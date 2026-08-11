@@ -1,0 +1,51 @@
+/* ---------------------------------------------------------------------------
+   Design tokens — single source of truth for color, type and layout.
+   Palette: ink navy on cool paper, Imperial Blue accent.
+   Type: Archivo (display) · Source Serif 4 (body) · IBM Plex Mono (meta).
+
+   Theming: the bare :root block defines the light palette. The media block
+   applies the dark palette when the OS prefers it and no explicit choice is
+   stamped; [data-theme="dark"] applies it when the user chooses explicitly.
+--------------------------------------------------------------------------- */
+
+:root {
+  --paper: #f3f5f6;
+  --surface: #fbfcfc;
+  --ink: #0f1926;
+  --muted: #43556a;
+  --line: #becad5;
+  --accent: #0000cd;
+  --accent-strong: #0000a0;
+  --hairline: rgba(15, 25, 38, 0.2);
+
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --w-content: 1060px;
+  --w-prose: 66ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d141d;
+    --surface: #131d29;
+    --ink: #edf2f6;
+    --muted: #a3b4c5;
+    --line: #34455a;
+    --accent: #0000cd;
+    --accent-strong: #9191ff;
+    --hairline: rgba(237, 242, 246, 0.22);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0d141d;
+  --surface: #131d29;
+  --ink: #edf2f6;
+  --muted: #a3b4c5;
+  --line: #34455a;
+  --accent: #0000cd;
+  --accent-strong: #9191ff;
+  --hairline: rgba(237, 242, 246, 0.22);
+}
