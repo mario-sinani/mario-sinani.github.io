@@ -1,6 +1,8 @@
 /* ---------------------------------------------------------------------------
    Design tokens - single source of truth for color, type and layout.
-   Palette: ink navy on cool paper, Imperial Blue accent.
+   Palette: ink navy on cool paper, Imperial Blue accent. The dark theme
+   lightens the accent (#0000cd reaches only 1.7:1 on the dark ground,
+   below the 3:1 minimum for UI elements) while keeping the same hue.
    Type: Archivo (display) · Source Serif 4 (body) · IBM Plex Mono (meta).
 
    Theming: the bare :root block defines the light palette. The media block
@@ -33,7 +35,7 @@
     --ink: #edf2f6;
     --muted: #a3b4c5;
     --line: #34455a;
-    --accent: #0000cd;
+    --accent: #6a6aff;
     --accent-strong: #9191ff;
     --hairline: rgba(237, 242, 246, 0.22);
   }
@@ -45,7 +47,7 @@
   --ink: #edf2f6;
   --muted: #a3b4c5;
   --line: #34455a;
-  --accent: #0000cd;
+  --accent: #6a6aff;
   --accent-strong: #9191ff;
   --hairline: rgba(237, 242, 246, 0.22);
 }

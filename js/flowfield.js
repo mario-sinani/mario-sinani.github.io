@@ -29,7 +29,7 @@ export function initFlowField(canvas, isDark) {
     const dark = isDark();
     palette.fade = styles.getPropertyValue('--paper').trim();
     palette.stroke = dark ? 'rgba(237, 242, 246, 0.32)' : 'rgba(15, 25, 38, 0.3)';
-    palette.accent = dark ? 'rgba(0, 0, 205, 0.95)' : 'rgba(0, 0, 205, 0.7)';
+    palette.accent = dark ? 'rgba(106, 106, 255, 0.8)' : 'rgba(0, 0, 205, 0.7)';
   }
 
   // Potential flow: uniform stream + doublet + vortex at the body centre.
