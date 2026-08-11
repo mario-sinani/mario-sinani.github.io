@@ -8,9 +8,12 @@
    Theming: the bare :root block defines the light palette. The media block
    applies the dark palette when the OS prefers it and no explicit choice is
    stamped; [data-theme="dark"] applies it when the user chooses explicitly.
+   color-scheme travels with each palette so form controls, scrollbars and
+   other native widgets follow the page even when it overrides the OS.
 --------------------------------------------------------------------------- */
 
 :root {
+  color-scheme: light;
   --paper: #f3f5f6;
   --surface: #fbfcfc;
   --ink: #0f1926;
@@ -30,6 +33,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --paper: #0d141d;
     --surface: #131d29;
     --ink: #edf2f6;
@@ -42,6 +46,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --paper: #0d141d;
   --surface: #131d29;
   --ink: #edf2f6;

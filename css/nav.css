@@ -75,24 +75,23 @@
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 
-/* The menu button only exists on small screens, and only with JavaScript. */
-.nav-toggle { display: none; }
+/* Both buttons need JavaScript to do anything, so neither is offered
+   without it. The menu button is additionally limited to small screens. */
+.theme-toggle, .nav-toggle { display: none; }
+
+.js .theme-toggle { display: inline-flex; }
 
 .nav-toggle .icon-close { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* Show the icon for the theme you would switch TO */
-.theme-toggle .icon-sun { display: none; }
-.theme-toggle .icon-moon { display: block; }
+/* The theme button shows the mode currently in force: a display for
+   "following your device", otherwise the chosen light or dark. */
+.theme-toggle svg { display: none; }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
-  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
-}
-
-:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
-:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+:root[data-theme-mode="system"] .theme-toggle .icon-auto,
+:root[data-theme-mode="light"] .theme-toggle .icon-sun,
+:root[data-theme-mode="dark"] .theme-toggle .icon-moon { display: block; }
 
 /* Below ~760px the brand, five section links and the action buttons no
    longer fit on one line, so the links move to their own full-width row.
