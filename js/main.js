@@ -3,6 +3,7 @@
 
 import { effectiveTheme, initTheme } from './theme.js';
 import { initFlowField } from './flowfield.js';
+import { initReveal } from './reveal.js';
 
 const flow = initFlowField(
   document.getElementById('flowfield'),
@@ -12,3 +13,5 @@ const flow = initFlowField(
 initTheme(() => {
   if (flow) flow.repaint();
 });
+
+initReveal();
