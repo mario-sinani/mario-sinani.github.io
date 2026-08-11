@@ -1,0 +1,35 @@
+/* Research: grid of interest areas with line-art glyphs. */
+
+.research-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.research-cell {
+  background: var(--surface);
+  padding: 1.7rem 1.6rem 1.9rem;
+}
+
+.research-cell h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+  margin: 0.9rem 0 0.55rem;
+}
+
+.research-cell p {
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.research-cell .glyph {
+  color: var(--accent);
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
+}
