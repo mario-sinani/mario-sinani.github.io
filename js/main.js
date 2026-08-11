@@ -1,6 +1,14 @@
 /* Entry point: composes the site's features. Modules receive their
    dependencies here instead of reaching into each other. */
 
-import { initTheme } from './theme.js';
+import { effectiveTheme, initTheme } from './theme.js';
+import { initFlowField } from './flowfield.js';
 
-initTheme(() => {});
+const flow = initFlowField(
+  document.getElementById('flowfield'),
+  () => effectiveTheme() === 'dark'
+);
+
+initTheme(() => {
+  if (flow) flow.repaint();
+});

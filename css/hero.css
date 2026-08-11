@@ -1,0 +1,76 @@
+/* Hero: full-height intro over the animated flow-field canvas. */
+
+.hero {
+  position: relative;
+  min-height: calc(92vh - 3.2rem);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+#flowfield {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: var(--w-content);
+  width: 100%;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 4.5rem;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.eyebrow .dot { color: var(--accent); }
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.9rem, 9vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin: 1.1rem 0 1.6rem;
+}
+
+.hero h1 .accent-mark { color: var(--accent); }
+
+.hero .thesis {
+  max-width: 34em;
+  font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.hero .thesis em { font-style: italic; }
+
+.hero-meta {
+  margin-top: 2.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.hero-links {
+  margin-top: 2.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
