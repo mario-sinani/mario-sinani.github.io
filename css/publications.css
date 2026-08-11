@@ -1,0 +1,144 @@
+/* Publications: chronological rail — a continuous vertical line with a
+   typed node per entry (conference / journal / thesis). */
+
+.pub-list { display: grid; }
+
+.pub {
+  display: grid;
+  grid-template-columns: 5rem 2.4rem 1fr;
+  column-gap: 1.5rem;
+}
+
+.pub-year {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: right;
+  padding-top: 0.55rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pub-node {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pub-node::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-0.5px);
+  background: var(--line);
+}
+
+.pub:first-child .pub-node::before { top: 1.25rem; }
+
+.pub:last-child .pub-node::before { bottom: auto; height: 1.25rem; }
+
+.node-icon {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.15rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-icon svg { width: 1.05rem; height: 1.05rem; }
+
+.pub-body {
+  grid-column: 3;
+  grid-row: 1;
+  padding-bottom: 2.4rem;
+}
+
+.pub:last-child .pub-body { padding-bottom: 0; }
+
+.pub-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.06rem;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.pub-title a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.pub-title a:hover, .pub-title a:focus-visible {
+  color: var(--accent-strong);
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.pub-authors {
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.pub-authors .me { color: var(--ink); font-weight: 600; }
+
+.pub-venue {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.pub-tag {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pub-tag.journal { color: var(--accent-strong); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+
+.pubs-footer { margin-top: 2rem; }
+
+.pubs-footer a {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.pubs-footer a:hover, .pubs-footer a:focus-visible { text-decoration: underline; }
+
+@media (max-width: 720px) {
+  .pub { grid-template-columns: 2.4rem 1fr; column-gap: 1.1rem; }
+  .pub-year {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: left;
+    padding: 0.15rem 0 0.3rem;
+  }
+  .pub-node { grid-row: 1 / span 2; }
+  .pub-body { grid-column: 2; grid-row: 2; padding-bottom: 1.9rem; }
+}
