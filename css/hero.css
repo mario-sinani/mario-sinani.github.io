@@ -3,6 +3,9 @@
 .hero {
   position: relative;
   min-height: calc(92vh - 3.2rem);
+  /* svh ignores the mobile browser's collapsing toolbars, so the hero does
+     not jump as the address bar hides on scroll. */
+  min-height: calc(92svh - 3.2rem);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -73,4 +76,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
+}
+
+@media (max-width: 720px) {
+  .hero-inner { padding: 3.25rem 1.15rem 3.5rem; }
+
+  /* Let the name shrink further than the desktop floor so it does not
+     overflow a 320px screen. */
+  .hero h1 {
+    font-size: clamp(2.3rem, 11vw, 3.6rem);
+    margin: 0.9rem 0 1.25rem;
+  }
+
+  .eyebrow { font-size: 0.7rem; letter-spacing: 0.1em; }
+  .hero .thesis { font-size: 1.05rem; }
+  .hero-meta { margin-top: 1.8rem; gap: 0.5rem 1.2rem; }
+  .hero-links { margin-top: 2rem; gap: 0.55rem; }
 }

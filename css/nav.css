@@ -50,7 +50,13 @@
 
 .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
 
-.theme-toggle {
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.theme-toggle, .nav-toggle {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--muted);
@@ -64,9 +70,17 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-.theme-toggle:hover, .theme-toggle:focus-visible { color: var(--accent); border-color: var(--accent); }
+.theme-toggle:hover, .theme-toggle:focus-visible,
+.nav-toggle:hover, .nav-toggle:focus-visible { color: var(--accent); border-color: var(--accent); }
 
-.theme-toggle svg { width: 0.95rem; height: 0.95rem; }
+.theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
+
+/* The menu button only exists on small screens, and only with JavaScript. */
+.nav-toggle { display: none; }
+
+.nav-toggle .icon-close { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
+.nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
 /* Show the icon for the theme you would switch TO */
 .theme-toggle .icon-sun { display: none; }
@@ -80,6 +94,54 @@
 :root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
-@media (max-width: 720px) {
-  .nav-links a:not(.nav-keep) { display: none; }
+/* Below ~760px the brand, five section links and the action buttons no
+   longer fit on one line, so the links move to their own full-width row.
+   With JavaScript that row collapses behind the menu button; without it the
+   links simply stay visible and wrap, so every section stays reachable. */
+@media (max-width: 760px) {
+  .site-nav .nav-inner {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.7rem 1.15rem;
+  }
+
+  .nav-actions { margin-left: auto; }
+
+  .nav-links {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+  }
+
+  .js .nav-toggle { display: inline-flex; }
+
+  .js .nav-links {
+    display: none;
+    flex-direction: column;
+    /* stretch, so each row is tappable across its full width rather than
+       only where the label sits */
+    align-items: stretch;
+    gap: 0;
+    margin-top: 0.1rem;
+    padding-top: 0.2rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .js .nav-links.is-open {
+    display: flex;
+    animation: nav-reveal 180ms ease;
+  }
+
+  /* Comfortable touch targets once the links are stacked. */
+  .js .nav-links a {
+    padding: 0.72rem 0.15rem;
+    font-size: 0.78rem;
+  }
+}
+
+@keyframes nav-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
 }

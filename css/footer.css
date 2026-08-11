@@ -43,6 +43,12 @@
   gap: 0.7rem;
 }
 
+@media (max-width: 720px) {
+  .footer-inner { padding: 2.75rem 1.15rem 2.5rem; }
+  .footer-email { font-size: 0.85rem; overflow-wrap: break-word; }
+  .footer-links { margin-top: 1.8rem; gap: 0.55rem; }
+}
+
 .footer-colophon {
   margin-top: 3rem;
   padding-top: 1.2rem;

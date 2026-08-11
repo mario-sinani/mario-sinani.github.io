@@ -31,6 +31,12 @@
   letter-spacing: -0.015em;
 }
 
+@media (max-width: 720px) {
+  .section { padding: 3.75rem 1.15rem 0; }
+  .section:last-of-type { padding-bottom: 3.75rem; }
+  .section-head { gap: 0.9rem; margin-bottom: 1.8rem; }
+}
+
 .pill {
   font-family: var(--font-mono);
   font-size: 0.74rem;

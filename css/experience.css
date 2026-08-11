@@ -43,6 +43,7 @@
   letter-spacing: 0.05em;
   color: var(--muted);
   margin: 0.3rem 0 0.6rem;
+  overflow-wrap: break-word;
 }
 
 .timeline-what p {
@@ -54,4 +55,6 @@
 @media (max-width: 720px) {
   .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.3rem 0; }
   .timeline-when { padding-top: 0; }
+  .timeline-what { gap: 0.9rem; }
+  .timeline-what h3 { font-size: 1.02rem; }
 }

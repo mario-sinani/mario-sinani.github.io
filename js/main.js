@@ -5,6 +5,7 @@ import { effectiveTheme, initTheme } from './theme.js';
 import { initFlowField } from './flowfield.js';
 import { initReveal } from './reveal.js';
 import { initEmail } from './email.js';
+import { initNav } from './nav.js';
 
 const flow = initFlowField(
   document.getElementById('flowfield'),
@@ -17,3 +18,4 @@ initTheme(() => {
 
 initReveal();
 initEmail();
+initNav();
