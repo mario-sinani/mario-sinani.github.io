@@ -1,0 +1,35 @@
+/* Education: degree cards with institution logo chips. */
+
+.edu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.edu-card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 1.6rem 1.6rem 1.7rem;
+}
+
+.edu-head {
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
+}
+
+.edu-card .org-icon { margin-top: 0.15rem; }
+
+.edu-card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.06rem;
+  margin: 0 0 0.35rem;
+}
+
+.edu-card .edu-school {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
