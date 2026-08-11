@@ -1,0 +1,81 @@
+/* Shared components: section chrome, pill links, organization logo chips. */
+
+.section {
+  max-width: var(--w-content);
+  margin: 0 auto;
+  padding: 5.5rem 1.5rem 0;
+}
+
+.section:last-of-type { padding-bottom: 5.5rem; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.1rem;
+  margin-bottom: 2.4rem;
+}
+
+.section-head .index {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.section-head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+  letter-spacing: -0.015em;
+}
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border-radius: 999px;
+  padding: 0.5rem 1.05rem;
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+
+.pill:hover, .pill:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pill.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.pill.primary:hover, .pill.primary:focus-visible {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+/* Logo chips: square avatar-style marks on a white ground in both themes,
+   so institutional colors stay legible on the dark surface. */
+.org-icon {
+  flex-shrink: 0;
+  width: 2.7rem;
+  height: 2.7rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.org-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
