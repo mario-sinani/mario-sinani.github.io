@@ -1,0 +1,53 @@
+/* About: prose column with a facts sidebar. */
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, var(--w-prose)) 1fr;
+  gap: 3rem;
+}
+
+.about-prose p + p { margin-top: 1.2em; }
+
+.about-prose a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: border-color 140ms ease;
+}
+
+.about-prose a:hover, .about-prose a:focus-visible { border-bottom-color: var(--accent-strong); }
+
+.about-aside {
+  border-left: 1px solid var(--line);
+  padding-left: 1.6rem;
+  align-self: start;
+  display: grid;
+  gap: 1.4rem;
+}
+
+.fact .fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.fact .fact-value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+  .about-grid { grid-template-columns: 1fr; gap: 2.2rem; }
+  .about-aside {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 1.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
