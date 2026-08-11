@@ -85,13 +85,21 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the mode currently in force: a display for
-   "following your device", otherwise the chosen light or dark. */
-.theme-toggle svg { display: none; }
+/* The theme button shows the theme on screen: sun in light, moon in dark,
+   whether that came from the device or from an explicit choice. These three
+   blocks mirror how tokens.css resolves the palette, so the icon and the
+   colours can never disagree. Which mode is in force is carried by the
+   button's label and tooltip. */
+.theme-toggle .icon-moon { display: none; }
+.theme-toggle .icon-sun { display: block; }
 
-:root[data-theme-mode="system"] .theme-toggle .icon-auto,
-:root[data-theme-mode="light"] .theme-toggle .icon-sun,
-:root[data-theme-mode="dark"] .theme-toggle .icon-moon { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: none; }
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: block; }
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
 /* Below ~760px the brand, five section links and the action buttons no
    longer fit on one line, so the links move to their own full-width row.

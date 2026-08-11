@@ -59,9 +59,6 @@ function syncButton() {
 }
 
 function apply() {
-  // data-theme-mode drives which icon the button shows. It is also set by
-  // the inline head script, so the right icon is painted from the start.
-  root.dataset.themeMode = mode;
   if (mode === 'system') root.removeAttribute('data-theme');
   else root.setAttribute('data-theme', mode);
   syncThemeColor();
