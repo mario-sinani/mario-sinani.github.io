@@ -1,0 +1,57 @@
+/* Experience: chronological timeline with organization logo chips. */
+
+.timeline { display: grid; gap: 0; }
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 2rem;
+  padding: 1.6rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-item:first-child { border-top: 0; padding-top: 0; }
+
+.timeline-when {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding-top: 0.35rem;
+}
+
+.timeline-when .now { color: var(--accent); }
+
+.timeline-what {
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
+}
+
+.timeline-what .org-icon { margin-top: 0.15rem; }
+
+.timeline-what h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+
+.timeline-org {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0.3rem 0 0.6rem;
+}
+
+.timeline-what p {
+  max-width: var(--w-prose);
+  font-size: 0.97rem;
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.3rem 0; }
+  .timeline-when { padding-top: 0; }
+}
