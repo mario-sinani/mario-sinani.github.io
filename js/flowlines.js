@@ -18,7 +18,7 @@
 import { withAlpha } from './ink.js';
 
 export function createFlowlines(options = {}) {
-  const lines = options.lines || 15;
+  const lines = options.lines || 21;
   const accentEvery = options.accentEvery || 5;
   const step = options.step || 4;          // px advanced per integration step
   const tracerCount = options.tracers || 30;
@@ -56,13 +56,16 @@ export function createFlowlines(options = {}) {
     }
   }
 
+  /* Fine and close-set, like the ruling of a chart: the family is the
+     texture of the drawing, so it stays light and lets the bodies and
+     instruments carry the weight. */
   function drawSkeleton(ctx, velocity, ink) {
     for (let i = 0; i < lines; i++) {
       const accent = i % accentEvery === accentEvery >> 1;
       ctx.beginPath();
       integrate(ctx, velocity, (i + 0.5) * (height / lines));
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = accent ? withAlpha(ink.accent, 0.3) : withAlpha(ink.line, 0.55);
+      ctx.lineWidth = 0.75;
+      ctx.strokeStyle = accent ? withAlpha(ink.wash, 0.5) : withAlpha(ink.line, 0.42);
       ctx.stroke();
     }
   }
@@ -87,9 +90,10 @@ export function createFlowlines(options = {}) {
       );
       if (presence <= 0 || tr.y < -10 || tr.y > height + 10) { spawn(tr, false); continue; }
 
-      // The tail, integrated backwards so the comet lies on its streamline.
-      ctx.beginPath();
-      ctx.moveTo(tr.x, tr.y);
+      /* The tail, integrated backwards so the comet lies on its own
+         streamline, and drawn segment by segment so it tapers - full
+         weight at the head, thinning and fading to nothing behind. */
+      const points = [[tr.x, tr.y]];
       let bx = tr.x;
       let by = tr.y;
       for (let k = 0; k < TAIL / 4; k++) {
@@ -98,12 +102,22 @@ export function createFlowlines(options = {}) {
         const mag = Math.hypot(bv.u, bv.v) || 1;
         bx -= (bv.u / mag) * 4;
         by -= (bv.v / mag) * 4;
-        ctx.lineTo(bx, by);
+        points.push([bx, by]);
       }
       const accent = i % accentEvery === 0;
-      ctx.lineWidth = accent ? 1.4 : 1.1;
-      ctx.strokeStyle = withAlpha(accent ? ink.accent : ink.line, (accent ? 0.85 : 0.8) * presence);
-      ctx.stroke();
+      const colour = accent ? ink.accent : ink.wash;
+      const base = (accent ? 0.85 : 0.7) * presence;
+      ctx.lineCap = 'round';
+      for (let k = 0; k < points.length - 1; k++) {
+        const falloff = 1 - k / (points.length - 1);
+        ctx.beginPath();
+        ctx.moveTo(points[k][0], points[k][1]);
+        ctx.lineTo(points[k + 1][0], points[k + 1][1]);
+        ctx.lineWidth = 0.5 + 1 * falloff;
+        ctx.strokeStyle = withAlpha(colour, base * falloff * falloff);
+        ctx.stroke();
+      }
+      ctx.lineCap = 'butt';
     }
   }
 

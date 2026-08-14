@@ -40,7 +40,7 @@ function loading(xi) {
 }
 
 export function createIncidenceSweep() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
+  const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28 });
   const section = { x: 0, y: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const inset = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -98,8 +98,10 @@ export function createIncidenceSweep() {
       ctx.moveTo(bx, by);
       ctx.lineTo(bx + nx * len, by + ny * len);
     }
-    ctx.lineWidth = 1.1;
-    ctx.strokeStyle = withAlpha(ink.accent, 0.5 * presence);
+    ctx.lineWidth = 1;
+    // The comb belongs to the field, so it takes the field's wash; the
+    // resultant it sums to keeps the full accent.
+    ctx.strokeStyle = withAlpha(ink.wash, 0.55 * presence);
     ctx.stroke();
 
     // The curve joining their tips, which is the distribution itself.
@@ -113,7 +115,7 @@ export function createIncidenceSweep() {
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.lineWidth = 1;
-    ctx.strokeStyle = withAlpha(ink.accent, 0.75 * presence);
+    ctx.strokeStyle = withAlpha(ink.wash, 0.85 * presence);
     ctx.stroke();
   }
 

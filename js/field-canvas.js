@@ -33,6 +33,10 @@ export function initFieldCanvas(canvas, isDark, scene) {
     ink.line = dark ? 'rgba(237, 242, 246, 0.32)' : 'rgba(15, 25, 38, 0.3)';
     ink.accent = dark ? 'rgba(106, 106, 255, 0.8)' : 'rgba(0, 0, 205, 0.7)';
     ink.body = dark ? 'rgba(154, 154, 255, 0.75)' : 'rgba(0, 0, 205, 0.55)';
+    /* A quieter indigo between the grey and the brand blue. The field -
+       streamlines, tracers, negative vorticity - takes this wash, so the
+       pure Imperial blue is kept for the instruments and stays special. */
+    ink.wash = dark ? 'rgba(148, 154, 236, 0.6)' : 'rgba(84, 92, 190, 0.6)';
     ink.faint = dark ? 'rgba(237, 242, 246, 0.16)' : 'rgba(15, 25, 38, 0.14)';
   }
 

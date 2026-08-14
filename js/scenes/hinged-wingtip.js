@@ -37,7 +37,7 @@ const TRACE_SECONDS = 1.05 / HINGE_HZ;
 const TRACE_STEP = 0.05;
 
 export function createHingedWingtip() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
+  const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28 });
   const inboard = { x: 0, y: 0, half: 40, thickness: 6, gain: 0, alpha: 0, gamma: 0 };
   const outboard = { x: 0, y: 0, half: 26, thickness: 5, gain: 0, alpha: 0, gamma: 0 };
   const hinge = { x: 0, y: 0, fold: 0 };
@@ -88,6 +88,29 @@ export function createHingedWingtip() {
     addVortex(out, x, y, a.x, a.y, inboard.gamma, CORE2);
     addVortex(out, x, y, b.x, b.y, outboard.gamma, CORE2);
     return out;
+  }
+
+  /* The strobe of the fold: the outboard piece a breath and two breaths
+     ago, hung from where the hinge then was - the oscillation drawn in
+     the same language as the beam and flutter pages. */
+  function drawGhosts(ctx, t, ink) {
+    for (const [ago, alpha] of [[0.5, 0.09], [0.25, 0.18]]) {
+      const when = t - ago;
+      const ia = WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * when);
+      const oa = ia + HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * when);
+      const dirIn = chordDirection(ia);
+      const hx = inboard.x + inboard.half * dirIn.x;
+      const hy = inboard.y + inboard.half * dirIn.y;
+      const dirOut = chordDirection(oa);
+      ctx.beginPath();
+      ctx.ellipse(
+        hx + outboard.half * dirOut.x, hy + outboard.half * dirOut.y,
+        outboard.half, outboard.thickness, -oa, 0, TWO_PI
+      );
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = withAlpha(ink.body, alpha);
+      ctx.stroke();
+    }
   }
 
   function drawPart(ctx, part, ink) {
@@ -201,6 +224,7 @@ export function createHingedWingtip() {
       flow.draw(ctx, dt, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
+      drawGhosts(ctx, t, ink);
       drawPart(ctx, inboard, ink);
       drawPart(ctx, outboard, ink);
       drawHinge(ctx, ink);
@@ -218,6 +242,7 @@ export function createHingedWingtip() {
       flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
+      drawGhosts(ctx, at, ink);
       drawPart(ctx, inboard, ink);
       drawPart(ctx, outboard, ink);
       drawHinge(ctx, ink);

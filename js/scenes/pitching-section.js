@@ -35,7 +35,7 @@ const PLUNGE_FRACTION = 0.04;   // of canvas height
 const SWEEP_SECONDS = 26;       // period of the slow amplitude sweep
 const SHED_INTERVAL = 0.14;     // seconds between shed wake vortices
 const SHED_RAMP = 0.3;          // seconds a new vortex takes to reach strength
-const MAX_WAKE = 80;
+const MAX_WAKE = 56;            // spans the stage; the edge fade hides the cut
 const CORE2 = 210;              // squared vortex core radius
 /* The orbit is sampled on a clock rather than per frame, and kept for
    just over one flutter cycle: counting frames would make the loop's
@@ -44,7 +44,9 @@ const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 
 export function createPitchingSection() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
+  // A slightly longer integration step: this field carries a whole wake
+  // of vortices, and at hairline weight the coarser polyline is invisible.
+  const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28, step: 5 });
   const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -59,17 +61,27 @@ export function createPitchingSection() {
 
   /* Plunge is positive upward, so the section's screen y is its rest
      height minus it, and plunging downward raises the effective incidence
-     exactly as a nose-up rotation does. */
-  function move(t) {
+     exactly as a nose-up rotation does. Kept pure so the strobe can ask
+     where the section was a moment ago. */
+  function kinematics(t) {
     const omega = TWO_PI * FLUTTER_HZ;
     const sweep = 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
     const plungeAmp = height * PLUNGE_FRACTION * sweep;
-    const hRate = plungeAmp * omega * Math.cos(omega * t);
+    const h = plungeAmp * Math.sin(omega * t);
+    return {
+      h,
+      alpha: PITCH_AMPLITUDE * sweep * Math.sin(omega * t + PITCH_LEAD),
+      y: section.baseY - h,
+      hRate: plungeAmp * omega * Math.cos(omega * t),
+    };
+  }
 
-    plunge = plungeAmp * Math.sin(omega * t);
-    section.alpha = PITCH_AMPLITUDE * sweep * Math.sin(omega * t + PITCH_LEAD);
-    section.y = section.baseY - plunge;
-    section.gamma = section.gain * (section.alpha - hRate / FREESTREAM);
+  function move(t) {
+    const k = kinematics(t);
+    plunge = k.h;
+    section.alpha = k.alpha;
+    section.y = k.y;
+    section.gamma = section.gain * (k.alpha - k.hRate / FREESTREAM);
   }
 
   function quarterChord() {
@@ -93,6 +105,12 @@ export function createPitchingSection() {
     const bound = quarterChord();
     addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
     for (let i = 0; i < wake.length; i++) {
+      /* A vortex's influence falls off as 1/r^2; past ~400px it moves a
+         streamline by less than a pixel, and skipping it there halves the
+         cost of threading the whole family through the wake. */
+      const wx = x - wake[i].x;
+      const wy = y - wake[i].y;
+      if (wx * wx + wy * wy > 160000) continue;
       addVortex(out, x, y, wake[i].x, wake[i].y, wake[i].gamma * wake[i].ramp, CORE2);
     }
     return out;
@@ -149,7 +167,21 @@ export function createPitchingSection() {
       ctx.beginPath();
       ctx.arc(w.x, w.y, r, 0, TWO_PI);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(w.gamma > 0 ? ink.accent : ink.body, (0.12 + 0.5 * strength) * fade);
+      ctx.strokeStyle = withAlpha(w.gamma > 0 ? ink.accent : ink.wash, (0.12 + 0.5 * strength) * fade);
+      ctx.stroke();
+    }
+  }
+
+  /* The oscillation's own strobe: the section a breath and two breaths
+     ago, fading back - the same language the beam page speaks, so the
+     motion reads even in a glance that catches no motion at all. */
+  function drawGhosts(ctx, t, ink) {
+    for (const [ago, alpha] of [[0.34, 0.09], [0.17, 0.18]]) {
+      const k = kinematics(t - ago);
+      ctx.beginPath();
+      ctx.ellipse(section.x, k.y, section.half, section.thickness, -k.alpha, 0, TWO_PI);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = withAlpha(ink.body, alpha);
       ctx.stroke();
     }
   }
@@ -266,6 +298,7 @@ export function createPitchingSection() {
       drawDatum(ctx, stage, ink);
       drawWake(ctx, dt, ink);
       drawIncidence(ctx, ink);
+      drawGhosts(ctx, t, ink);
       drawSection(ctx, ink);
       drawOrbit(ctx, ink);
     },
@@ -289,6 +322,7 @@ export function createPitchingSection() {
       flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawIncidence(ctx, ink);
+      drawGhosts(ctx, at, ink);
       drawSection(ctx, ink);
       drawOrbit(ctx, ink);
     },
