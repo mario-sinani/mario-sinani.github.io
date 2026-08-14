@@ -31,10 +31,36 @@
   letter-spacing: -0.015em;
 }
 
+/* Quiet links a section can carry in its head, opposite the title. */
+.section-head .head-links {
+  margin-left: auto;
+  display: flex;
+  gap: 1.5rem;
+  white-space: nowrap;
+}
+
+.section-head .head-links a {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color 140ms ease;
+}
+
+.section-head .head-links a:hover, .section-head .head-links a:focus-visible {
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
 @media (max-width: 720px) {
   .section { padding: 3.75rem 1.15rem 0; }
   .section:last-of-type { padding-bottom: 3.75rem; }
-  .section-head { gap: 0.9rem; margin-bottom: 1.8rem; }
+  .section-head { flex-wrap: wrap; gap: 0.9rem; margin-bottom: 1.8rem; }
+
+  /* Their own quiet row beneath the title. */
+  .section-head .head-links { flex-basis: 100%; margin-left: 0; gap: 1.2rem; }
 }
 
 .pill {
