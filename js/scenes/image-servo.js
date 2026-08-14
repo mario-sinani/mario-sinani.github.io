@@ -16,6 +16,8 @@
    drawn to show. Every few seconds the vehicle is knocked off and they
    are drawn again. */
 
+import { withAlpha } from '../ink.js';
+
 const TWO_PI = 6.2832;
 const SETTLE = 0.9;             // exponential rate the error decays at
 const KICK_SECONDS = 5.5;       // how often the view is knocked off
@@ -28,13 +30,6 @@ const GRID_Y = 4;
    panel below is vertically centred, so this strip stays clear of the
    words at every viewport height. */
 const BAND = 0.14;
-
-function fadeColour(rgba, alpha) {
-  return rgba.replace(/rgba?\(([^)]+)\)/, (all, parts) => {
-    const [r, g, b] = parts.split(',');
-    return `rgba(${r},${g},${b},${alpha})`;
-  });
-}
 
 export function createImageServo() {
   const frame = { x: 0, y: 0, w: 0, h: 0 };
@@ -103,7 +98,7 @@ export function createImageServo() {
       ctx.lineTo(frame.x + frame.w, y);
     }
     ctx.lineWidth = 1;
-    ctx.strokeStyle = fadeColour(ink.line, 0.1);
+    ctx.strokeStyle = withAlpha(ink.line, 0.1);
     ctx.stroke();
 
     ctx.beginPath();
@@ -163,7 +158,7 @@ export function createImageServo() {
         if (k === 0) ctx.moveTo(px, path[k]); else ctx.lineTo(px, path[k]);
       }
       ctx.lineWidth = 1;
-      ctx.strokeStyle = fadeColour(ink.accent, 0.4);
+      ctx.strokeStyle = withAlpha(ink.accent, 0.4);
       ctx.stroke();
     }
   }
@@ -189,7 +184,7 @@ export function createImageServo() {
         ctx.moveTo(have.x, have.y);
         ctx.lineTo(want.x, want.y);
         ctx.lineWidth = 1.1;
-        ctx.strokeStyle = fadeColour(ink.accent, 0.55);
+        ctx.strokeStyle = withAlpha(ink.accent, 0.55);
         ctx.stroke();
       }
 

@@ -15,6 +15,8 @@
    coastline standing in for depth contours, which also gives the eye
    something to read the vehicle's motion against. */
 
+import { withAlpha } from '../ink.js';
+
 const TWO_PI = 6.2832;
 const DRIFT = 46;               // px/s the world scrolls beneath the vehicle
 const HORIZON = 1.5;            // seconds a plan is valid for
@@ -28,13 +30,6 @@ const STEP = 6;                 // px between samples along a curve
    panel below is vertically centred, so this strip stays clear of the
    words at every viewport height. */
 const BAND = 0.14;
-
-function fadeColour(rgba, alpha) {
-  return rgba.replace(/rgba?\(([^)]+)\)/, (all, parts) => {
-    const [r, g, b] = parts.split(',');
-    return `rgba(${r},${g},${b},${alpha})`;
-  });
-}
 
 export function createEventTracking() {
   const view = { w: 0, h: 0 };
@@ -92,7 +87,7 @@ export function createEventTracking() {
     for (let i = CONTOURS; i >= 1; i--) {
       traceShore(ctx, t, i * shore.spacing);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = fadeColour(ink.line, 0.3 * (1 - (i - 1) / CONTOURS));
+      ctx.strokeStyle = withAlpha(ink.line, 0.3 * (1 - (i - 1) / CONTOURS));
       ctx.stroke();
     }
   }
@@ -113,7 +108,7 @@ export function createEventTracking() {
     ctx.lineTo(craft.x - spread, shoreAt(craft.x - spread, t));
     ctx.lineTo(craft.x + spread, shoreAt(craft.x + spread, t));
     ctx.closePath();
-    ctx.fillStyle = fadeColour(ink.accent, 0.07);
+    ctx.fillStyle = withAlpha(ink.accent, 0.07);
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = ink.faint;
@@ -138,7 +133,7 @@ export function createEventTracking() {
       if (i === 0) ctx.moveTo(x, track[i].y); else ctx.lineTo(x, track[i].y);
     }
     ctx.lineWidth = 1.2;
-    ctx.strokeStyle = fadeColour(ink.body, 0.45);
+    ctx.strokeStyle = withAlpha(ink.body, 0.45);
     ctx.stroke();
   }
 

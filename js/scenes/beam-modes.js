@@ -17,6 +17,8 @@
    And the bars are the share of energy in each mode, measured against the
    bound the paper's semidefinite program provides. */
 
+import { withAlpha } from '../ink.js';
+
 const TWO_PI = 6.2832;
 
 // Roots of cos(bL)cosh(bL) = -1, and the frequency of each mode goes as
@@ -43,14 +45,6 @@ function modeShape(bL, sigma, xi) {
   const raw = Math.cosh(b) - Math.cos(b) - sigma * (Math.sinh(b) - Math.sin(b));
   const tip = Math.cosh(bL) - Math.cos(bL) - sigma * (Math.sinh(bL) - Math.sin(bL));
   return raw / tip;
-}
-
-/** Swap the alpha of an rgba() colour, so one palette entry can fade. */
-function fadeColour(rgba, alpha) {
-  return rgba.replace(/rgba?\(([^)]+)\)/, (all, parts) => {
-    const [r, g, b] = parts.split(',');
-    return `rgba(${r},${g},${b},${alpha})`;
-  });
 }
 
 export function createBeamModes() {
@@ -124,7 +118,7 @@ export function createBeamModes() {
     for (let s = STROBES; s >= 1; s--) {
       traceBeam(ctx, t - s * STROBE_STEP);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = fadeColour(ink.line, (0.42 * (STROBES - s + 1)) / STROBES);
+      ctx.strokeStyle = withAlpha(ink.line, (0.42 * (STROBES - s + 1)) / STROBES);
       ctx.stroke();
     }
   }
