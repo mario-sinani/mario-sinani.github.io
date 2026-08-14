@@ -13,7 +13,14 @@ const CIRCULATION = 9000;     // vortex strength around the body
 const ADVECTION_GAIN = 1.6;   // visual speed-up of particle motion
 
 export function createLiftingCylinder() {
-  const streaks = createStreaklines({ spacing: 9, max: 190, stall: 7, accentEvery: 19, gain: ADVECTION_GAIN });
+  const streaks = createStreaklines({
+    spacing: 6,
+    max: 250,
+    accentEvery: 19,
+    gain: ADVECTION_GAIN,
+    seconds: 0.9,
+    reference: FREESTREAM * ADVECTION_GAIN,
+  });
   const body = { x: 0, y: 0, r: 60 };
 
   function velocity(x, y) {
@@ -29,7 +36,8 @@ export function createLiftingCylinder() {
   }
 
   return {
-    fade: 0.075,
+    // The trails hold their own history, so the engine clears each frame.
+    fade: 1,
 
     layout(w, h) {
       body.x = w * 0.3;
@@ -39,7 +47,7 @@ export function createLiftingCylinder() {
     },
 
     frame(ctx, dt, t, ink) {
-      streaks.draw(ctx, dt, velocity, ink);
+      streaks.draw(ctx, dt, velocity, ink, t);
     },
 
     still(ctx, ink) {
