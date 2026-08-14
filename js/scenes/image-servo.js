@@ -32,6 +32,7 @@ const GAIN = 1.45;              // servo gain on the image error
 const HORIZON = 0.9;            // seconds a command stays valid for
 const DRIFT_TRIGGER = 0.055;    // pose drift, as a fraction of frame height
 const KICK_SECONDS = 7;         // how often the view is knocked off
+const KICK_RAMP = 0.6;          // seconds the gust takes to land
 const TRAIL_SECONDS = 2.6;
 const SAMPLE_STEP = 0.04;       // seconds between trail and plot samples
 const PLOT_SECONDS = 8;
@@ -52,6 +53,9 @@ export function createImageServo() {
   let lastSample = -99;
   let nextKick = 1.4;
   let kicks = 0;
+  let kickAt = -99;
+  const kickFrom = { u: 0, v: 0, roll: 0 };
+  const kickTo = { u: 0, v: 0, roll: 0 };
 
   /** The contour in sensor coordinates: a gentle meander across the view. */
   function shoreY(u) {
@@ -123,14 +127,30 @@ export function createImageServo() {
 
   function step(dt, t) {
     if (t > nextKick) {
-      // Deterministic rather than random, so the rhythm stays calm.
+      /* The knock-off is a gust, not a teleport: the pose is carried to
+         its displaced value over a short eased ramp, and the trails are
+         left running so the excursion itself is drawn - being knocked
+         off is part of the trajectory, not a scene change. */
       kicks += 1;
-      pose.u = frame.w * 0.16 * Math.sin(kicks * 2.4);
-      pose.v = frame.h * 0.42 * Math.cos(kicks * 1.1);
-      pose.roll = 0.2 * Math.sin(kicks * 1.7);
+      kickFrom.u = pose.u;
+      kickFrom.v = pose.v;
+      kickFrom.roll = pose.roll;
+      // Deterministic rather than random, so the rhythm stays calm.
+      kickTo.u = frame.w * 0.16 * Math.sin(kicks * 2.4);
+      kickTo.v = frame.h * 0.42 * Math.cos(kicks * 1.1);
+      kickTo.roll = 0.2 * Math.sin(kicks * 1.7);
+      kickAt = t;
       nextKick = t + KICK_SECONDS;
-      trails = trails.map(() => []);
-      solve(t);
+    }
+
+    if (t - kickAt < KICK_RAMP) {
+      const s = Math.min((t - kickAt) / KICK_RAMP, 1);
+      const e = s * s * (3 - 2 * s);
+      pose.u = kickFrom.u + (kickTo.u - kickFrom.u) * e;
+      pose.v = kickFrom.v + (kickTo.v - kickFrom.v) * e;
+      pose.roll = kickFrom.roll + (kickTo.roll - kickFrom.roll) * e;
+      // The controller solves the moment the gust lets go.
+      lastSolve = -99;
     } else {
       if (t - lastSolve > HORIZON || drift() > DRIFT_TRIGGER * frame.h) solve(t);
       // Held open loop between solves: the command does not change.
@@ -311,30 +331,35 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
+    /* The log is sampled on a clock, but the curve ends at the live
+       error, so the head moves every frame. */
+    const liveE = errorNorm();
     ctx.beginPath();
     for (let i = 0; i < errorLog.length; i++) {
       const px = toX(errorLog[i].t);
       const py = toY(errorLog[i].e);
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
+    ctx.lineTo(toX(t), toY(liveE));
     ctx.lineWidth = 1.3;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    ctx.beginPath();
     for (const at of triggers) {
       const px = toX(at);
-      if (px < plot.x) continue;
+      // Born fading in, and gone fading out at the plot's left edge.
+      const presence = Math.min(1, (t - at) / 0.3, (px - plot.x) / 14);
+      if (presence <= 0) continue;
+      ctx.beginPath();
       ctx.moveTo(px, baseY);
       ctx.lineTo(px, baseY + 4);
+      ctx.lineWidth = 1.1;
+      ctx.strokeStyle = withAlpha(ink.accent, presence);
+      ctx.stroke();
     }
-    ctx.lineWidth = 1.1;
-    ctx.strokeStyle = ink.accent;
-    ctx.stroke();
 
-    const last = errorLog[errorLog.length - 1];
     ctx.beginPath();
-    ctx.arc(toX(last.t), toY(last.e), 2.4, 0, TWO_PI);
+    ctx.arc(toX(t), toY(liveE), 2.4, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
     ctx.fill();
   }
@@ -365,6 +390,7 @@ export function createImageServo() {
     lastSolve = -99;
     lastSample = -99;
     kicks = 0;
+    kickAt = -99;
     trails = Array.from({ length: FEATURES }, () => []);
     errorLog = [];
     triggers = [];

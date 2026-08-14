@@ -31,8 +31,9 @@ export function createEventTracking() {
   const view = { w: 0, h: 0 };
   const shore = { y: 0, a1: 0, a2: 0, k1: 0, k2: 0, spacing: 9 };
   const craft = { x: 0, y: 0, standoff: 0, span: 0 };
-  const plan = { from: 0, to: 0, at: -99 };
+  const plan = { from: 0, to: 0, at: -99, v0: 0 };
   let stage = null;
+  let craftVel = 0;
   let ticks = [];
   let track = [];
 
@@ -52,9 +53,13 @@ export function createEventTracking() {
     // Aim at where the contour will have moved to by the end of the horizon.
     plan.to = target(t + HORIZON);
     plan.at = t;
+    // The new plan starts at the velocity the craft already has, so a
+    // trigger bends its path rather than halting it for an instant.
+    plan.v0 = craftVel;
   }
 
-  function follow(t) {
+  function follow(dt, t) {
+    const before = craft.y;
     const age = t - plan.at;
     const error = Math.abs(craft.y - target(t));
     if (age > HORIZON || error > ERROR_TRIGGER * view.h) {
@@ -62,10 +67,17 @@ export function createEventTracking() {
       ticks.push(t);
       if (ticks.length > MAX_TICKS) ticks.shift();
     } else {
-      // Open loop between triggers: no feedback, just the stored trajectory.
+      /* Open loop between triggers: no feedback, just the stored
+         trajectory - a Hermite arc from where the craft was, at the
+         velocity it had, to where the contour will be. */
       const s = Math.min(age / HORIZON, 1);
-      craft.y = plan.from + (plan.to - plan.from) * (s * s * (3 - 2 * s));
+      const s2 = s * s;
+      const s3 = s2 * s;
+      craft.y = (2 * s3 - 3 * s2 + 1) * plan.from
+        + (s3 - 2 * s2 + s) * HORIZON * plan.v0
+        + (-2 * s3 + 3 * s2) * plan.to;
     }
+    if (dt > 0) craftVel = (craft.y - before) / dt;
     track.push({ t, y: craft.y });
     while (track.length && t - track[0].t > TRACK_SECONDS) track.shift();
   }
@@ -180,16 +192,18 @@ export function createEventTracking() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    ctx.beginPath();
     for (const at of ticks) {
       const x = craft.x - (t - at) * DRIFT;
-      if (x < stage.left) continue;
+      // Born fading in, and gone fading out at the column's edge.
+      const presence = Math.min(1, (t - at) / 0.3, (x - stage.left) / 30);
+      if (presence <= 0) continue;
+      ctx.beginPath();
       ctx.moveTo(x, railY - 4);
       ctx.lineTo(x, railY + 4);
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = withAlpha(ink.accent, presence);
+      ctx.stroke();
     }
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = ink.accent;
-    ctx.stroke();
   }
 
   return {
@@ -215,7 +229,7 @@ export function createEventTracking() {
     },
 
     frame(ctx, dt, t, ink) {
-      follow(t);
+      follow(dt, t);
       drawContours(ctx, t, ink);
       drawShore(ctx, t, ink);
       drawFootprint(ctx, t, ink);
