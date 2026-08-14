@@ -9,7 +9,7 @@
      · the oscillation amplitude sweeps slowly, standing in for the sweep
        across trim conditions the model is built over.
 
-   Three things are drawn over the streaklines. The wake vortices are the
+   Three things are drawn over the streamlines. The wake vortices are the
    ones the flow field is already using - marked so the street is visible
    as a street rather than only as its effect, sized by strength and split
    by sign. The incidence arc measures the section against the freestream
@@ -22,7 +22,7 @@
    k = omega * chord / (2 * freestream) - the number that decides whether
    this reads as a wing in a tunnel or as noise. */
 
-import { createStreaklines } from '../streaklines.js';
+import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -43,7 +43,7 @@ const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 
 export function createPitchingSection() {
-  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 34 });
   const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -205,9 +205,8 @@ export function createPitchingSection() {
   }
 
   return {
-    /* The same wash rate as the hero field: any slower and the accent
-       trails accumulate faster than they fade, tinting the ground. */
-    fade: 0.075,
+    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    fade: 1,
 
     layout(w, h) {
       width = w;
@@ -233,7 +232,7 @@ export function createPitchingSection() {
       wake = [];
       path = [];
       lastOrbitSample = -99;
-      streaks.layout(w, h);
+      flow.layout(w, h);
       move(0);
     },
 
@@ -248,7 +247,7 @@ export function createPitchingSection() {
         while (path.length > ORBIT_SECONDS / ORBIT_STEP) path.shift();
       }
 
-      streaks.draw(ctx, dt, velocity, ink);
+      flow.draw(ctx, velocity, ink, t);
       drawDatum(ctx, stage, ink);
       drawWake(ctx, ink);
       drawIncidence(ctx, ink);
@@ -272,7 +271,7 @@ export function createPitchingSection() {
         });
       }
       move(at);
-      streaks.still(ctx, velocity, ink, 24);
+      flow.draw(ctx, velocity, ink, 0);
       drawDatum(ctx, stage, ink);
       drawIncidence(ctx, ink);
       drawSection(ctx, ink);

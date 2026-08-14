@@ -15,7 +15,7 @@
    what a single linearized model would predict, and the curve bending away
    from it is the nonlinearity this paper is about. */
 
-import { createStreaklines } from '../streaklines.js';
+import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -40,7 +40,7 @@ function loading(xi) {
 }
 
 export function createIncidenceSweep() {
-  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 32 });
   const section = { x: 0, y: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const inset = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -191,9 +191,8 @@ export function createIncidenceSweep() {
   }
 
   return {
-    /* The same wash rate as the hero field: any slower and the accent
-       trails accumulate faster than they fade, tinting the ground. */
-    fade: 0.075,
+    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    fade: 1,
 
     layout(w, h) {
       const chord = Math.min(w * 0.19, h * 0.32);
@@ -212,13 +211,13 @@ export function createIncidenceSweep() {
       inset.x = stage.right - inset.w;
       inset.y = stage.y - inset.h / 2;
 
-      streaks.layout(w, h);
+      flow.layout(w, h);
       move(0);
     },
 
     frame(ctx, dt, t, ink) {
       move(t);
-      streaks.draw(ctx, dt, velocity, ink);
+      flow.draw(ctx, velocity, ink, t);
       drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);
@@ -228,7 +227,7 @@ export function createIncidenceSweep() {
 
     still(ctx, ink, t) {
       move(t || SWEEP_SECONDS * 0.2);
-      streaks.still(ctx, velocity, ink, 24);
+      flow.draw(ctx, velocity, ink, 0);
       drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);

@@ -19,7 +19,7 @@
    right is that one angle over time: the whole state of the joint, which
    is what a multibody solver is actually integrating. */
 
-import { createStreaklines } from '../streaklines.js';
+import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -37,7 +37,7 @@ const TRACE_SECONDS = 1.05 / HINGE_HZ;
 const TRACE_STEP = 0.05;
 
 export function createHingedWingtip() {
-  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 30 });
   const inboard = { x: 0, y: 0, half: 40, thickness: 6, gain: 0, alpha: 0, gamma: 0 };
   const outboard = { x: 0, y: 0, half: 26, thickness: 5, gain: 0, alpha: 0, gamma: 0 };
   const hinge = { x: 0, y: 0, fold: 0 };
@@ -158,9 +158,8 @@ export function createHingedWingtip() {
   }
 
   return {
-    /* The same wash rate as the hero field: any slower and the accent
-       trails accumulate faster than they fade, tinting the ground. */
-    fade: 0.075,
+    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    fade: 1,
 
     layout(w, h) {
       const chord = Math.min(w * 0.2, h * 0.34);
@@ -182,7 +181,7 @@ export function createHingedWingtip() {
 
       history = [];
       lastSample = -99;
-      streaks.layout(w, h);
+      flow.layout(w, h);
       move(0);
     },
 
@@ -194,7 +193,7 @@ export function createHingedWingtip() {
         while (history.length > TRACE_SECONDS / TRACE_STEP) history.shift();
       }
 
-      streaks.draw(ctx, dt, velocity, ink);
+      flow.draw(ctx, velocity, ink, t);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
@@ -211,7 +210,7 @@ export function createHingedWingtip() {
       for (let k = steps - 1; k >= 0; k--) {
         history.push(HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * (at - k * TRACE_STEP)));
       }
-      streaks.still(ctx, velocity, ink, 24);
+      flow.draw(ctx, velocity, ink, 0);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
