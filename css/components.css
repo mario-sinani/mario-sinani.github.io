@@ -31,17 +31,20 @@
   letter-spacing: -0.015em;
 }
 
-/* Quiet links a section can carry in its head, opposite the title. */
+/* Quiet links a section can carry beneath its title, as a subtitle row -
+   the same small mono register the rest of the site's links speak. */
+.section-head { flex-wrap: wrap; }
+
 .section-head .head-links {
-  margin-left: auto;
+  flex-basis: 100%;
   display: flex;
-  gap: 1.5rem;
-  white-space: nowrap;
+  gap: 1.4rem;
+  margin-top: 0.1rem;
 }
 
 .section-head .head-links a {
   font-family: var(--font-mono);
-  font-size: 0.73rem;
+  font-size: 0.68rem;
   letter-spacing: 0.06em;
   color: var(--accent-strong);
   text-decoration: none;
@@ -57,10 +60,9 @@
 @media (max-width: 720px) {
   .section { padding: 3.75rem 1.15rem 0; }
   .section:last-of-type { padding-bottom: 3.75rem; }
-  .section-head { flex-wrap: wrap; gap: 0.9rem; margin-bottom: 1.8rem; }
+  .section-head { gap: 0.9rem; margin-bottom: 1.8rem; }
 
-  /* Their own quiet row beneath the title. */
-  .section-head .head-links { flex-basis: 100%; margin-left: 0; gap: 1.2rem; }
+  .section-head .head-links { gap: 1.1rem; }
 }
 
 .pill {
