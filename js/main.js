@@ -1,21 +1,16 @@
-/* Entry point: composes the site's features. Modules receive their
-   dependencies here instead of reaching into each other. */
+/* Entry point for the home page: the shared site features plus the hero
+   flow field, which exists only here. Modules receive their dependencies
+   here instead of reaching into each other. */
 
-import { effectiveTheme, initTheme } from './theme.js';
+import { effectiveTheme } from './theme.js';
 import { initFlowField } from './flowfield.js';
-import { initReveal } from './reveal.js';
-import { initEmail } from './email.js';
-import { initNav } from './nav.js';
+import { initSite } from './site.js';
 
 const flow = initFlowField(
   document.getElementById('flowfield'),
   () => effectiveTheme() === 'dark'
 );
 
-initTheme(() => {
+initSite(() => {
   if (flow) flow.repaint();
 });
-
-initReveal();
-initEmail();
-initNav();
