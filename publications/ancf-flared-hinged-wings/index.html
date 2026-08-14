@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing - Mario A. Sinani</title>
-  <meta name="description" content="AIAA SciTech 2026 paper by M. A. Sinani, R. Palacios, U. Fasel and A. Wynn: a physics-informed SINDy framework for low-order parametric models of the Pazy wing that stay accurate as angle of attack varies.">
+  <title>Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings - Mario A. Sinani</title>
+  <meta name="description" content="Computer Physics Communications paper by K. Otsuka, R. Palacios, C. W. Cheng, G. Wilson, M. A. Sinani and A. Wynn on an absolute nodal coordinate formulation for nonlinear multibody modelling of flared hinged wings.">
   <meta name="author" content="Mario A. Sinani">
   <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="canonical" href="https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/">
+  <link rel="canonical" href="https://mariosinani.com/publications/ancf-flared-hinged-wings/">
 
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f6">
@@ -15,35 +15,36 @@
 
   <!-- Open Graph (link previews on LinkedIn, Slack, iMessage, WhatsApp, …) -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/">
+  <meta property="og:url" content="https://mariosinani.com/publications/ancf-flared-hinged-wings/">
   <meta property="og:site_name" content="Mario A. Sinani">
   <meta property="og:locale" content="en_GB">
-  <meta property="og:title" content="Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing">
-  <meta property="og:description" content="AIAA SciTech 2026: a physics-informed SINDy framework for low-order parametric models of the Pazy wing that stay accurate as angle of attack varies.">
+  <meta property="og:title" content="Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings">
+  <meta property="og:description" content="Computer Physics Communications: an absolute nodal coordinate formulation for nonlinear multibody modelling of flared hinged wings.">
   <meta property="og:image" content="https://mariosinani.com/assets/og-image.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Mario A. Sinani - data-driven modelling and nonlinear control of highly flexible structures, shown over streamlines around a lifting body.">
-  <meta property="article:published_time" content="2026-01-12">
+  <meta property="article:published_time" content="2025">
   <meta property="article:author" content="Mario A. Sinani">
 
   <!-- Twitter / X card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing">
-  <meta name="twitter:description" content="AIAA SciTech 2026: a physics-informed SINDy framework for low-order parametric models of the Pazy wing that stay accurate as angle of attack varies.">
+  <meta name="twitter:title" content="Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings">
+  <meta name="twitter:description" content="Computer Physics Communications: an absolute nodal coordinate formulation for nonlinear multibody modelling of flared hinged wings.">
   <meta name="twitter:image" content="https://mariosinani.com/assets/og-image.png">
   <meta name="twitter:image:alt" content="Mario A. Sinani - data-driven modelling and nonlinear control of highly flexible structures, shown over streamlines around a lifting body.">
 
   <!-- Scholarly indexing (Google Scholar reads these) -->
-  <meta name="citation_title" content="Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing">
-  <meta name="citation_author" content="Sinani, Mario A.">
+  <meta name="citation_title" content="Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings">
+  <meta name="citation_author" content="Otsuka, Keisuke">
   <meta name="citation_author" content="Palacios, Rafael">
-  <meta name="citation_author" content="Fasel, Urban">
+  <meta name="citation_author" content="Cheng, C. W.">
+  <meta name="citation_author" content="Wilson, G.">
+  <meta name="citation_author" content="Sinani, Mario A.">
   <meta name="citation_author" content="Wynn, Andrew">
-  <meta name="citation_publication_date" content="2026/01/12">
-  <meta name="citation_conference_title" content="AIAA SCITECH 2026 Forum">
-  <meta name="citation_doi" content="10.2514/6.2026-0187">
+  <meta name="citation_publication_date" content="2025">
+  <meta name="citation_journal_title" content="Computer Physics Communications">
 
   <!-- Icons & manifest -->
   <link rel="icon" href="../../assets/icons/favicon.svg" type="image/svg+xml">
@@ -58,7 +59,7 @@
   <link rel="modulepreload" href="../../js/site.js">
   <link rel="modulepreload" href="../../js/theme.js">
   <link rel="modulepreload" href="../../js/field-canvas.js">
-  <link rel="modulepreload" href="../../js/scenes/pitching-section.js">
+  <link rel="modulepreload" href="../../js/scenes/hinged-wingtip.js">
   <link rel="modulepreload" href="../../js/reveal.js">
   <link rel="modulepreload" href="../../js/email.js">
   <link rel="modulepreload" href="../../js/nav.js">
@@ -93,13 +94,12 @@
 {
   "@context": "https://schema.org",
   "@type": "ScholarlyArticle",
-  "name": "Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing",
-  "url": "https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/",
+  "name": "Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings",
+  "url": "https://mariosinani.com/publications/ancf-flared-hinged-wings/",
   "author": [
     {
       "@type": "Person",
-      "name": "Mario A. Sinani",
-      "url": "https://mariosinani.com/"
+      "name": "Keisuke Otsuka"
     },
     {
       "@type": "Person",
@@ -107,30 +107,36 @@
     },
     {
       "@type": "Person",
-      "name": "Urban Fasel"
+      "name": "C. W. Cheng"
+    },
+    {
+      "@type": "Person",
+      "name": "G. Wilson"
+    },
+    {
+      "@type": "Person",
+      "name": "Mario A. Sinani",
+      "url": "https://mariosinani.com/"
     },
     {
       "@type": "Person",
       "name": "Andrew Wynn"
     }
   ],
-  "datePublished": "2026-01-12",
+  "datePublished": "2025",
   "inLanguage": "en",
-  "headline": "Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing",
+  "headline": "Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings",
   "isPartOf": {
-    "@type": "PublicationVolume",
-    "name": "AIAA SCITECH 2026 Forum"
+    "@type": "Periodical",
+    "name": "Computer Physics Communications"
   },
-  "identifier": "https://doi.org/10.2514/6.2026-0187",
-  "sameAs": "https://doi.org/10.2514/6.2026-0187",
   "about": [
-    "Nonlinear aeroelasticity",
-    "Reduced-order modelling",
-    "SINDy",
-    "Flutter",
-    "Constrained optimization"
-  ],
-  "isBasedOn": "https://doi.org/10.2514/6.2025-0422"
+    "Multibody dynamics",
+    "ANCF",
+    "Flared hinges",
+    "Geometric nonlinearity",
+    "Flexible aircraft"
+  ]
 }
   </script>
 </head>
@@ -164,18 +170,17 @@
   <main id="top">
 
     <section class="hero paper-hero">
-      <canvas id="paper-field" data-field="pitching-section" aria-hidden="true"></canvas>
+      <canvas id="paper-field" data-field="hinged-wingtip" aria-hidden="true"></canvas>
       <div class="hero-inner">
-        <p class="eyebrow"><a href="../">Publications</a> <span class="dot">·</span> Conference paper <span class="dot">·</span> 2026</p>
-        <h1>Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing</h1>
-        <p class="paper-authors"><span class="me">M. A. Sinani</span>, R. Palacios, U. Fasel, A. Wynn</p>
-        <p class="paper-venue">AIAA SciTech Forum · Orlando, FL, USA · January 2026 · doi:10.2514/6.2026-0187</p>
+        <p class="eyebrow"><a href="../">Publications</a> <span class="dot">·</span> Journal article <span class="dot">·</span> 2025</p>
+        <h1>Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings</h1>
+        <p class="paper-authors">K. Otsuka, R. Palacios, C. W. Cheng, G. Wilson, <span class="me">M. A. Sinani</span>, A. Wynn</p>
+        <p class="paper-venue">Computer Physics Communications · 2025</p>
         <div class="hero-links">
-          <a class="pill primary" href="https://doi.org/10.2514/6.2026-0187" rel="noopener">Read the paper</a>
+          <a class="pill primary" href="https://scholar.google.com/citations?user=zb5_6PwAAAAJ&view_op=view_citation&citation_for_view=zb5_6PwAAAAJ:qjMakFHDy7sC" rel="noopener">View the record</a>
           <a class="pill" href="#citation">Cite this paper</a>
-          <a class="pill" href="https://scholar.google.com/citations?user=zb5_6PwAAAAJ&view_op=view_citation&citation_for_view=zb5_6PwAAAAJ:2osOgNQ5qMEC" rel="noopener">Google Scholar</a>
         </div>
-        <p class="field-note">Behind: a wing section pitching and plunging, its bound circulation shedding a wake</p>
+        <p class="field-note">Behind: a hinged outboard section, free to turn about its joint while the wing holds incidence</p>
       </div>
     </section>
 
@@ -187,35 +192,35 @@
       <div class="snapshot reveal">
         <div class="fact">
           <div class="fact-label">Type</div>
-          <div class="fact-value">Conference paper</div>
+          <div class="fact-value">Journal article</div>
         </div>
         <div class="fact">
-          <div class="fact-label">Venue</div>
-          <div class="fact-value">AIAA SciTech Forum 2026</div>
+          <div class="fact-label">Journal</div>
+          <div class="fact-value">Computer Physics Communications</div>
         </div>
         <div class="fact">
-          <div class="fact-label">Location</div>
-          <div class="fact-value">Orlando, Florida, USA</div>
+          <div class="fact-label">Year</div>
+          <div class="fact-value">2025</div>
         </div>
         <div class="fact">
-          <div class="fact-label">Published</div>
-          <div class="fact-value">January 2026</div>
+          <div class="fact-label">Formulation</div>
+          <div class="fact-value">Absolute nodal coordinate</div>
         </div>
         <div class="fact">
-          <div class="fact-label">DOI</div>
-          <div class="fact-value"><a href="https://doi.org/10.2514/6.2026-0187" rel="noopener">10.2514/6.2026-0187</a></div>
+          <div class="fact-label">Application</div>
+          <div class="fact-value">Flared hinged wings</div>
         </div>
         <div class="fact">
-          <div class="fact-label">Benchmark</div>
-          <div class="fact-value">Pazy wing</div>
+          <div class="fact-label">Record</div>
+          <div class="fact-value"><a href="https://scholar.google.com/citations?user=zb5_6PwAAAAJ&amp;view_op=view_citation&amp;citation_for_view=zb5_6PwAAAAJ:qjMakFHDy7sC" rel="noopener">Google Scholar</a></div>
         </div>
       </div>
       <div class="topics reveal">
-        <span class="topic">Nonlinear aeroelasticity</span>
-        <span class="topic">Reduced-order modelling</span>
-        <span class="topic">SINDy</span>
-        <span class="topic">Flutter</span>
-        <span class="topic">Constrained optimization</span>
+        <span class="topic">Multibody dynamics</span>
+        <span class="topic">ANCF</span>
+        <span class="topic">Flared hinges</span>
+        <span class="topic">Geometric nonlinearity</span>
+        <span class="topic">Flexible aircraft</span>
       </div>
     </section>
 
@@ -224,30 +229,12 @@
         <span class="index">02</span>
         <h2>Overview</h2>
       </div>
-      <p class="paper-brief reveal">A physics-informed <em>SINDy</em> framework that learns compact aeroelastic models of the Pazy wing whose dynamics vary smoothly with angle of attack - accurate enough for flutter prediction and control design, from only a handful of simulations.</p>
+      <p class="paper-brief reveal">An <em>absolute nodal coordinate formulation</em> for the nonlinear multibody modelling of wings whose outboard section is free to rotate about a flared hinge.</p>
 
-      <ol class="contributions reveal">
-        <li>
-          <span class="index">01</span>
-          <p>Low-order parametric models of nonlinear coupled aeroelastic systems, built around equilibrium (trim) conditions rather than at a single operating point.</p>
-        </li>
-        <li>
-          <span class="index">02</span>
-          <p>Sparse Identification of Nonlinear Dynamics used to identify reduced-order models whose dynamics evolve smoothly as angle of attack varies, so no interpolation between separately linearized models is needed.</p>
-        </li>
-        <li>
-          <span class="index">03</span>
-          <p>Prior knowledge of structural dynamics and flutter characteristics embedded through customized library construction and constrained optimization, keeping the identified models physically consistent.</p>
-        </li>
-        <li>
-          <span class="index">04</span>
-          <p>Trained on a small number of Pazy wing simulations, and shown to predict the coupled aeroelastic response and flutter behaviour across a broad range of operating conditions.</p>
-        </li>
-      </ol>
 
       <h3 class="abstract-head">Abstract</h3>
-      <p class="paper-abstract reveal">Accurate and tractable aeroelastic models are essential for the analysis, optimization, and control of next-generation aerospace systems that increasingly rely on highly flexible structures exhibiting significant structural and aerodynamic nonlinearities. In this work, we propose a data-driven, physics-informed framework for constructing low-order parametric models of nonlinear coupled aeroelastic systems around equilibrium (trim) conditions. Leveraging the Sparse Identification of Nonlinear Dynamics (SINDy) methodology, we identify reduced-order models whose dynamics evolve smoothly with variations in angle of attack, using training data from a small number of simulations of the Pazy wing, a lightweight composite benchmark for nonlinear aeroelastic analysis. The modeling process embeds prior knowledge of structural dynamics and flutter characteristics through customized library construction and constrained optimization. This results in compact, physically consistent models that accurately predict the coupled aeroelastic response and flutter behavior across a broad range of operating conditions, making them well suited for nonlinear analysis and control design.
-        <span class="source">Abstract as deposited by the publisher.</span>
+      <p class="paper-abstract reveal">No abstract is on record for this entry yet.
+        <span class="source">The publisher has not deposited one.</span>
       </p>
     </section>
 
@@ -262,21 +249,18 @@
             <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>BibTeX
           </summary>
           <div class="cite-body">
-            <pre id="bib-2026-pazy"><code>@inproceedings{sinani2026parametric,
-  author    = {Sinani, Mario A. and Palacios, Rafael and Fasel, Urban and Wynn, Andrew},
-  title     = {Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing},
-  booktitle = {AIAA SCITECH 2026 Forum},
-  address   = {Orlando, FL, USA},
-  year      = {2026},
-  doi       = {10.2514/6.2026-0187}
+            <pre id="bib-2025-ancf"><code>@article{otsuka2025absolute,
+  author  = {Otsuka, K. and Palacios, R. and Cheng, C. W. and Wilson, G. and Sinani, M. A. and Wynn, A.},
+  title   = {Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings},
+  journal = {Computer Physics Communications},
+  year    = {2025}
 }</code></pre>
-            <button class="copy-btn" type="button" data-copy="bib-2026-pazy"><span class="copy-label">Copy</span></button>
+            <button class="copy-btn" type="button" data-copy="bib-2025-ancf"><span class="copy-label">Copy</span></button>
           </div>
         </details>
       </div>
       <div class="paper-nav reveal">
         <a href="../">&larr; All publications</a>
-        <a href="../physics-informed-pazy-wing/">Earlier work on this benchmark →</a>
       </div>
     </section>
 
