@@ -25,6 +25,7 @@
 import { createStreaklines } from '../streaklines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 110;         // px/s
 const FLUTTER_HZ = 0.1;
@@ -41,15 +42,11 @@ const CORE2 = 210;              // squared vortex core radius
 const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
-
 export function createPitchingSection() {
-  const streaks = createStreaklines({ spacing: 7, max: 260, stall: 9, accentEvery: 17 });
+  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
   const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
+  let stage = null;
   let wake = [];
   let path = [];
   let width = 0;
@@ -156,18 +153,9 @@ export function createPitchingSection() {
     ctx.stroke();
   }
 
-  /** The chord against the freestream, with the angle between them. */
+  /* The incidence arc measures the chord against the datum, which is the
+     freestream's own line - so it needs no reference of its own. */
   function drawIncidence(ctx, ink) {
-    const reach = section.half * 1.15;
-    ctx.beginPath();
-    ctx.setLineDash([3, 4]);
-    ctx.moveTo(section.x - reach, section.y);
-    ctx.lineTo(section.x + reach, section.y);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
-    ctx.setLineDash([]);
-
     if (Math.abs(section.alpha) < 0.02) return;
     const r = section.half * 0.85;
     ctx.beginPath();
@@ -185,9 +173,8 @@ export function createPitchingSection() {
     const cx = orbit.x + orbit.w / 2;
     const cy = orbit.y + orbit.h / 2;
 
+    // The datum already carries the horizontal axis through cy.
     ctx.beginPath();
-    ctx.moveTo(orbit.x, cy);
-    ctx.lineTo(orbit.x + orbit.w, cy);
     ctx.moveTo(cx, orbit.y);
     ctx.lineTo(cx, orbit.y + orbit.h);
     ctx.lineWidth = 1;
@@ -218,7 +205,9 @@ export function createPitchingSection() {
   }
 
   return {
-    fade: 0.05,
+    /* The same wash rate as the hero field: any slower and the accent
+       trails accumulate faster than they fade, tinting the ground. */
+    fade: 0.075,
 
     layout(w, h) {
       width = w;
@@ -228,18 +217,18 @@ export function createPitchingSection() {
       section.thickness = Math.max(chord * 0.055, 4);
       // Thin-aerofoil bound circulation per radian of incidence: pi * c * U.
       section.gain = Math.PI * chord * FREESTREAM;
-      /* High and to the left: the hero panel is vertically centred, so this
-         band above it is clear, and the wake then streams right across the
-         full width instead of running straight off the near edge. */
-      section.x = w * 0.3;
-      section.baseY = h * BAND;
+      stage = stageFor(w, h);
+      /* On the stage's left, so the wake streams right along the datum
+         toward the orbit that summarises it. */
+      section.x = stage.left + stage.width * 0.22;
+      section.baseY = stage.y;
 
       // Dropped entirely when the canvas is too narrow to hold it quietly.
       const room = w > 760;
-      orbit.w = room ? Math.min(w * 0.1, 130) : 0;
+      orbit.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       orbit.h = orbit.w * 0.78;
-      orbit.x = w * 0.82;
-      orbit.y = h * BAND - orbit.h / 2;
+      orbit.x = stage.right - orbit.w;
+      orbit.y = stage.y - orbit.h / 2;
 
       wake = [];
       path = [];
@@ -260,6 +249,7 @@ export function createPitchingSection() {
       }
 
       streaks.draw(ctx, dt, velocity, ink);
+      drawDatum(ctx, stage, ink);
       drawWake(ctx, ink);
       drawIncidence(ctx, ink);
       drawSection(ctx, ink);
@@ -283,6 +273,7 @@ export function createPitchingSection() {
       }
       move(at);
       streaks.still(ctx, velocity, ink, 24);
+      drawDatum(ctx, stage, ink);
       drawIncidence(ctx, ink);
       drawSection(ctx, ink);
       drawOrbit(ctx, ink);

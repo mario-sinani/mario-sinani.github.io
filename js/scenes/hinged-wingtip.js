@@ -22,6 +22,7 @@
 import { createStreaklines } from '../streaklines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 100;         // px/s
 const WING_HZ = 0.075;
@@ -35,17 +36,13 @@ const CORE2 = 240;
 const TRACE_SECONDS = 1.05 / HINGE_HZ;
 const TRACE_STEP = 0.05;
 
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
-
 export function createHingedWingtip() {
-  const streaks = createStreaklines({ spacing: 7, max: 250, stall: 9, accentEvery: 17 });
+  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
   const inboard = { x: 0, y: 0, half: 40, thickness: 6, gain: 0, alpha: 0, gamma: 0 };
   const outboard = { x: 0, y: 0, half: 26, thickness: 5, gain: 0, alpha: 0, gamma: 0 };
   const hinge = { x: 0, y: 0, fold: 0 };
   const trace = { x: 0, y: 0, w: 0, h: 0 };
+  let stage = null;
   let history = [];
   let lastSample = -99;
 
@@ -141,13 +138,7 @@ export function createHingedWingtip() {
     const steps = Math.round(TRACE_SECONDS / TRACE_STEP);
     const midY = trace.y + trace.h / 2;
 
-    ctx.beginPath();
-    ctx.moveTo(trace.x, midY);
-    ctx.lineTo(trace.x + trace.w, midY);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
-
+    // The datum already carries the zero line through midY.
     ctx.beginPath();
     for (let i = 0; i < history.length; i++) {
       const px = trace.x + (i / (steps - 1)) * trace.w;
@@ -167,7 +158,9 @@ export function createHingedWingtip() {
   }
 
   return {
-    fade: 0.05,
+    /* The same wash rate as the hero field: any slower and the accent
+       trails accumulate faster than they fade, tinting the ground. */
+    fade: 0.075,
 
     layout(w, h) {
       const chord = Math.min(w * 0.2, h * 0.34);
@@ -177,14 +170,15 @@ export function createHingedWingtip() {
       outboard.half = chord * 0.2;
       outboard.thickness = Math.max(chord * 0.042, 3.5);
       outboard.gain = Math.PI * outboard.half * 2 * FREESTREAM;
-      inboard.x = w * 0.26;
-      inboard.y = h * BAND;
+      stage = stageFor(w, h);
+      inboard.x = stage.left + stage.width * 0.2;
+      inboard.y = stage.y;
 
       const room = w > 760;
-      trace.w = room ? Math.min(w * 0.13, 175) : 0;
+      trace.w = room ? Math.min(stage.width * 0.15, 170) : 0;
       trace.h = Math.max(h * 0.055, 34);
-      trace.x = w * 0.78;
-      trace.y = h * BAND - trace.h / 2;
+      trace.x = stage.right - trace.w;
+      trace.y = stage.y - trace.h / 2;
 
       history = [];
       lastSample = -99;
@@ -201,6 +195,7 @@ export function createHingedWingtip() {
       }
 
       streaks.draw(ctx, dt, velocity, ink);
+      drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
       drawPart(ctx, outboard, ink);
@@ -217,6 +212,7 @@ export function createHingedWingtip() {
         history.push(HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * (at - k * TRACE_STEP)));
       }
       streaks.still(ctx, velocity, ink, 24);
+      drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
       drawPart(ctx, outboard, ink);

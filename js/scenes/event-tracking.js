@@ -16,6 +16,7 @@
    something to read the vehicle's motion against. */
 
 import { withAlpha } from '../ink.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
 const DRIFT = 46;               // px/s the world scrolls beneath the vehicle
@@ -26,16 +27,12 @@ const TRACK_SECONDS = 9;        // how much flown path is kept
 const CONTOURS = 6;             // depth lines below the shore
 const STEP = 6;                 // px between samples along a curve
 
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
-
 export function createEventTracking() {
   const view = { w: 0, h: 0 };
   const shore = { y: 0, a1: 0, a2: 0, k1: 0, k2: 0, spacing: 9 };
   const craft = { x: 0, y: 0, standoff: 0, span: 0 };
   const plan = { from: 0, to: 0, at: -99 };
+  let stage = null;
   let ticks = [];
   let track = [];
 
@@ -175,9 +172,10 @@ export function createEventTracking() {
      the world, so the uneven spacing of the triggers is visible. */
   function drawTicks(ctx, t, ink) {
     const railY = shore.y + shore.a1 + CONTOURS * shore.spacing + view.h * 0.022;
+    // The rail spans the text column below, not the whole viewport.
     ctx.beginPath();
-    ctx.moveTo(0, railY);
-    ctx.lineTo(view.w, railY);
+    ctx.moveTo(stage.left, railY);
+    ctx.lineTo(stage.right, railY);
     ctx.lineWidth = 1;
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
@@ -185,7 +183,7 @@ export function createEventTracking() {
     ctx.beginPath();
     for (const at of ticks) {
       const x = craft.x - (t - at) * DRIFT;
-      if (x < -5) continue;
+      if (x < stage.left) continue;
       ctx.moveTo(x, railY - 4);
       ctx.lineTo(x, railY + 4);
     }
@@ -200,13 +198,14 @@ export function createEventTracking() {
     layout(w, h) {
       view.w = w;
       view.h = h;
-      shore.y = h * (BAND - 0.03);
+      stage = stageFor(w, h);
+      shore.y = stage.y - h * 0.03;
       shore.a1 = h * 0.022;
       shore.a2 = h * 0.011;
       shore.k1 = TWO_PI / Math.max(w * 0.55, 260);
       shore.k2 = TWO_PI / Math.max(w * 0.21, 110);
       shore.spacing = Math.max(h * 0.0075, 5);
-      craft.x = w * 0.34;
+      craft.x = stage.left + stage.width * 0.34;
       craft.standoff = h * 0.05;
       craft.span = Math.min(w * 0.035, 34);
       craft.y = shore.y - craft.standoff;

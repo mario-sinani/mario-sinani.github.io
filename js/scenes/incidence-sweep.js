@@ -18,6 +18,7 @@
 import { createStreaklines } from '../streaklines.js';
 import { withAlpha } from '../ink.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 105;         // px/s
 const SWEEP_SECONDS = 17;       // period of the incidence sweep
@@ -25,11 +26,6 @@ const ALPHA_MAX = 0.42;         // radians
 const STALL_BEND = 0.38;        // how far the lift curve falls below linear
 const CORE2 = 240;
 const COMB = 13;                // arrows in the load distribution
-
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
 
 /** Normalised lift: linear near zero, bending over as incidence grows. */
 function liftCoefficient(alpha) {
@@ -44,9 +40,10 @@ function loading(xi) {
 }
 
 export function createIncidenceSweep() {
-  const streaks = createStreaklines({ spacing: 7, max: 250, stall: 9, accentEvery: 17 });
+  const streaks = createStreaklines({ spacing: 9, max: 200, stall: 9, accentEvery: 19 });
   const section = { x: 0, y: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const inset = { x: 0, y: 0, w: 0, h: 0 };
+  let stage = null;
 
   function move(t) {
     section.alpha = ALPHA_MAX * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
@@ -148,9 +145,8 @@ export function createIncidenceSweep() {
     const toX = (a) => inset.x + inset.w * (0.5 + a / (2 * ALPHA_MAX));
     const toY = (cl) => midY - half * (cl / peak);
 
+    // The datum already carries the horizontal axis through midY.
     ctx.beginPath();
-    ctx.moveTo(inset.x, midY);
-    ctx.lineTo(inset.x + inset.w, midY);
     ctx.moveTo(inset.x + inset.w / 2, inset.y);
     ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h);
     ctx.lineWidth = 1;
@@ -195,23 +191,26 @@ export function createIncidenceSweep() {
   }
 
   return {
-    fade: 0.05,
+    /* The same wash rate as the hero field: any slower and the accent
+       trails accumulate faster than they fade, tinting the ground. */
+    fade: 0.075,
 
     layout(w, h) {
       const chord = Math.min(w * 0.19, h * 0.32);
       section.half = chord / 2;
       section.thickness = Math.max(chord * 0.055, 4);
       section.gain = Math.PI * chord * FREESTREAM;
-      section.x = w * 0.28;
-      section.y = h * BAND;
+      stage = stageFor(w, h);
+      section.x = stage.left + stage.width * 0.22;
+      section.y = stage.y;
 
-      // Tucked into the far right of the same clear band, and dropped
-      // entirely when the canvas is too narrow to hold it without noise.
+      // Right-aligned on the stage, and dropped entirely when the canvas
+      // is too narrow to hold it without noise.
       const room = w > 760;
-      inset.w = room ? Math.min(w * 0.11, 150) : 0;
+      inset.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       inset.h = inset.w * 0.62;
-      inset.x = w * 0.8;
-      inset.y = h * BAND - inset.h / 2;
+      inset.x = stage.right - inset.w;
+      inset.y = stage.y - inset.h / 2;
 
       streaks.layout(w, h);
       move(0);
@@ -220,6 +219,7 @@ export function createIncidenceSweep() {
     frame(ctx, dt, t, ink) {
       move(t);
       streaks.draw(ctx, dt, velocity, ink);
+      drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);
       drawResultant(ctx, ink);
@@ -229,6 +229,7 @@ export function createIncidenceSweep() {
     still(ctx, ink, t) {
       move(t || SWEEP_SECONDS * 0.2);
       streaks.still(ctx, velocity, ink, 24);
+      drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);
       drawResultant(ctx, ink);

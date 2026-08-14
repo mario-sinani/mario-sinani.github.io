@@ -24,6 +24,7 @@
    currently being held would carry it. */
 
 import { withAlpha } from '../ink.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
 const FEATURES = 9;
@@ -37,17 +38,13 @@ const PLOT_SECONDS = 8;
 const GRID_X = 8;
 const GRID_Y = 4;
 
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
-
 export function createImageServo() {
   const frame = { x: 0, y: 0, w: 0, h: 0 };
   const plot = { x: 0, y: 0, w: 0, h: 0 };
   const pose = { u: 0, v: 0, roll: 0 };
   const held = { u: 0, v: 0, roll: 0 };
   const atSolve = { u: 0, v: 0, roll: 0 };
+  let stage = null;
   let trails = [];
   let errorLog = [];
   let triggers = [];
@@ -377,18 +374,19 @@ export function createImageServo() {
     fade: 1,   // a drawn scene rather than a trailing one: no ghosting
 
     layout(w, h) {
-      frame.w = Math.min(w * 0.42, 620);
+      stage = stageFor(w, h);
+      frame.w = Math.min(stage.width * 0.52, 620);
       frame.h = Math.min(h * 0.16, frame.w * 0.46);
-      frame.x = w * 0.08;
+      frame.x = stage.left;
       // Sat a little above the band's centre: the viewfinder is the
       // tallest thing any of these scenes draws.
-      frame.y = h * (BAND - 0.03) - frame.h / 2;
+      frame.y = stage.y - h * 0.03 - frame.h / 2;
 
       const room = w > 760;
-      plot.w = room ? Math.min(w * 0.15, 190) : 0;
+      plot.w = room ? Math.min(stage.width * 0.15, 170) : 0;
       plot.h = frame.h * 0.62;
-      plot.x = w * 0.74;
-      plot.y = h * (BAND - 0.03) - plot.h / 2;
+      plot.x = stage.right - plot.w;
+      plot.y = stage.y - h * 0.03 - plot.h / 2;
 
       reset();
       nextKick = 1.4;

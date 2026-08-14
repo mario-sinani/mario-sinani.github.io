@@ -18,6 +18,7 @@
    bound the paper's semidefinite program provides. */
 
 import { withAlpha } from '../ink.js';
+import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
 
@@ -29,11 +30,6 @@ const BASE_HZ = 0.09;           // first mode; the rest follow the ratios
 const SAMPLES = 96;
 const STROBES = 14;             // recent instants drawn behind the beam
 const STROBE_STEP = 0.085;      // seconds between them
-
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
 
 function sigmaFor(bL) {
   return (Math.cosh(bL) + Math.cos(bL)) / (Math.sinh(bL) + Math.sin(bL));
@@ -65,6 +61,7 @@ export function createBeamModes() {
   const shape = modes.map(() => new Float32Array(SAMPLES + 1));
   const beam = { x: 0, y: 0, length: 200, amplitude: 30 };
   const bars = { x: 0, y: 0, w: 0, gap: 0 };
+  let stage = null;
 
   function tabulate() {
     for (let m = 0; m < modes.length; m++) {
@@ -203,21 +200,24 @@ export function createBeamModes() {
     fade: 1,
 
     layout(w, h) {
-      beam.length = Math.min(w * 0.46, 660);
-      beam.x = w * 0.07;
-      beam.y = h * BAND;
+      stage = stageFor(w, h);
+      beam.x = stage.left;
+      beam.length = Math.min(stage.width * 0.58, 660);
+      beam.y = stage.y;
       beam.amplitude = Math.min(h * 0.085, 62);
 
       const room = w > 700;
-      bars.w = room ? Math.min(w * 0.12, 160) : 0;
-      bars.x = w * 0.78;
+      bars.w = room ? Math.min(stage.width * 0.15, 170) : 0;
+      bars.x = stage.right - bars.w;
       bars.gap = Math.max(h * 0.028, 12);
-      bars.y = h * BAND - bars.gap;
+      bars.y = stage.y - bars.gap;
       tabulate();
     },
 
     frame(ctx, dt, t, ink) {
       slosh(t);
+      // The datum is the beam at rest, run on to the bars that measure it.
+      drawDatum(ctx, stage, ink);
       drawEnvelope(ctx, ink);
       drawStrobe(ctx, t, ink);
       drawBeam(ctx, t, ink);
@@ -227,6 +227,7 @@ export function createBeamModes() {
     still(ctx, ink, t) {
       const at = t || 2.6;
       slosh(at);
+      drawDatum(ctx, stage, ink);
       drawEnvelope(ctx, ink);
       drawStrobe(ctx, at, ink);
       drawBeam(ctx, at, ink);
