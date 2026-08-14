@@ -1,0 +1,231 @@
+/* Individual paper page: a hero over the paper's own animated field, then
+   the snapshot, the overview and the citation.
+
+   The hero borrows hero.css and narrows it - a paper title is far longer
+   than a name, so it takes a smaller face and the panel is not asked to
+   fill the viewport. */
+
+#aerofield {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.paper-hero { min-height: calc(80vh - 3.2rem); }
+.paper-hero { min-height: calc(80svh - 3.2rem); }
+
+.paper-hero h1 {
+  font-size: clamp(1.85rem, 4.2vw, 3.05rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  max-width: 17em;
+  margin: 1rem 0 1.3rem;
+}
+
+.paper-authors {
+  max-width: 44em;
+  font-size: 1.02rem;
+  color: var(--muted);
+}
+
+.paper-authors .me { color: var(--ink); font-weight: 600; }
+
+.paper-venue {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* A quiet line naming what is moving behind the words, so the animation
+   reads as the paper's subject rather than as decoration. It sits in the
+   panel's bottom padding, which .hero-inner already reserves. */
+.field-note {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* Snapshot ------------------------------------------------------------ */
+
+/* The hairlines are the 1px gaps letting the container's colour through,
+   so any cell the last row does not fill would read as a grey block. Every
+   count below divides six, which is how many facts a paper is given. */
+.snapshot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.snapshot .fact {
+  background: var(--surface);
+  padding: 1.3rem 1.4rem 1.4rem;
+}
+
+.snapshot .fact-value { overflow-wrap: anywhere; }
+
+.snapshot .fact-value a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.snapshot .fact-value a:hover, .snapshot .fact-value a:focus-visible {
+  border-bottom-color: var(--accent-strong);
+}
+
+.topics {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.topic {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+}
+
+/* Overview ------------------------------------------------------------ */
+
+.paper-brief {
+  max-width: var(--w-prose);
+  font-size: clamp(1.12rem, 2.1vw, 1.28rem);
+  line-height: 1.55;
+}
+
+.paper-brief em { font-style: italic; }
+
+.contributions {
+  margin-top: 2.4rem;
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  list-style: none;
+}
+
+.contributions li {
+  background: var(--paper);
+  padding: 1.25rem 0 1.35rem;
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.contributions .index {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.contributions p {
+  max-width: var(--w-prose);
+  color: var(--muted);
+  font-size: 0.99rem;
+  line-height: 1.62;
+}
+
+.abstract-head {
+  margin-top: 3rem;
+  margin-bottom: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.paper-abstract {
+  max-width: var(--w-prose);
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.paper-abstract .source {
+  display: block;
+  margin-top: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+}
+
+/* Foot of the page: back to the list, and on to the next paper. */
+.paper-nav {
+  margin-top: 2.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.paper-nav a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color 140ms ease;
+}
+
+.paper-nav a:hover, .paper-nav a:focus-visible {
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+@media (max-width: 860px) {
+  .snapshot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 460px) {
+  .snapshot { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .paper-hero { min-height: 0; }
+
+  .paper-hero h1 {
+    font-size: clamp(1.6rem, 7.2vw, 2.2rem);
+    margin: 0.8rem 0 1.05rem;
+  }
+
+  .paper-authors { font-size: 0.96rem; }
+  .paper-venue { font-size: 0.71rem; gap: 0.5rem 0.8rem; }
+
+  /* Too tight to tuck into the panel's padding; it follows the links. */
+  .field-note {
+    position: static;
+    margin-top: 1.7rem;
+    font-size: 0.62rem;
+  }
+
+  .snapshot .fact { padding: 1.1rem 1.15rem 1.2rem; }
+  .paper-brief { font-size: 1.06rem; }
+  .contributions li { grid-template-columns: 2.4rem 1fr; }
+}
