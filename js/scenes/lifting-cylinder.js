@@ -2,24 +2,32 @@
    behind the site's hero: uniform stream, doublet, and vortex.
 
    The cylinder is the simplest body with circulation, and so with lift.
-   The circulation makes the streaks above the body run faster than the
-   streaks below it. */
 
-import { createStreaklines } from '../streaklines.js';
-import { addVortex, addDoublet } from '../potential-flow.js';
+   The drawing is the figure this field is always shown with. The module
+   integrates a family of streamlines from evenly spaced points at the
+   inlet and strokes each one whole, so the lines run the width of the
+   canvas. Streamlines cannot cross, and the flow between two of them is
+   constant, so the space between two lines shows the local speed. The
+   lines close over the top of the body, where the flow is fast, and open
+   below it, where the flow is slow. That difference is the lift.
+
+   Tracers ride the field and supply the motion. One faint circle shows
+   the body that turns the flow. */
+
+import { createFlowlines } from '../flowlines.js';
+import { withAlpha } from '../ink.js';
+import { addVortex, addDoublet, TWO_PI } from '../potential-flow.js';
 
 const FREESTREAM = 42;        // freestream speed, px/s
 const CIRCULATION = 9000;     // vortex strength around the body
-const ADVECTION_GAIN = 1.6;   // visual speed-up of particle motion
 
 export function createLiftingCylinder() {
-  const streaks = createStreaklines({
-    spacing: 6,
-    max: 250,
-    accentEvery: 19,
-    gain: ADVECTION_GAIN,
-    seconds: 0.9,
-    reference: FREESTREAM * ADVECTION_GAIN,
+  const flow = createFlowlines({
+    lines: 22,
+    accentEvery: 5,
+    step: 4,
+    tracers: 40,
+    tracerGain: 1.5,
   });
   const body = { x: 0, y: 0, r: 60 };
 
@@ -35,23 +43,33 @@ export function createLiftingCylinder() {
     return out;
   }
 
+  function drawBody(ctx, ink) {
+    ctx.beginPath();
+    ctx.arc(body.x, body.y, body.r, 0, TWO_PI);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(ink.body, 0.3);
+    ctx.stroke();
+  }
+
   return {
-    // The trails hold their own history, so the engine clears each frame.
+    // A drawn figure. The engine clears it fully each frame.
     fade: 1,
 
     layout(w, h) {
       body.x = w * 0.3;
       body.y = h * 0.58;
-      body.r = Math.min(w, h) * 0.13;
-      streaks.layout(w, h);
+      body.r = Math.min(w, h) * 0.155;
+      flow.layout(w, h);
     },
 
     frame(ctx, dt, t, ink) {
-      streaks.draw(ctx, dt, velocity, ink, t);
+      flow.draw(ctx, dt, velocity, ink);
+      drawBody(ctx, ink);
     },
 
     still(ctx, ink) {
-      streaks.still(ctx, velocity, ink, 26);
+      flow.still(ctx, velocity, ink);
+      drawBody(ctx, ink);
     },
   };
 }
