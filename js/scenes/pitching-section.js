@@ -24,7 +24,8 @@
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
 import { createVortexWake } from '../vortex-wake.js';
-import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
+import { PAZY_RATIO, traceAerofoil, isInsideAerofoil } from '../aerofoil.js';
+import { TWO_PI, addVortex, addDoublet, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 110;         // px/s
@@ -41,6 +42,13 @@ const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 const CORE2 = 210;              // squared vortex core radius
 
+/* The doublet stands for the volume the section displaces. Its radius
+   is a fraction of the half chord, not of the thickness, so the outline
+   can change without a change to the flow field. */
+const DOUBLET_RATIO = 0.22;
+/* Wake marker radius, as a fraction of the section thickness. */
+const WAKE_MARKER = 0.42;
+
 export function createPitchingSection() {
   /* Use a 5px integration step, not 4px. This field also samples a full
      wake, and a hairline stroke hides the coarser polyline. */
@@ -52,7 +60,10 @@ export function createPitchingSection() {
     core2: CORE2,
     cullRadius2: 160000,        // past 400px a vortex moves a line less than 1px
   });
-  const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
+  const section = {
+    x: 0, y: 0, baseY: 0, half: 60, thickness: 7,
+    ratio: PAZY_RATIO, gain: 0, alpha: 0, gamma: 0,
+  };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
   let path = [];
@@ -100,12 +111,10 @@ export function createPitchingSection() {
   /* Field sample: freestream + thickness doublet + bound vortex + wake.
      Returns null inside the body. */
   function velocity(x, y) {
-    const dir = chordDirection(section.alpha);
-    if (segmentDistance2(x, y, section.x, section.y, dir.x, dir.y, section.half)
-        <= section.thickness * section.thickness) return null;
+    if (isInsideAerofoil(section, x, y)) return null;
 
     const out = { u: FREESTREAM, v: 0 };
-    addDoublet(out, x, y, section.x, section.y, section.thickness * 2, FREESTREAM);
+    addDoublet(out, x, y, section.x, section.y, section.half * DOUBLET_RATIO, FREESTREAM);
     const bound = quarterChord();
     addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
     wake.addTo(out, x, y);
@@ -122,7 +131,7 @@ export function createPitchingSection() {
     strongestEma += (strongest - strongestEma) * Math.min(1, dt * 2);
     wake.forEach((w) => {
       const strength = Math.min(Math.abs(w.gamma) / strongestEma, 1) * w.ramp;
-      const r = 1 + Math.sqrt(strength) * section.thickness * 0.7;
+      const r = 1 + Math.sqrt(strength) * section.thickness * WAKE_MARKER;
       if (r < 1.2) return;
       // Grow in with the ramp. Fade out near the right edge.
       const fade = w.ramp * Math.min(1, (width + 30 - w.x) / 130);
@@ -139,8 +148,7 @@ export function createPitchingSection() {
   function drawGhosts(ctx, t, ink) {
     for (const [ago, alpha] of [[0.34, 0.09], [0.17, 0.18]]) {
       const k = kinematics(t - ago);
-      ctx.beginPath();
-      ctx.ellipse(section.x, k.y, section.half, section.thickness, -k.alpha, 0, TWO_PI);
+      traceAerofoil(ctx, { ...section, y: k.y, alpha: k.alpha });
       ctx.lineWidth = 1;
       ctx.strokeStyle = withAlpha(ink.body, alpha);
       ctx.stroke();
@@ -150,9 +158,9 @@ export function createPitchingSection() {
   /* A hairline outline, not a filled shape. The hero text sits over this
      canvas, and an outline stays legible behind it. */
   function drawSection(ctx, ink) {
-    ctx.beginPath();
-    ctx.ellipse(section.x, section.y, section.half, section.thickness, -section.alpha, 0, TWO_PI);
+    traceAerofoil(ctx, section);
     ctx.lineWidth = 1.3;
+    ctx.lineJoin = 'round';
     ctx.strokeStyle = ink.body;
     ctx.stroke();
   }
@@ -218,7 +226,8 @@ export function createPitchingSection() {
       height = h;
       const chord = Math.min(w * 0.2, h * 0.34);
       section.half = chord / 2;
-      section.thickness = Math.max(chord * 0.055, 4);
+      // NACA 0018: the largest half-thickness is 0.09 of the chord.
+      section.thickness = Math.max(chord * section.ratio / 2, 4);
       // Thin-aerofoil bound circulation per radian: pi * chord * U.
       section.gain = Math.PI * chord * FREESTREAM;
       stage = stageFor(w, h);
