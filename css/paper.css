@@ -11,6 +11,15 @@
   width: 100%;
   height: 100%;
   display: block;
+  /* A from-only keyframe eases toward the element's own computed opacity,
+     so the same rule serves desktop (1) and the faded mobile canvas. Under
+     reduced motion base.css disables all animation and the field simply
+     shows its still frame. */
+  animation: field-in 900ms ease-out;
+}
+
+@keyframes field-in {
+  from { opacity: 0; }
 }
 
 .paper-hero { min-height: calc(80vh - 3.2rem); }

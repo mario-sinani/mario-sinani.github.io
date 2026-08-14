@@ -40,7 +40,7 @@ function loading(xi) {
 }
 
 export function createIncidenceSweep() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 32 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
   const section = { x: 0, y: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const inset = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -79,7 +79,9 @@ export function createIncidenceSweep() {
      the section passes through zero incidence and flips with it. */
   function drawLoading(ctx, ink) {
     const cl = liftCoefficient(section.alpha) / liftCoefficient(ALPHA_MAX);
-    if (Math.abs(cl) < 0.04) return;
+    // Eased in with the load itself, so the comb never pops at a threshold.
+    const presence = Math.min(1, Math.max(0, (Math.abs(cl) - 0.02) / 0.12));
+    if (presence <= 0) return;
     const dir = chordDirection(section.alpha);
     // Normal to the chord, pointing the way positive lift acts.
     const nx = dir.y;
@@ -97,7 +99,7 @@ export function createIncidenceSweep() {
       ctx.lineTo(bx + nx * len, by + ny * len);
     }
     ctx.lineWidth = 1.1;
-    ctx.strokeStyle = withAlpha(ink.accent, 0.5);
+    ctx.strokeStyle = withAlpha(ink.accent, 0.5 * presence);
     ctx.stroke();
 
     // The curve joining their tips, which is the distribution itself.
@@ -111,7 +113,7 @@ export function createIncidenceSweep() {
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.lineWidth = 1;
-    ctx.strokeStyle = withAlpha(ink.accent, 0.75);
+    ctx.strokeStyle = withAlpha(ink.accent, 0.75 * presence);
     ctx.stroke();
   }
 
@@ -121,7 +123,8 @@ export function createIncidenceSweep() {
   function drawResultant(ctx, ink) {
     const root = quarterChord();
     const span = (section.gamma / section.gain) * section.half * 2.4;
-    if (Math.abs(span) < 2) return;
+    const presence = Math.min(1, Math.max(0, (Math.abs(span) - 1) / 9));
+    if (presence <= 0) return;
     const tipY = root.y - span;
     const sign = Math.sign(span);
     ctx.beginPath();
@@ -131,7 +134,7 @@ export function createIncidenceSweep() {
     ctx.lineTo(root.x, tipY);
     ctx.lineTo(root.x + 4, tipY + sign * 6);
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = ink.accent;
+    ctx.strokeStyle = withAlpha(ink.accent, 0.85 * presence);
     ctx.stroke();
   }
 
@@ -217,7 +220,7 @@ export function createIncidenceSweep() {
 
     frame(ctx, dt, t, ink) {
       move(t);
-      flow.draw(ctx, velocity, ink, t);
+      flow.draw(ctx, dt, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);
@@ -227,7 +230,7 @@ export function createIncidenceSweep() {
 
     still(ctx, ink, t) {
       move(t || SWEEP_SECONDS * 0.2);
-      flow.draw(ctx, velocity, ink, 0);
+      flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawLoading(ctx, ink);
       drawSection(ctx, ink);

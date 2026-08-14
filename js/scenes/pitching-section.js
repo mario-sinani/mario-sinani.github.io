@@ -33,7 +33,8 @@ const PITCH_LEAD = 1.9;         // radians by which pitch leads plunge
 const PITCH_AMPLITUDE = 0.26;   // radians
 const PLUNGE_FRACTION = 0.04;   // of canvas height
 const SWEEP_SECONDS = 26;       // period of the slow amplitude sweep
-const SHED_INTERVAL = 0.2;      // seconds between shed wake vortices
+const SHED_INTERVAL = 0.14;     // seconds between shed wake vortices
+const SHED_RAMP = 0.3;          // seconds a new vortex takes to reach strength
 const MAX_WAKE = 80;
 const CORE2 = 210;              // squared vortex core radius
 /* The orbit is sampled on a clock rather than per frame, and kept for
@@ -43,7 +44,7 @@ const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 
 export function createPitchingSection() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 34 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
   const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
@@ -92,7 +93,7 @@ export function createPitchingSection() {
     const bound = quarterChord();
     addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
     for (let i = 0; i < wake.length; i++) {
-      addVortex(out, x, y, wake[i].x, wake[i].y, wake[i].gamma, CORE2);
+      addVortex(out, x, y, wake[i].x, wake[i].y, wake[i].gamma * wake[i].ramp, CORE2);
     }
     return out;
   }
@@ -106,7 +107,10 @@ export function createPitchingSection() {
     if (sinceShed < SHED_INTERVAL) return;
     sinceShed = 0;
     const edge = trailingEdge();
-    wake.push({ x: edge.x, y: edge.y, gamma: pendingShed });
+    // Born at zero effective strength and ramped in, so the field - and
+    // every streamline threading it - deforms continuously rather than
+    // twitching once per shed.
+    wake.push({ x: edge.x, y: edge.y, gamma: pendingShed, ramp: 0 });
     pendingShed = 0;
     if (wake.length > MAX_WAKE) wake.shift();
   }
@@ -115,6 +119,7 @@ export function createPitchingSection() {
     const bound = quarterChord();
     for (let i = 0; i < wake.length; i++) {
       const w = wake[i];
+      w.ramp = Math.min(1, w.ramp + dt / SHED_RAMP);
       const out = { u: FREESTREAM, v: 0 };
       addVortex(out, w.x, w.y, bound.x, bound.y, section.gamma, CORE2);
       w.x += out.u * dt;
@@ -125,19 +130,26 @@ export function createPitchingSection() {
 
   /* The shed vortices themselves. Radius follows the square root of the
      strength, so area reads as circulation, and the sign picks the colour:
-     the street alternates because the bound circulation does. */
-  function drawWake(ctx, ink) {
+     the street alternates because the bound circulation does. The scale
+     they are measured against is eased over time, so the whole street
+     never pulses when one strong vortex arrives or leaves. */
+  let strongestEma = 1;
+
+  function drawWake(ctx, dt, ink) {
     let strongest = 1;
     for (let i = 0; i < wake.length; i++) strongest = Math.max(strongest, Math.abs(wake[i].gamma));
+    strongestEma += (strongest - strongestEma) * Math.min(1, dt * 2);
     for (let i = 0; i < wake.length; i++) {
       const w = wake[i];
-      const strength = Math.abs(w.gamma) / strongest;
+      const strength = Math.min(Math.abs(w.gamma) / strongestEma, 1) * w.ramp;
       const r = 1 + Math.sqrt(strength) * section.thickness * 0.7;
-      if (r < 1.5) continue;
+      if (r < 1.2) continue;
+      // Grown in by the ramp, faded out approaching the edge.
+      const fade = w.ramp * Math.min(1, (width + 30 - w.x) / 130);
       ctx.beginPath();
       ctx.arc(w.x, w.y, r, 0, TWO_PI);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(w.gamma > 0 ? ink.accent : ink.body, 0.15 + 0.5 * strength);
+      ctx.strokeStyle = withAlpha(w.gamma > 0 ? ink.accent : ink.body, (0.12 + 0.5 * strength) * fade);
       ctx.stroke();
     }
   }
@@ -156,13 +168,15 @@ export function createPitchingSection() {
   /* The incidence arc measures the chord against the datum, which is the
      freestream's own line - so it needs no reference of its own. */
   function drawIncidence(ctx, ink) {
-    if (Math.abs(section.alpha) < 0.02) return;
+    // Eased in with the angle itself, so it never pops at a threshold.
+    const presence = Math.min(1, Math.max(0, (Math.abs(section.alpha) - 0.015) / 0.05));
+    if (presence <= 0) return;
     const r = section.half * 0.85;
     ctx.beginPath();
     // Screen y runs downward, so a nose-up section sweeps the arc negative.
     ctx.arc(section.x, section.y, r, Math.min(0, -section.alpha), Math.max(0, -section.alpha));
     ctx.lineWidth = 1.1;
-    ctx.strokeStyle = withAlpha(ink.accent, 0.6);
+    ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
     ctx.stroke();
   }
 
@@ -183,23 +197,24 @@ export function createPitchingSection() {
 
     const spanA = PITCH_AMPLITUDE;
     const spanH = height * PLUNGE_FRACTION;
+    const toPx = (q) => cx + (q.a / spanA) * (orbit.w / 2) * 0.9;
+    const toPy = (q) => cy - (q.h / spanH) * (orbit.h / 2) * 0.9;
+
     ctx.beginPath();
     for (let i = 0; i < path.length; i++) {
-      const px = cx + (path[i].a / spanA) * (orbit.w / 2) * 0.9;
-      const py = cy - (path[i].h / spanH) * (orbit.h / 2) * 0.9;
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      if (i === 0) ctx.moveTo(toPx(path[i]), toPy(path[i]));
+      else ctx.lineTo(toPx(path[i]), toPy(path[i]));
     }
+    /* The loop is sampled on a clock, but its head is the live state, so
+       the marker moves every frame instead of at the sampling rate. */
+    const head = { a: section.alpha, h: plunge };
+    ctx.lineTo(toPx(head), toPy(head));
     ctx.lineWidth = 1;
     ctx.strokeStyle = withAlpha(ink.line, 0.55);
     ctx.stroke();
 
-    const last = path[path.length - 1];
     ctx.beginPath();
-    ctx.arc(
-      cx + (last.a / spanA) * (orbit.w / 2) * 0.9,
-      cy - (last.h / spanH) * (orbit.h / 2) * 0.9,
-      2.6, 0, TWO_PI
-    );
+    ctx.arc(toPx(head), toPy(head), 2.6, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
     ctx.fill();
   }
@@ -247,9 +262,9 @@ export function createPitchingSection() {
         while (path.length > ORBIT_SECONDS / ORBIT_STEP) path.shift();
       }
 
-      flow.draw(ctx, velocity, ink, t);
+      flow.draw(ctx, dt, velocity, ink);
       drawDatum(ctx, stage, ink);
-      drawWake(ctx, ink);
+      drawWake(ctx, dt, ink);
       drawIncidence(ctx, ink);
       drawSection(ctx, ink);
       drawOrbit(ctx, ink);
@@ -271,7 +286,7 @@ export function createPitchingSection() {
         });
       }
       move(at);
-      flow.draw(ctx, velocity, ink, 0);
+      flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawIncidence(ctx, ink);
       drawSection(ctx, ink);

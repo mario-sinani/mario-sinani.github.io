@@ -37,7 +37,7 @@ const TRACE_SECONDS = 1.05 / HINGE_HZ;
 const TRACE_STEP = 0.05;
 
 export function createHingedWingtip() {
-  const flow = createFlowlines({ lines: 15, accentEvery: 5, march: 30 });
+  const flow = createFlowlines({ lines: 15, accentEvery: 5, tracers: 30 });
   const inboard = { x: 0, y: 0, half: 40, thickness: 6, gain: 0, alpha: 0, gamma: 0 };
   const outboard = { x: 0, y: 0, half: 26, thickness: 5, gain: 0, alpha: 0, gamma: 0 };
   const hinge = { x: 0, y: 0, fold: 0 };
@@ -115,14 +115,16 @@ export function createHingedWingtip() {
 
   /** The joint, and the angle currently held across it. */
   function drawHinge(ctx, ink) {
-    if (Math.abs(hinge.fold) > 0.02) {
+    // Eased in with the fold itself, so it never pops at a threshold.
+    const presence = Math.min(1, Math.max(0, (Math.abs(hinge.fold) - 0.015) / 0.06));
+    if (presence > 0) {
       const r = outboard.half * 0.8;
       const from = -inboard.alpha;
       const to = -outboard.alpha;
       ctx.beginPath();
       ctx.arc(hinge.x, hinge.y, r, Math.min(from, to), Math.max(from, to));
       ctx.lineWidth = 1.1;
-      ctx.strokeStyle = withAlpha(ink.accent, 0.6);
+      ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
       ctx.stroke();
     }
     ctx.beginPath();
@@ -145,14 +147,17 @@ export function createHingedWingtip() {
       const py = midY - (history[i] / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
+    /* The trace is sampled on a clock, but its head is the live fold, so
+       the marker moves every frame instead of at the sampling rate. */
+    const headX = trace.x + (history.length / (steps - 1)) * trace.w;
+    const headY = midY - (hinge.fold / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
+    ctx.lineTo(Math.min(headX, trace.x + trace.w), headY);
     ctx.lineWidth = 1.1;
     ctx.strokeStyle = withAlpha(ink.line, 0.7);
     ctx.stroke();
 
-    const lastX = trace.x + ((history.length - 1) / (steps - 1)) * trace.w;
-    const lastY = midY - (history[history.length - 1] / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
     ctx.beginPath();
-    ctx.arc(lastX, lastY, 2.6, 0, TWO_PI);
+    ctx.arc(Math.min(headX, trace.x + trace.w), headY, 2.6, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
     ctx.fill();
   }
@@ -193,7 +198,7 @@ export function createHingedWingtip() {
         while (history.length > TRACE_SECONDS / TRACE_STEP) history.shift();
       }
 
-      flow.draw(ctx, velocity, ink, t);
+      flow.draw(ctx, dt, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
@@ -210,7 +215,7 @@ export function createHingedWingtip() {
       for (let k = steps - 1; k >= 0; k--) {
         history.push(HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * (at - k * TRACE_STEP)));
       }
-      flow.draw(ctx, velocity, ink, 0);
+      flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);
       drawPart(ctx, inboard, ink);
