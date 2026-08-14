@@ -1,14 +1,36 @@
-/* Ink: small helpers for the palette the field canvas hands to a scene.
+/* Ink: the colours a scene draws with.
 
-   Scenes are given four resolved colours and often need the same colour at
-   a weaker strength - a strobe fading into the past, a contour receding.
-   Rather than each scene carrying its own copy of the palette, it asks for
-   the one it was given at a different alpha. */
+   This module owns colour. The canvas engine asks it for a palette, and
+   the scenes ask it for weaker tints of that palette. Scenes do not read
+   the CSS. */
 
-/** The same colour at a new alpha. Accepts the rgb()/rgba() the ink uses. */
+/** Return the same colour with a new alpha value. */
 export function withAlpha(colour, alpha) {
   return colour.replace(/rgba?\(([^)]+)\)/, (whole, parts) => {
     const [r, g, b] = parts.split(',');
     return `rgba(${r},${g},${b},${alpha})`;
   });
+}
+
+/**
+ * Build the palette for one theme.
+ *
+ * ground - the page background, taken from the CSS custom property.
+ * line   - grey strokes.
+ * accent - the brand blue. Use it for instruments and key marks.
+ * wash   - a quieter indigo. Use it for field elements, so the accent
+ *          stays reserved.
+ * body   - the outline colour for bodies (wing sections, beams).
+ * faint  - hairlines and reference lines.
+ */
+export function resolveInk(dark, ground) {
+  return {
+    dark,
+    ground,
+    line: dark ? 'rgba(237, 242, 246, 0.32)' : 'rgba(15, 25, 38, 0.3)',
+    accent: dark ? 'rgba(106, 106, 255, 0.8)' : 'rgba(0, 0, 205, 0.7)',
+    body: dark ? 'rgba(154, 154, 255, 0.75)' : 'rgba(0, 0, 205, 0.55)',
+    wash: dark ? 'rgba(148, 154, 236, 0.6)' : 'rgba(84, 92, 190, 0.6)',
+    faint: dark ? 'rgba(237, 242, 246, 0.16)' : 'rgba(15, 25, 38, 0.14)',
+  };
 }

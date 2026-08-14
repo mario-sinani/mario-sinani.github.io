@@ -1,43 +1,37 @@
-/* Field canvas: the plumbing every animated background shares - sizing to
-   the parent at device pixel ratio, resolving the theme colours, washing
-   the previous frame toward the page ground, the animation loop, and the
-   frozen frame drawn instead when reduced motion is asked for.
+/* Field canvas: the engine that runs one animated background.
 
-   What is drawn comes from a scene, so a new background is a new scene
-   rather than another copy of this file. A scene provides:
+   The engine owns the canvas lifecycle: it sizes the canvas to its parent
+   at the device pixel ratio, washes the last frame toward the page
+   ground, runs the animation loop, and draws one still frame when the
+   visitor prefers reduced motion.
+
+   What is drawn comes from a scene object. A scene provides:
 
      fade                    per-frame wash toward the ground, 0..1
-     layout(width, height)   position and size everything
+     layout(width, height)   set positions and sizes
      frame(ctx, dt, t, ink)  draw one frame
-     still(ctx, ink, t)      draw a single frozen frame
+     still(ctx, ink, t)      draw one frozen frame
 
-   `ink` carries the resolved palette, so scenes never read CSS themselves.
-   The theme arrives as an `isDark` predicate for the same reason. */
+   The engine gives each call a resolved palette (see ink.js), so scenes
+   do not read the CSS. The isDark function reports the active theme. */
+
+import { resolveInk } from './ink.js';
 
 export function initFieldCanvas(canvas, isDark, scene) {
   if (!canvas || !scene) return null;
 
   const ctx = canvas.getContext('2d');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ink = { ground: '', line: '', accent: '', body: '', dark: false };
+  let ink = resolveInk(false, '#ffffff');
   let width = 0;
   let height = 0;
   let clock = 0;
   let lastFrameTime = 0;
 
   function readInk() {
-    const styles = getComputedStyle(document.documentElement);
-    const dark = isDark();
-    ink.dark = dark;
-    ink.ground = styles.getPropertyValue('--paper').trim();
-    ink.line = dark ? 'rgba(237, 242, 246, 0.32)' : 'rgba(15, 25, 38, 0.3)';
-    ink.accent = dark ? 'rgba(106, 106, 255, 0.8)' : 'rgba(0, 0, 205, 0.7)';
-    ink.body = dark ? 'rgba(154, 154, 255, 0.75)' : 'rgba(0, 0, 205, 0.55)';
-    /* A quieter indigo between the grey and the brand blue. The field -
-       streamlines, tracers, negative vorticity - takes this wash, so the
-       pure Imperial blue is kept for the instruments and stays special. */
-    ink.wash = dark ? 'rgba(148, 154, 236, 0.6)' : 'rgba(84, 92, 190, 0.6)';
-    ink.faint = dark ? 'rgba(237, 242, 246, 0.16)' : 'rgba(15, 25, 38, 0.14)';
+    const ground = getComputedStyle(document.documentElement)
+      .getPropertyValue('--paper').trim();
+    ink = resolveInk(isDark(), ground);
   }
 
   function wash(alpha) {

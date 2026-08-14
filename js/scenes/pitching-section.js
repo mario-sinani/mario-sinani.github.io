@@ -1,68 +1,70 @@
-/* Scene: a wing section pitching and plunging, shedding a wake.
+/* Scene: a wing section that pitches and plunges, and sheds a wake.
 
-   Behind "Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing".
+   Background for "Data-Driven Parametric Aeroelastic Modeling of the
+   Pazy Wing".
 
-     · the section carries a bound vortex whose strength follows the
-       effective incidence, so the flow visibly turns as the wing moves;
-     · Kelvin's theorem is respected by shedding the change in that
-       circulation off the trailing edge, which is what draws the wake;
-     · the oscillation amplitude sweeps slowly, standing in for the sweep
-       across trim conditions the model is built over.
+   The physics:
+   - The section carries a bound vortex. Its strength follows the
+     effective incidence, so the flow turns as the wing moves.
+   - The wake receives the change in bound circulation (Kelvin's
+     theorem). The shed vortices draw the vortex street.
+   - The oscillation amplitude sweeps slowly. This stands for the sweep
+     across trim conditions in the paper.
 
-   Three things are drawn over the streamlines. The wake vortices are the
-   ones the flow field is already using - marked so the street is visible
-   as a street rather than only as its effect, sized by strength and split
-   by sign. The incidence arc measures the section against the freestream
-   it is actually flying into. And the orbit at the right is the pitch
-   plotted against the plunge: a closed loop whose area is the work done
-   on the wing each cycle, growing and shrinking as the sweep carries the
-   section through its trim conditions.
+   Over the streamlines the scene draws: the wake vortices (radius shows
+   strength, colour shows sign), the incidence arc against the datum, two
+   ghost outlines of the section at earlier times, and the pitch-plunge
+   orbit. The area of the orbit loop is the work the flow does on the
+   wing in one cycle.
 
-   Speeds and the chord together fix the reduced frequency
-   k = omega * chord / (2 * freestream) - the number that decides whether
-   this reads as a wing in a tunnel or as noise. */
+   The speeds and the chord set the reduced frequency
+   k = omega * chord / (2 * freestream). This value keeps the motion in
+   the flutter range. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
+import { createVortexWake } from '../vortex-wake.js';
 import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 110;         // px/s
 const FLUTTER_HZ = 0.1;
-const PITCH_LEAD = 1.9;         // radians by which pitch leads plunge
+const PITCH_LEAD = 1.9;         // radians: pitch leads plunge by this phase
 const PITCH_AMPLITUDE = 0.26;   // radians
-const PLUNGE_FRACTION = 0.04;   // of canvas height
+const PLUNGE_FRACTION = 0.04;   // fraction of the canvas height
 const SWEEP_SECONDS = 26;       // period of the slow amplitude sweep
-const SHED_INTERVAL = 0.14;     // seconds between shed wake vortices
-const SHED_RAMP = 0.3;          // seconds a new vortex takes to reach strength
-const MAX_WAKE = 56;            // spans the stage; the edge fade hides the cut
-const CORE2 = 210;              // squared vortex core radius
-/* The orbit is sampled on a clock rather than per frame, and kept for
-   just over one flutter cycle: counting frames would make the loop's
-   length depend on the refresh rate, and it would never close. */
+
+/* Sample the orbit on a clock, and keep a little more than one flutter
+   cycle. A frame-counted buffer would depend on the refresh rate, and the
+   loop would not close. */
 const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
+const CORE2 = 210;              // squared vortex core radius
 
 export function createPitchingSection() {
-  // A slightly longer integration step: this field carries a whole wake
-  // of vortices, and at hairline weight the coarser polyline is invisible.
+  /* Step 5 instead of 4: this field carries a full wake, and a hairline
+     stroke does not show the coarser polyline. */
   const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28, step: 5 });
+  const wake = createVortexWake({
+    interval: 0.14,
+    ramp: 0.3,
+    max: 56,                    // spans the stage; the edge fade hides the cut
+    core2: CORE2,
+    cullRadius2: 160000,        // past 400px a vortex moves a line less than 1px
+  });
   const section = { x: 0, y: 0, baseY: 0, half: 60, thickness: 7, gain: 0, alpha: 0, gamma: 0 };
   const orbit = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
-  let wake = [];
   let path = [];
   let width = 0;
   let height = 0;
-  let sinceShed = 0;
-  let pendingShed = 0;
   let plunge = 0;
   let lastOrbitSample = -99;
+  let strongestEma = 1;
 
-  /* Plunge is positive upward, so the section's screen y is its rest
-     height minus it, and plunging downward raises the effective incidence
-     exactly as a nose-up rotation does. Kept pure so the strobe can ask
-     where the section was a moment ago. */
+  /* Pure function of time, so the ghosts can ask for earlier states.
+     Plunge is positive upward. A downward plunge rate raises the
+     effective incidence, the same as a nose-up rotation. */
   function kinematics(t) {
     const omega = TWO_PI * FLUTTER_HZ;
     const sweep = 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
@@ -95,6 +97,8 @@ export function createPitchingSection() {
     return { x: section.x + section.half * dir.x, y: section.y + section.half * dir.y };
   }
 
+  /* Field sample: freestream + thickness doublet + bound vortex + wake.
+     Returns null inside the body. */
   function velocity(x, y) {
     const dir = chordDirection(section.alpha);
     if (segmentDistance2(x, y, section.x, section.y, dir.x, dir.y, section.half)
@@ -104,77 +108,34 @@ export function createPitchingSection() {
     addDoublet(out, x, y, section.x, section.y, section.thickness * 2, FREESTREAM);
     const bound = quarterChord();
     addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
-    for (let i = 0; i < wake.length; i++) {
-      /* A vortex's influence falls off as 1/r^2; past ~400px it moves a
-         streamline by less than a pixel, and skipping it there halves the
-         cost of threading the whole family through the wake. */
-      const wx = x - wake[i].x;
-      const wy = y - wake[i].y;
-      if (wx * wx + wy * wy > 160000) continue;
-      addVortex(out, x, y, wake[i].x, wake[i].y, wake[i].gamma * wake[i].ramp, CORE2);
-    }
+    wake.addTo(out, x, y);
     return out;
   }
 
-  /* Kelvin's theorem: whatever the bound circulation gains, the wake takes
-     the opposite. The change is banked between sheds so the wake stays a
-     countable number of vortices rather than one per frame. */
-  function shed(dt, previousGamma) {
-    pendingShed -= section.gamma - previousGamma;
-    sinceShed += dt;
-    if (sinceShed < SHED_INTERVAL) return;
-    sinceShed = 0;
-    const edge = trailingEdge();
-    // Born at zero effective strength and ramped in, so the field - and
-    // every streamline threading it - deforms continuously rather than
-    // twitching once per shed.
-    wake.push({ x: edge.x, y: edge.y, gamma: pendingShed, ramp: 0 });
-    pendingShed = 0;
-    if (wake.length > MAX_WAKE) wake.shift();
-  }
-
-  function convectWake(dt) {
-    const bound = quarterChord();
-    for (let i = 0; i < wake.length; i++) {
-      const w = wake[i];
-      w.ramp = Math.min(1, w.ramp + dt / SHED_RAMP);
-      const out = { u: FREESTREAM, v: 0 };
-      addVortex(out, w.x, w.y, bound.x, bound.y, section.gamma, CORE2);
-      w.x += out.u * dt;
-      w.y += out.v * dt;
-    }
-    wake = wake.filter((w) => w.x < width + 40);
-  }
-
-  /* The shed vortices themselves. Radius follows the square root of the
-     strength, so area reads as circulation, and the sign picks the colour:
-     the street alternates because the bound circulation does. The scale
-     they are measured against is eased over time, so the whole street
-     never pulses when one strong vortex arrives or leaves. */
-  let strongestEma = 1;
-
+  /* Draw the shed vortices. Radius follows the square root of strength,
+     so area shows circulation. Sign selects the colour. The strength
+     scale is a slow moving average, so the street does not pulse when one
+     strong vortex arrives or leaves. */
   function drawWake(ctx, dt, ink) {
     let strongest = 1;
-    for (let i = 0; i < wake.length; i++) strongest = Math.max(strongest, Math.abs(wake[i].gamma));
+    wake.forEach((w) => { strongest = Math.max(strongest, Math.abs(w.gamma)); });
     strongestEma += (strongest - strongestEma) * Math.min(1, dt * 2);
-    for (let i = 0; i < wake.length; i++) {
-      const w = wake[i];
+    wake.forEach((w) => {
       const strength = Math.min(Math.abs(w.gamma) / strongestEma, 1) * w.ramp;
       const r = 1 + Math.sqrt(strength) * section.thickness * 0.7;
-      if (r < 1.2) continue;
-      // Grown in by the ramp, faded out approaching the edge.
+      if (r < 1.2) return;
+      // Grow in with the ramp. Fade out near the right edge.
       const fade = w.ramp * Math.min(1, (width + 30 - w.x) / 130);
       ctx.beginPath();
       ctx.arc(w.x, w.y, r, 0, TWO_PI);
       ctx.lineWidth = 1;
       ctx.strokeStyle = withAlpha(w.gamma > 0 ? ink.accent : ink.wash, (0.12 + 0.5 * strength) * fade);
       ctx.stroke();
-    }
+    });
   }
 
-  /* The oscillation's own strobe: the section a breath and two breaths
-     ago, fading back - the same language the beam page speaks, so the
-     motion reads even in a glance that catches no motion at all. */
+  /* Draw the section at two earlier times, faded. This strobe shows the
+     motion in a single glance, like the beam scene. */
   function drawGhosts(ctx, t, ink) {
     for (const [ago, alpha] of [[0.34, 0.09], [0.17, 0.18]]) {
       const k = kinematics(t - ago);
@@ -186,9 +147,8 @@ export function createPitchingSection() {
     }
   }
 
-  /* A hairline outline rather than a solid mass: the hero text sits over
-     this canvas, and a filled shape behind a paragraph reads as a smudge
-     where an outline reads as a drawing. */
+  /* A hairline outline, not a filled shape. The hero text sits over this
+     canvas, and an outline stays legible behind it. */
   function drawSection(ctx, ink) {
     ctx.beginPath();
     ctx.ellipse(section.x, section.y, section.half, section.thickness, -section.alpha, 0, TWO_PI);
@@ -197,29 +157,27 @@ export function createPitchingSection() {
     ctx.stroke();
   }
 
-  /* The incidence arc measures the chord against the datum, which is the
-     freestream's own line - so it needs no reference of its own. */
+  /* The incidence arc measures the chord against the datum. It fades in
+     with the angle, so it does not appear at a hard threshold. */
   function drawIncidence(ctx, ink) {
-    // Eased in with the angle itself, so it never pops at a threshold.
     const presence = Math.min(1, Math.max(0, (Math.abs(section.alpha) - 0.015) / 0.05));
     if (presence <= 0) return;
     const r = section.half * 0.85;
     ctx.beginPath();
-    // Screen y runs downward, so a nose-up section sweeps the arc negative.
+    // Screen y points down, so a nose-up angle sweeps the arc negative.
     ctx.arc(section.x, section.y, r, Math.min(0, -section.alpha), Math.max(0, -section.alpha));
     ctx.lineWidth = 1.1;
     ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
     ctx.stroke();
   }
 
-  /* Pitch against plunge. A flutter cycle is a closed loop here, and the
-     area it encloses is the work the flow does on the wing over it. */
+  /* The orbit instrument: pitch on x, plunge on y. One flutter cycle is a
+     closed loop. The datum carries the horizontal axis. */
   function drawOrbit(ctx, ink) {
     if (orbit.w <= 0 || path.length < 3) return;
     const cx = orbit.x + orbit.w / 2;
     const cy = orbit.y + orbit.h / 2;
 
-    // The datum already carries the horizontal axis through cy.
     ctx.beginPath();
     ctx.moveTo(cx, orbit.y);
     ctx.lineTo(cx, orbit.y + orbit.h);
@@ -237,8 +195,8 @@ export function createPitchingSection() {
       if (i === 0) ctx.moveTo(toPx(path[i]), toPy(path[i]));
       else ctx.lineTo(toPx(path[i]), toPy(path[i]));
     }
-    /* The loop is sampled on a clock, but its head is the live state, so
-       the marker moves every frame instead of at the sampling rate. */
+    /* The loop is sampled on a clock. The head is the live state, so the
+       marker moves every frame. */
     const head = { a: section.alpha, h: plunge };
     ctx.lineTo(toPx(head), toPy(head));
     ctx.lineWidth = 1;
@@ -252,7 +210,7 @@ export function createPitchingSection() {
   }
 
   return {
-    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    // A drawn figure. The engine clears it fully each frame.
     fade: 1,
 
     layout(w, h) {
@@ -261,22 +219,22 @@ export function createPitchingSection() {
       const chord = Math.min(w * 0.2, h * 0.34);
       section.half = chord / 2;
       section.thickness = Math.max(chord * 0.055, 4);
-      // Thin-aerofoil bound circulation per radian of incidence: pi * c * U.
+      // Thin-aerofoil bound circulation per radian: pi * chord * U.
       section.gain = Math.PI * chord * FREESTREAM;
       stage = stageFor(w, h);
-      /* On the stage's left, so the wake streams right along the datum
-         toward the orbit that summarises it. */
+      // Left of the stage, so the wake streams right toward the orbit.
       section.x = stage.left + stage.width * 0.22;
       section.baseY = stage.y;
 
-      // Dropped entirely when the canvas is too narrow to hold it quietly.
+      // Drop the orbit when the canvas is too narrow to hold it.
       const room = w > 760;
       orbit.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       orbit.h = orbit.w * 0.78;
       orbit.x = stage.right - orbit.w;
       orbit.y = stage.y - orbit.h / 2;
 
-      wake = [];
+      wake.reset();
+      wake.setLimit(w + 40);
       path = [];
       lastOrbitSample = -99;
       flow.layout(w, h);
@@ -286,8 +244,11 @@ export function createPitchingSection() {
     frame(ctx, dt, t, ink) {
       const previousGamma = section.gamma;
       move(t);
-      shed(dt, previousGamma);
-      convectWake(dt);
+      wake.shed(dt, section.gamma - previousGamma, trailingEdge());
+      const bound = quarterChord();
+      wake.convect(dt, FREESTREAM, (out, x, y) => {
+        addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
+      });
       if (t - lastOrbitSample >= ORBIT_STEP) {
         lastOrbitSample = t;
         path.push({ a: section.alpha, h: plunge });
@@ -306,7 +267,7 @@ export function createPitchingSection() {
     still(ctx, ink, t) {
       const at = t || 9;
       move(at);
-      // A cycle of the orbit, so the loop is there to see.
+      // Rebuild one orbit cycle, so the loop is visible without motion.
       path = [];
       const steps = Math.round(ORBIT_SECONDS / ORBIT_STEP);
       for (let k = 0; k <= steps; k++) {
