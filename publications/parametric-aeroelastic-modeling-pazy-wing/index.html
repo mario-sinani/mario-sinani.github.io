@@ -97,13 +97,20 @@
 {
   "@context": "https://schema.org",
   "@type": "ScholarlyArticle",
+  "@id": "https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/#article",
+  "mainEntityOfPage": "https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/",
   "name": "Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing",
   "url": "https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/",
   "author": [
     {
       "@type": "Person",
       "name": "Mario A. Sinani",
-      "url": "https://mariosinani.com/"
+      "url": "https://mariosinani.com/",
+      "@id": "https://mariosinani.com/#person",
+      "sameAs": [
+        "https://scholar.google.com/citations?user=zb5_6PwAAAAJ",
+        "https://profiles.imperial.ac.uk/mario.sinani"
+      ]
     },
     {
       "@type": "Person",
@@ -127,6 +134,7 @@
   },
   "identifier": "https://doi.org/10.2514/6.2026-0187",
   "sameAs": "https://doi.org/10.2514/6.2026-0187",
+  "isBasedOn": "https://doi.org/10.2514/6.2025-0422",
   "about": [
     "Nonlinear aeroelasticity",
     "Reduced-order modelling",
@@ -134,7 +142,40 @@
     "Flutter",
     "Constrained optimization"
   ],
-  "isBasedOn": "https://doi.org/10.2514/6.2025-0422"
+  "publisher": {
+    "@type": "Organization",
+    "name": "American Institute of Aeronautics and Astronautics"
+  },
+  "abstract": "Accurate and tractable aeroelastic models are essential for the analysis, optimization, and control of next-generation aerospace systems that increasingly rely on highly flexible structures exhibiting significant structural and aerodynamic nonlinearities. In this work, we propose a data-driven, physics-informed framework for constructing low-order parametric models of nonlinear coupled aeroelastic systems around equilibrium (trim) conditions. Leveraging the Sparse Identification of Nonlinear Dynamics (SINDy) methodology, we identify reduced-order models whose dynamics evolve smoothly with variations in angle of attack, using training data from a small number of simulations of the Pazy wing, a lightweight composite benchmark for nonlinear aeroelastic analysis. The modeling process embeds prior knowledge of structural dynamics and flutter characteristics through customized library construction and constrained optimization. This results in compact, physically consistent models that accurately predict the coupled aeroelastic response and flutter behavior across a broad range of operating conditions, making them well suited for nonlinear analysis and control design.",
+  "image": "https://mariosinani.com/assets/og/parametric-aeroelastic-modeling-pazy-wing.png",
+  "keywords": "Nonlinear aeroelasticity, Reduced-order modelling, SINDy, Flutter, Constrained optimization",
+  "dateModified": "2026-08-14"
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://mariosinani.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Publications",
+      "item": "https://mariosinani.com/publications/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing",
+      "item": "https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/"
+    }
+  ]
 }
   </script>
 </head>

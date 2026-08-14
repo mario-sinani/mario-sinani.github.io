@@ -98,13 +98,20 @@
 {
   "@context": "https://schema.org",
   "@type": "ScholarlyArticle",
+  "@id": "https://mariosinani.com/publications/event-triggered-visual-servoing/#article",
+  "mainEntityOfPage": "https://mariosinani.com/publications/event-triggered-visual-servoing/",
   "name": "An Event-Triggered Visual Servoing Predictive Control Strategy for the Surveillance of Contour-Based Areas using Multirotor Aerial Vehicles",
   "url": "https://mariosinani.com/publications/event-triggered-visual-servoing/",
   "author": [
     {
       "@type": "Person",
       "name": "Mario A. Sinani",
-      "url": "https://mariosinani.com/"
+      "url": "https://mariosinani.com/",
+      "@id": "https://mariosinani.com/#person",
+      "sameAs": [
+        "https://scholar.google.com/citations?user=zb5_6PwAAAAJ",
+        "https://profiles.imperial.ac.uk/mario.sinani"
+      ]
     },
     {
       "@type": "Person",
@@ -130,7 +137,6 @@
     "@type": "PublicationVolume",
     "name": "2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)"
   },
-  "pagination": "2203-2210",
   "identifier": "https://doi.org/10.1109/IROS47612.2022.9981176",
   "sameAs": "https://doi.org/10.1109/IROS47612.2022.9981176",
   "about": [
@@ -139,6 +145,41 @@
     "Event-triggered control",
     "Aerial robotics",
     "Deep learning"
+  ],
+  "publisher": {
+    "@type": "Organization",
+    "name": "Institute of Electrical and Electronics Engineers"
+  },
+  "abstract": "In this paper, an Event-triggered Image-based Visual Servoing Nonlinear Model Predictive Controller (ET-IBVS-NMPC) for multirotor aerial vehicles is presented. The proposed scheme is developed for the autonomous surveillance of contour-based areas with different characteristics (e.g. forest paths, coastlines, road pavements). For this purpose, an appropriately trained Deep Neural Network (DNN) is employed for the accurate detection of the contours. In an effort to reduce the remarkably large computational cost required by an IBVS-NMPC algorithm, a triggering condition is designed to define when the Optimal Control Problem (OCP) should be resolved and new control inputs will be calculated. Between two successive triggering instants, the control input trajectory is applied to the robot in an open-loop fashion, which means that no control input computations are required. As a result, the system's computing effort and energy consumption are lowered, while its autonomy and flight duration are increased. The visibility and input constraints, as well as the external disturbances, are all taken into account throughout the control design. The efficacy of the proposed strategy is demonstrated through a series of real-time experiments using a quadrotor and an octorotor both equipped with a monocular downward looking camera.",
+  "image": "https://mariosinani.com/assets/og/event-triggered-visual-servoing.png",
+  "keywords": "Visual servoing, Nonlinear MPC, Event-triggered control, Aerial robotics, Deep learning",
+  "dateModified": "2026-08-14",
+  "pagination": "2203-2210"
+}
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://mariosinani.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Publications",
+      "item": "https://mariosinani.com/publications/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "An Event-Triggered Visual Servoing Predictive Control Strategy for the Surveillance of Contour-Based Areas using Multirotor Aerial Vehicles",
+      "item": "https://mariosinani.com/publications/event-triggered-visual-servoing/"
+    }
   ]
 }
   </script>
