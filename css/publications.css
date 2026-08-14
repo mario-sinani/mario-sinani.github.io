@@ -121,7 +121,12 @@
 
 .pub-tag.journal { color: var(--accent-strong); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 
-.pubs-footer { margin-top: 2rem; }
+.pubs-footer {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+}
 
 .pubs-footer a {
   font-family: var(--font-mono);
