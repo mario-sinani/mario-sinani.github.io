@@ -1,0 +1,339 @@
+/* Publications page: the full record. Extends the chronological rail from
+   publications.css with a page head, a type filter, abstracts and BibTeX,
+   so the home page can stay a summary and this page carry the detail. */
+
+.page-head {
+  max-width: var(--w-content);
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem 0;
+}
+
+.page-head .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.page-head .eyebrow .dot { color: var(--accent); padding: 0 0.35rem; }
+
+.page-head .eyebrow a {
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.page-head .eyebrow a:hover, .page-head .eyebrow a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.page-head h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.3rem, 7vw, 3.6rem);
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  margin: 0.7rem 0 0;
+}
+
+.page-head h1 .accent-mark { color: var(--accent); }
+
+.page-head .lede {
+  margin-top: 1.1rem;
+  max-width: var(--w-prose);
+  color: var(--muted);
+  font-size: 1.06rem;
+}
+
+/* Counts, so the shape of the record reads at a glance. Each figure is
+   plain text either side of a hairline - no boxes, matching the rest. */
+.pub-stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 2.4rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pub-stat {
+  flex: 1 1 8rem;
+  padding: 1.1rem 1.2rem 1.15rem 0;
+}
+
+.pub-stat + .pub-stat {
+  border-left: 1px solid var(--hairline);
+  padding-left: 1.4rem;
+}
+
+.pub-stat .figure {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pub-stat .label {
+  margin-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Filter -------------------------------------------------------------- */
+
+.pub-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.6rem;
+}
+
+/* Without JavaScript the buttons would do nothing, so they stay away and
+   the full list is simply shown. */
+.pub-toolbar { display: none; }
+.js .pub-toolbar { display: flex; }
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.chip:hover, .chip:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+.chip[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.pub-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* Entries ------------------------------------------------------------- */
+
+/* .pub sets display:grid, which would otherwise defeat the hidden
+   attribute the filter toggles. */
+.pub[hidden] { display: none; }
+
+/* The rail caps belong to the first and last *visible* entry, which the
+   filter moves; neutralise the static child-based caps from
+   publications.css and drive them from classes instead. Both are present
+   in the markup, so the caps are correct before any script runs. */
+.pub:first-child .pub-node::before { top: 0; }
+.pub:last-child .pub-node::before { bottom: 0; height: auto; }
+.pub:last-child .pub-body { padding-bottom: 3.2rem; }
+
+.pub.rail-start .pub-node::before { top: 1.25rem; }
+.pub.rail-end .pub-node::before { bottom: auto; height: 1.25rem; }
+.pub.rail-end .pub-body { padding-bottom: 0; }
+
+/* The rail's 1fr track sizes to its content by default, which the wide
+   BibTeX block would stretch; min-width lets it hold the column instead. */
+.pubs-page .pub-body {
+  min-width: 0;
+  padding-bottom: 3.2rem;
+}
+
+.pubs-page .pub-title { font-size: 1.16rem; }
+
+.pub-abstract {
+  margin-top: 0.85rem;
+  max-width: var(--w-prose);
+}
+
+.pub-abstract p {
+  font-size: 0.97rem;
+  line-height: 1.68;
+  color: var(--muted);
+}
+
+/* Clamped only where the toggle that undoes it exists; without JavaScript
+   the whole abstract is on the page. */
+.js .pub-abstract.is-clamped p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.abstract-toggle {
+  display: none;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--accent-strong);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 1px;
+  cursor: pointer;
+  transition: border-color 140ms ease;
+}
+
+.js .abstract-toggle { display: inline-block; }
+
+.abstract-toggle[hidden] { display: none; }
+
+.abstract-toggle:hover, .abstract-toggle:focus-visible {
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.pub-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.pub-actions a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color 140ms ease;
+}
+
+.pub-actions a:hover, .pub-actions a:focus-visible {
+  border-bottom-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.pub-doi { color: var(--muted); overflow-wrap: anywhere; }
+
+/* Citation ------------------------------------------------------------ */
+
+/* Always its own row inside .pub-actions, so opening the record never
+   reflows the links beside it. min-width lets the row collapse around the
+   scrolling <pre> instead of being propped open by its longest line. */
+.cite {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.cite summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  color: var(--accent-strong);
+  letter-spacing: 0.06em;
+  list-style: none;
+}
+
+.cite summary::-webkit-details-marker { display: none; }
+
+.cite summary .caret {
+  width: 0.62rem;
+  height: 0.62rem;
+  transition: transform 160ms ease;
+}
+
+.cite[open] summary .caret { transform: rotate(90deg); }
+
+.cite-body {
+  position: relative;
+  margin-top: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.cite-body pre {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--muted);
+  /* Long author lists must scroll inside the box rather than widen the
+     page, so the record is never reflowed into something unquotable. */
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+.copy-btn {
+  display: none;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.js .copy-btn { display: inline-flex; }
+
+.copy-btn:hover, .copy-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+.copy-btn.is-copied { color: var(--accent-strong); border-color: var(--accent); }
+
+@media (max-width: 720px) {
+  .page-head { padding: 3rem 1.15rem 0; }
+  .page-head .lede { font-size: 1rem; }
+
+  .pub-stats { margin-top: 1.9rem; }
+
+  .pub-stat {
+    flex: 1 1 45%;
+    padding: 0.9rem 0.9rem 0.95rem 0;
+  }
+
+  /* Two per row: the third starts a new row, so its left rule would hang
+     without a neighbour above it. */
+  .pub-stat:nth-child(odd) + .pub-stat { border-left: 1px solid var(--hairline); padding-left: 1rem; }
+  .pub-stat:nth-child(odd) { border-left: 0; padding-left: 0; }
+
+  .pub-toolbar { margin-bottom: 2rem; gap: 0.7rem; }
+  .pub-count { margin-left: 0; width: 100%; }
+
+  .pubs-page .pub-body { padding-bottom: 2.6rem; }
+  .pubs-page .pub-title { font-size: 1.06rem; }
+  .pub-abstract p { font-size: 0.94rem; }
+
+  .cite-body pre { padding: 0.85rem 0.9rem; }
+  .copy-btn { position: static; margin: 0.55rem 0.9rem 0.85rem; }
+}

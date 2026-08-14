@@ -50,6 +50,10 @@
 
 .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
 
+/* The section the visitor is already on, once the site has more than one
+   page to be on. */
+.nav-links a[aria-current="page"] { color: var(--accent); }
+
 .nav-actions {
   display: flex;
   align-items: center;
