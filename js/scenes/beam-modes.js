@@ -7,10 +7,15 @@
    The mode shapes are the real ones - the clamped-free eigenfunctions,
    with the usual roots of cos(bL)cosh(bL) = -1 - and the frequencies keep
    their true ratios, which is why the third mode blurs while the first is
-   still swinging. What the paper adds is the bar at the right: a rigorous
-   bound on the energy a chosen set of modes can hold, which is drawn as
-   the line the bars are measured against. The trail the beam leaves is
-   just the canvas fading, so the envelope draws itself. */
+   still swinging.
+
+   Three things are drawn on top of each other, the way a vibration figure
+   normally is. The strobe is the beam at a run of recent instants, so the
+   shape of the motion reads without waiting for it. The envelope is the
+   largest deflection the current modal energies could ever reach, taken
+   with every mode in phase; the strobe lives inside it by construction.
+   And the bars are the share of energy in each mode, measured against the
+   bound the paper's semidefinite program provides. */
 
 const TWO_PI = 6.2832;
 
@@ -19,7 +24,14 @@ const TWO_PI = 6.2832;
 const ROOTS = [1.8751, 4.6941, 7.8548];
 const SLOSH_SECONDS = 14;       // period of the energy exchange
 const BASE_HZ = 0.09;           // first mode; the rest follow the ratios
-const SAMPLES = 90;
+const SAMPLES = 96;
+const STROBES = 14;             // recent instants drawn behind the beam
+const STROBE_STEP = 0.085;      // seconds between them
+
+/* Every paper scene sits in this band down from the top of the hero: the
+   panel below is vertically centred, so this strip stays clear of the
+   words at every viewport height. */
+const BAND = 0.14;
 
 function sigmaFor(bL) {
   return (Math.cosh(bL) + Math.cos(bL)) / (Math.sinh(bL) + Math.sin(bL));
@@ -33,10 +45,13 @@ function modeShape(bL, sigma, xi) {
   return raw / tip;
 }
 
-/* Every paper scene sits in this band down from the top of the hero: the
-   panel below is vertically centred, so this strip stays clear of the
-   words at every viewport height. */
-const BAND = 0.14;
+/** Swap the alpha of an rgba() colour, so one palette entry can fade. */
+function fadeColour(rgba, alpha) {
+  return rgba.replace(/rgba?\(([^)]+)\)/, (all, parts) => {
+    const [r, g, b] = parts.split(',');
+    return `rgba(${r},${g},${b},${alpha})`;
+  });
+}
 
 export function createBeamModes() {
   const modes = ROOTS.map((bL, i) => {
@@ -51,8 +66,19 @@ export function createBeamModes() {
     };
   });
 
+  // The mode shapes never change, so they are evaluated once per layout
+  // rather than three times per sample per frame.
+  const shape = modes.map(() => new Float32Array(SAMPLES + 1));
   const beam = { x: 0, y: 0, length: 200, amplitude: 30 };
-  const bars = { x: 0, y: 0, w: 0, gap: 0, height: 0 };
+  const bars = { x: 0, y: 0, w: 0, gap: 0 };
+
+  function tabulate() {
+    for (let m = 0; m < modes.length; m++) {
+      for (let i = 0; i <= SAMPLES; i++) {
+        shape[m][i] = modeShape(modes[m].bL, modes[m].sigma, i / SAMPLES);
+      }
+    }
+  }
 
   /* Energy moves between modes and back; the three shares are normalised
      every frame, so the total is conserved exactly. */
@@ -67,34 +93,82 @@ export function createBeamModes() {
     for (let i = 0; i < modes.length; i++) modes[i].energy /= sum;
   }
 
-  function deflection(xi, t) {
+  function deflection(i, t) {
     let w = 0;
-    for (let i = 0; i < modes.length; i++) {
-      const m = modes[i];
-      w += Math.sqrt(m.energy) * m.reach * modeShape(m.bL, m.sigma, xi) * Math.sin(m.omega * t);
+    for (let m = 0; m < modes.length; m++) {
+      const mode = modes[m];
+      w += Math.sqrt(mode.energy) * mode.reach * shape[m][i] * Math.sin(mode.omega * t);
     }
     return w;
   }
 
-  function drawBeam(ctx, t, ink) {
+  /** Largest deflection these energies allow, every mode in phase. */
+  function envelope(i) {
+    let w = 0;
+    for (let m = 0; m < modes.length; m++) {
+      w += Math.sqrt(modes[m].energy) * modes[m].reach * Math.abs(shape[m][i]);
+    }
+    return w;
+  }
+
+  function traceBeam(ctx, t) {
     ctx.beginPath();
     for (let i = 0; i <= SAMPLES; i++) {
-      const xi = i / SAMPLES;
-      const x = beam.x + xi * beam.length;
-      const y = beam.y + deflection(xi, t) * beam.amplitude;
+      const x = beam.x + (i / SAMPLES) * beam.length;
+      const y = beam.y + deflection(i, t) * beam.amplitude;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    ctx.lineWidth = 1.4;
+  }
+
+  function drawStrobe(ctx, t, ink) {
+    for (let s = STROBES; s >= 1; s--) {
+      traceBeam(ctx, t - s * STROBE_STEP);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = fadeColour(ink.line, (0.42 * (STROBES - s + 1)) / STROBES);
+      ctx.stroke();
+    }
+  }
+
+  function drawEnvelope(ctx, ink) {
+    for (const side of [1, -1]) {
+      ctx.beginPath();
+      for (let i = 0; i <= SAMPLES; i++) {
+        const x = beam.x + (i / SAMPLES) * beam.length;
+        const y = beam.y + side * envelope(i) * beam.amplitude;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.setLineDash([2, 4]);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = ink.faint;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function drawBeam(ctx, t, ink) {
+    traceBeam(ctx, t);
+    ctx.lineWidth = 1.6;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    // The clamp: a short upright at the root, so which end is fixed reads
-    // at a glance.
+    // The clamp: a short upright with hatching, so which end is fixed
+    // reads at a glance.
+    const reach = beam.amplitude * 0.72;
     ctx.beginPath();
-    ctx.moveTo(beam.x, beam.y - beam.amplitude * 0.5);
-    ctx.lineTo(beam.x, beam.y + beam.amplitude * 0.5);
+    ctx.moveTo(beam.x, beam.y - reach);
+    ctx.lineTo(beam.x, beam.y + reach);
     ctx.lineWidth = 1.6;
     ctx.strokeStyle = ink.accent;
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let i = -3; i <= 3; i++) {
+      const y = beam.y + (i / 3) * reach;
+      ctx.moveTo(beam.x, y);
+      ctx.lineTo(beam.x - 7, y + 5);
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = ink.faint;
     ctx.stroke();
   }
 
@@ -130,23 +204,28 @@ export function createBeamModes() {
   }
 
   return {
-    fade: 0.055,
+    // Cleared each frame: the strobe already carries the history, and
+    // letting it smear as well would only blur it.
+    fade: 1,
 
     layout(w, h) {
-      beam.length = Math.min(w * 0.42, 620);
-      beam.x = w * 0.08;
+      beam.length = Math.min(w * 0.46, 660);
+      beam.x = w * 0.07;
       beam.y = h * BAND;
-      beam.amplitude = Math.min(h * 0.075, 52);
+      beam.amplitude = Math.min(h * 0.085, 62);
 
       const room = w > 700;
       bars.w = room ? Math.min(w * 0.12, 160) : 0;
       bars.x = w * 0.78;
       bars.gap = Math.max(h * 0.028, 12);
       bars.y = h * BAND - bars.gap;
+      tabulate();
     },
 
     frame(ctx, dt, t, ink) {
       slosh(t);
+      drawEnvelope(ctx, ink);
+      drawStrobe(ctx, t, ink);
       drawBeam(ctx, t, ink);
       drawEnergy(ctx, ink);
     },
@@ -154,6 +233,8 @@ export function createBeamModes() {
     still(ctx, ink, t) {
       const at = t || 2.6;
       slosh(at);
+      drawEnvelope(ctx, ink);
+      drawStrobe(ctx, at, ink);
       drawBeam(ctx, at, ink);
       drawEnergy(ctx, ink);
     },
