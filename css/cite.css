@@ -1,0 +1,80 @@
+/* Citation record: a BibTeX entry behind a native disclosure, shared by the
+   publication list and the individual paper pages. The disclosure works on
+   its own; only the copy button needs a script, so only it is gated. */
+
+.cite {
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.cite summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  color: var(--accent-strong);
+  letter-spacing: 0.06em;
+  list-style: none;
+}
+
+.cite summary::-webkit-details-marker { display: none; }
+
+.cite summary .caret {
+  width: 0.62rem;
+  height: 0.62rem;
+  transition: transform 160ms ease;
+}
+
+.cite[open] summary .caret { transform: rotate(90deg); }
+
+.cite-body {
+  position: relative;
+  margin-top: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.cite-body pre {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  color: var(--muted);
+  /* Long author lists must scroll inside the box rather than widen the
+     page, so the record is never reflowed into something unquotable. */
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+.copy-btn {
+  display: none;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.js .copy-btn { display: inline-flex; }
+
+.copy-btn:hover, .copy-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+.copy-btn.is-copied { color: var(--accent-strong); border-color: var(--accent); }
+
+@media (max-width: 720px) {
+  .cite-body pre { padding: 0.85rem 0.9rem; }
+  .copy-btn { position: static; margin: 0.55rem 0.9rem 0.85rem; }
+}
