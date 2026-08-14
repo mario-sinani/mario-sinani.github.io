@@ -18,7 +18,8 @@ export function createFlowlines(options = {}) {
   const lines = options.lines || 21;
   const accentEvery = options.accentEvery || 5;
   const step = options.step || 4;          // px advanced per integration step
-  const tracerCount = options.tracers || 30;
+  // Nullish, not falsy: a scene can ask for no tracers at all.
+  const tracerCount = options.tracers ?? 30;
   const tracerGain = options.tracerGain || 0.55;  // fraction of field speed
   const TAIL = 16;                         // px of comet tail
   const EASE = 0.8;                        // seconds to fade a tracer in/out

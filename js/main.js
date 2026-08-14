@@ -3,13 +3,13 @@
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
-import { createLiftingCylinder } from './scenes/lifting-cylinder.js';
+import { createVortexStreet } from './scenes/vortex-street.js';
 import { initSite } from './site.js';
 
 const field = initFieldCanvas(
   document.getElementById('flowfield'),
   () => effectiveTheme() === 'dark',
-  createLiftingCylinder()
+  createVortexStreet()
 );
 
 initSite(() => {
