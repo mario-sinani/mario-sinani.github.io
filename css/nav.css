@@ -89,11 +89,10 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the theme on screen: sun in light, moon in dark,
-   whether that came from the device or from an explicit choice. These three
-   blocks mirror how tokens.css resolves the palette, so the icon and the
-   colours can never disagree. Which mode is in force is carried by the
-   button's label and tooltip. */
+/* The theme button shows the resolved theme: sun in light, moon in
+   dark. The three blocks mirror the palette resolution in tokens.css,
+   so the icon and the colours agree. The label and the tooltip carry
+   the mode. */
 .theme-toggle .icon-moon { display: none; }
 .theme-toggle .icon-sun { display: block; }
 

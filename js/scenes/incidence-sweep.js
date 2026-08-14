@@ -1,19 +1,16 @@
-/* Scene: a wing section swept slowly through incidence, with the load it
-   carries drawn as it goes.
+/* Scene: a wing section swept slowly through incidence, with its load
+   drawn as it moves.
 
-   Behind "Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic
-   Forces of the Pazy Wing".
+   Background for "Physics-Informed Data-Driven Modelling of Nonlinear
+   Aerodynamic Forces of the Pazy Wing".
 
-   Where the flutter scene oscillates fast and sheds a wake, this one moves
-   quasi-steadily: the point is the force, not the unsteadiness.
-
-   The comb of arrows along the chord is the load distribution thin
-   aerofoil theory gives - proportional to sqrt((1-x)/x), so it piles up at
-   the leading edge and runs out to nothing at the trailing edge - and its
-   total is the arrow at the quarter chord, where that resultant acts. The
-   inset plots that total against incidence: the straight dashed line is
-   what a single linearized model would predict, and the curve bending away
-   from it is the nonlinearity this paper is about. */
+   The motion is quasi-steady: the subject is the force, not the
+   unsteadiness. The comb of arrows on the chord is the thin-aerofoil
+   load, proportional to sqrt((1-x)/x): high at the leading edge, zero at
+   the trailing edge. The arrow at the quarter chord is its resultant.
+   The inset plots lift against incidence. The dashed line is the linear
+   prediction, and the gap to the curve is the nonlinearity the paper
+   models. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -75,11 +72,11 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* The load along the chord, drawn normal to it. The comb collapses as
-     the section passes through zero incidence and flips with it. */
+  /* Draw the load along the chord, normal to it. The comb collapses at
+     zero incidence and flips with the sign. */
   function drawLoading(ctx, ink) {
     const cl = liftCoefficient(section.alpha) / liftCoefficient(ALPHA_MAX);
-    // Eased in with the load itself, so the comb never pops at a threshold.
+    // Fade in with the load, so the comb does not pop at a threshold.
     const presence = Math.min(1, Math.max(0, (Math.abs(cl) - 0.02) / 0.12));
     if (presence <= 0) return;
     const dir = chordDirection(section.alpha);
@@ -99,12 +96,12 @@ export function createIncidenceSweep() {
       ctx.lineTo(bx + nx * len, by + ny * len);
     }
     ctx.lineWidth = 1;
-    // The comb belongs to the field, so it takes the field's wash; the
-    // resultant it sums to keeps the full accent.
+    // The comb is a field element, so it uses the wash. The resultant
+    // keeps the full accent.
     ctx.strokeStyle = withAlpha(ink.wash, 0.55 * presence);
     ctx.stroke();
 
-    // The curve joining their tips, which is the distribution itself.
+    // The curve through the arrow tips: the distribution itself.
     ctx.beginPath();
     for (let i = 0; i <= COMB; i++) {
       const xi = i / COMB;
@@ -119,9 +116,9 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* Kutta-Joukowski: lift is proportional to circulation, and acts normal
-     to the stream at the quarter chord. Screen y runs downward, so
-     positive lift points up the page. */
+  /* Kutta-Joukowski: lift is proportional to circulation and acts at
+     the quarter chord. Screen y points down, so positive lift points up
+     the page. */
   function drawResultant(ctx, ink) {
     const root = quarterChord();
     const span = (section.gamma / section.gain) * section.half * 2.4;
@@ -140,8 +137,8 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* The lift curve, the straight line a linearized model would use in its
-     place, and a marker at the incidence currently being flown. */
+  /* The inset: the lift curve, the linearized line, and a marker at the
+     current incidence. */
   function drawInset(ctx, ink) {
     if (inset.w <= 0) return;
     const midY = inset.y + inset.h / 2;
@@ -158,7 +155,7 @@ export function createIncidenceSweep() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    // What a model linearized about zero incidence would predict.
+    // The prediction of a model linearized about zero incidence.
     const slope = 1 / ALPHA_MAX;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
@@ -196,7 +193,7 @@ export function createIncidenceSweep() {
   }
 
   return {
-    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    // A drawn figure. The engine clears it fully each frame.
     fade: 1,
 
     layout(w, h) {
@@ -208,8 +205,8 @@ export function createIncidenceSweep() {
       section.x = stage.left + stage.width * 0.22;
       section.y = stage.y;
 
-      // Right-aligned on the stage, and dropped entirely when the canvas
-      // is too narrow to hold it without noise.
+      // Right-aligned on the stage. Dropped when the canvas is too
+      // narrow to hold it.
       const room = w > 760;
       inset.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       inset.h = inset.w * 0.62;

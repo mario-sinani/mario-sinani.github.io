@@ -47,8 +47,8 @@
   font-size: 1.06rem;
 }
 
-/* Counts, so the shape of the record reads at a glance. Each figure is
-   plain text either side of a hairline - no boxes, matching the rest. */
+/* Counts show the shape of the record: plain text between hairlines,
+   no boxes. */
 .pub-stats {
   display: flex;
   flex-wrap: wrap;
@@ -95,8 +95,8 @@
   margin-bottom: 2.6rem;
 }
 
-/* Without JavaScript the buttons would do nothing, so they stay away and
-   the full list is simply shown. */
+/* Without JavaScript the buttons do nothing, so they stay hidden and
+   the full list shows. */
 .pub-toolbar { display: none; }
 .js .pub-toolbar { display: flex; }
 
@@ -142,10 +142,10 @@
    attribute the filter toggles. */
 .pub[hidden] { display: none; }
 
-/* The rail caps belong to the first and last *visible* entry, which the
-   filter moves; neutralise the static child-based caps from
-   publications.css and drive them from classes instead. Both are present
-   in the markup, so the caps are correct before any script runs. */
+/* The rail caps belong to the first and last visible entry, and the
+   filter moves them. Neutralise the child-based caps from
+   publications.css and drive them from classes. The classes are in the
+   markup, so the caps are correct before any script runs. */
 .pub:first-child .pub-node::before { top: 0; }
 .pub:last-child .pub-node::before { bottom: 0; height: auto; }
 .pub:last-child .pub-body { padding-bottom: 3.2rem; }
@@ -232,10 +232,9 @@
 
 .pub-doi { color: var(--muted); overflow-wrap: anywhere; }
 
-/* The citation record itself lives in cite.css; here it only has to take a
-   row of its own inside .pub-actions, so opening one never reflows the
-   links beside it. min-width lets that row collapse around the scrolling
-   <pre> instead of being propped open by its longest line. */
+/* The record's style lives in cite.css. Here it takes its own row in
+   .pub-actions, so an open record does not reflow the links beside it.
+   min-width lets the row collapse around the scrolling <pre>. */
 .pub-actions .cite {
   flex: 1 1 100%;
   min-width: 0;
@@ -253,8 +252,8 @@
     padding: 0.9rem 0.9rem 0.95rem 0;
   }
 
-  /* Two per row: the third starts a new row, so its left rule would hang
-     without a neighbour above it. */
+  /* Two stats per row. The third starts a new row, so its left rule
+     must reset. */
   .pub-stat:nth-child(odd) + .pub-stat { border-left: 1px solid var(--hairline); padding-left: 1rem; }
   .pub-stat:nth-child(odd) { border-left: 0; padding-left: 0; }
 

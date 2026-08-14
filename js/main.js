@@ -1,6 +1,5 @@
-/* Entry point for the home page: the shared site features plus the hero
-   field, which exists only here. Modules receive their dependencies here
-   instead of reaching into each other. */
+/* Entry point for the home page: the shared site features plus the
+   hero field. Dependencies are wired here. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';

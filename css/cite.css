@@ -42,8 +42,8 @@
   font-size: 0.72rem;
   line-height: 1.65;
   color: var(--muted);
-  /* Long author lists must scroll inside the box rather than widen the
-     page, so the record is never reflowed into something unquotable. */
+  /* Long lines scroll inside the box. They must not widen the page or
+     reflow the record. */
   white-space: pre;
   -webkit-overflow-scrolling: touch;
 }

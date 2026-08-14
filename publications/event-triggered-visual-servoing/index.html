@@ -81,10 +81,10 @@
   <link rel="stylesheet" href="../../css/footer.css">
   <link rel="stylesheet" href="../../css/motion.css">
   <script>
-    // Apply the saved theme before first paint to avoid a flash, and mark the
-    // document so CSS can enhance controls that need JavaScript. No stored
-    // choice, or "system", leaves data-theme unset so the page follows the
-    // device via prefers-color-scheme.
+    // Apply the saved theme before first paint, so there is no flash.
+    // Add the js class, so CSS can enable script-dependent controls.
+    // With no stored choice, data-theme stays unset and the page follows
+    // the device through prefers-color-scheme.
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}

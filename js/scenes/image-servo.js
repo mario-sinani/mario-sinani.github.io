@@ -1,27 +1,22 @@
-/* Scene: event-triggered image-based visual servoing - the coastline as
-   the camera sees it, driven back onto where it belongs.
+/* Scene: event-triggered image-based visual servoing. The camera sees
+   the coastline, and the controller drives it back to where it belongs.
 
-   Behind "Coastline Tracking for UAVs Using Event-Triggered Image-Based
-   Visual Servoing Nonlinear Model Predictive Control".
+   Background for "Coastline Tracking for UAVs Using Event-Triggered
+   Image-Based Visual Servoing Nonlinear Model Predictive Control".
 
-   Image-based servoing closes the loop in the image itself: the error is
-   the gap between where the features sit on the sensor and where they
-   should sit, and the controller works on that directly rather than on any
-   reconstructed position. So the left panel is the sensor. The crosses are
-   the desired feature positions, the dots are where the features actually
-   are, and the curves behind them are the path each has taken across the
-   image - the trajectory plot this method is always shown with. Because
-   the camera rolls as well as translates, those paths are arcs rather than
-   straight runs.
+   Image-based servoing closes the loop in the image: the error is the
+   gap between where the features sit on the sensor and where they
+   should sit. The left panel is the sensor. The crosses are the desired
+   feature positions, the dots are the current positions, and the curves
+   behind the dots are the feature trajectories. The camera rolls as
+   well as translates, so the trajectories are arcs.
 
-   The triggering is the other half of the title, and it is real here. One
-   solve fixes one velocity command, which is then held; a new one is only
-   computed once the pose has drifted a set distance from where it was
-   solved, or the horizon expires. That is why the ticks under the error
-   plot crowd together while the error is steep and thin out as it flattens
-   - the whole point of triggering on events rather than on a clock. The
-   short dashed continuation ahead of each feature is where the command
-   currently being held would carry it. */
+   The triggering is simulated. One solve fixes one velocity command,
+   which is then held. A new solve runs only when the pose drifts a set
+   distance from the last solve point, or when the horizon expires. The
+   ticks under the error plot are the solve instants: dense while the
+   error is steep, sparse as it flattens. The dashed continuation ahead
+   of each feature shows where the held command would carry it. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -69,9 +64,8 @@ export function createImageServo() {
     };
   }
 
-  /* Where a point actually lands, given the camera's pose. Roll is about
-     the centre of the sensor, so features sweep arcs rather than sliding
-     straight - which is what makes the trajectory plot worth drawing. */
+  /* Project a point through the camera pose. Roll is about the sensor
+     centre, so features sweep arcs. */
   function project(point, at) {
     const cx = frame.x + frame.w / 2;
     const cy = frame.y + frame.h / 2;
@@ -105,9 +99,9 @@ export function createImageServo() {
     return sum / FEATURES;
   }
 
-  /* One solve fixes one velocity command. Nothing is recomputed until the
-     pose has drifted far enough from where it was solved, or the horizon
-     runs out - and that is the event, rather than a fixed control period. */
+  /* One solve fixes one velocity command. The next solve runs when the
+     pose drifts far enough from the last solve point, or when the
+     horizon expires. That is the event. */
   function solve(t) {
     held.u = -GAIN * pose.u;
     held.v = -GAIN * pose.v;
@@ -127,15 +121,14 @@ export function createImageServo() {
 
   function step(dt, t) {
     if (t > nextKick) {
-      /* The knock-off is a gust, not a teleport: the pose is carried to
-         its displaced value over a short eased ramp, and the trails are
-         left running so the excursion itself is drawn - being knocked
-         off is part of the trajectory, not a scene change. */
+      /* The knock-off is a gust, not a jump. An eased ramp carries the
+         pose to its displaced value. The trails keep running, so the
+         excursion is part of the drawn trajectory. */
       kicks += 1;
       kickFrom.u = pose.u;
       kickFrom.v = pose.v;
       kickFrom.roll = pose.roll;
-      // Deterministic rather than random, so the rhythm stays calm.
+      // Deterministic values, so the rhythm stays even.
       kickTo.u = frame.w * 0.16 * Math.sin(kicks * 2.4);
       kickTo.v = frame.h * 0.42 * Math.cos(kicks * 1.1);
       kickTo.roll = 0.2 * Math.sin(kicks * 1.7);
@@ -192,7 +185,7 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    // Corner marks, so it reads as a viewfinder rather than a box.
+    // Corner marks make the frame read as a viewfinder.
     const c = Math.min(frame.w, frame.h) * 0.09;
     ctx.beginPath();
     for (const [cx, sx] of [[frame.x, 1], [frame.x + frame.w, -1]]) {
@@ -207,8 +200,8 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The contour runs past the edges of the sensor, so rolling the camera
-     never pulls its ends into view. */
+  /* The contour extends past the sensor edges, so a roll does not pull
+     its ends into view. */
   function traceContour(ctx, at, from = -0.3, to = 1.3) {
     ctx.beginPath();
     const span = to - from;
@@ -219,9 +212,9 @@ export function createImageServo() {
     }
   }
 
-  /* The coastline carries on past the sensor in both directions. Drawing
-     it makes the viewfinder read as a window onto something longer, which
-     is what it is - the vehicle only ever servos on the part it can see. */
+  /* Draw the coastline faintly outside the sensor. The viewfinder is a
+     window onto a longer coast, and the craft servos only on the part
+     it can see. */
   function drawBeyond(ctx, ink) {
     traceContour(ctx, pose, -2.2, 3.2);
     ctx.lineWidth = 1.2;
@@ -313,8 +306,8 @@ export function createImageServo() {
     }
   }
 
-  /* The error being driven out, and the instants at which a new command
-     was actually computed. */
+  /* The error over time, and the instants when a new command was
+     computed. */
   function drawPlot(ctx, t, ink) {
     if (plot.w <= 0 || errorLog.length < 2) return;
     const baseY = plot.y + plot.h;
@@ -331,8 +324,8 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    /* The log is sampled on a clock, but the curve ends at the live
-       error, so the head moves every frame. */
+    /* The log is sampled on a clock. The curve ends at the live error,
+       so the head moves every frame. */
     const liveE = errorNorm();
     ctx.beginPath();
     for (let i = 0; i < errorLog.length; i++) {
@@ -347,7 +340,7 @@ export function createImageServo() {
 
     for (const at of triggers) {
       const px = toX(at);
-      // Born fading in, and gone fading out at the plot's left edge.
+      // Fade in at birth. Fade out at the plot's left edge.
       const presence = Math.min(1, (t - at) / 0.3, (px - plot.x) / 14);
       if (presence <= 0) continue;
       ctx.beginPath();
@@ -397,15 +390,15 @@ export function createImageServo() {
   }
 
   return {
-    fade: 1,   // a drawn scene rather than a trailing one: no ghosting
+    fade: 1,   // a drawn figure; the engine clears it each frame
 
     layout(w, h) {
       stage = stageFor(w, h);
       frame.w = Math.min(stage.width * 0.52, 620);
       frame.h = Math.min(h * 0.16, frame.w * 0.46);
       frame.x = stage.left;
-      // Sat a little above the band's centre: the viewfinder is the
-      // tallest thing any of these scenes draws.
+      // Sit above the band centre: the viewfinder is the tallest
+      // element in these scenes.
       frame.y = stage.y - h * 0.03 - frame.h / 2;
 
       const room = w > 760;
@@ -424,8 +417,8 @@ export function createImageServo() {
     },
 
     still(ctx, ink, t) {
-      /* Replay a settling episode, so the trajectories and the plot are
-         there to read rather than empty. */
+      /* Replay one settling episode, so the still frame shows the
+         trajectories and the plot. */
       const at = t || 5;
       reset();
       nextKick = at + 999;

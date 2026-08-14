@@ -1,23 +1,19 @@
-/* Scene: a wing section with a hinged outboard piece, free to rotate about
-   the hinge while the inboard part holds its incidence.
+/* Scene: a wing section with a hinged outboard piece. The hinge is
+   free while the inboard part holds its incidence.
 
-   Behind "Absolute Nodal Coordinate Formulation for Nonlinear Multibody
-   Modeling of Flared Hinged Wings".
+   Background for "Absolute Nodal Coordinate Formulation for Nonlinear
+   Multibody Modeling of Flared Hinged Wings".
 
-   Two bodies joined by a revolute joint is the smallest multibody system
-   that still behaves like the real thing: the hinge angle is a degree of
-   freedom of its own, so the outboard piece chases the local flow instead
-   of following the wing, and each carries its own bound circulation. The
-   beat between two nearby frequencies stands for the coupling between the
-   wing's motion and the hinge's.
+   Two bodies and one revolute joint form the smallest multibody system.
+   The hinge angle is its own degree of freedom, and each body carries
+   its own bound circulation. The beat between two close frequencies
+   stands for the coupling between the wing and the hinge.
 
-   Over the flow, the drawing says what a multibody sketch says. The dashed
-   line through the joint is the hinge axis, set at its flare angle rather
-   than square to the chord - which is what makes the fold change the
-   outboard incidence at all. The arc is the current hinge angle, measured
-   from the inboard piece and not from the ground. And the trace at the
-   right is that one angle over time: the whole state of the joint, which
-   is what a multibody solver is actually integrating. */
+   Over the flow the scene draws: the hinge axis at its flare angle (the
+   flare is why a fold changes the outboard incidence), the arc of the
+   current hinge angle, measured from the inboard piece, and the trace
+   of that angle over time - the joint state a multibody solver
+   integrates. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -31,8 +27,8 @@ const WING_INCIDENCE = 0.16;    // radians
 const HINGE_TRAVEL = 0.5;       // radians of fold, peak to zero
 const FLARE = 0.55;             // radians the hinge axis is swept back by
 const CORE2 = 240;
-/* Sampled on a clock rather than per frame, and kept for just over one
-   beat of the hinge, so the trace does not depend on the refresh rate. */
+/* Sample the trace on a clock, and keep a little more than one hinge
+   beat, so the trace does not depend on the refresh rate. */
 const TRACE_SECONDS = 1.05 / HINGE_HZ;
 const TRACE_STEP = 0.05;
 
@@ -49,9 +45,8 @@ export function createHingedWingtip() {
   function move(t) {
     inboard.alpha = WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * t);
 
-    // The hinge is a free degree of freedom: its angle is measured from the
-    // inboard piece, not from the flow, so the outboard incidence is the
-    // sum of the two.
+    // The hinge angle is measured from the inboard piece. The outboard
+    // incidence is the sum of the two angles.
     hinge.fold = HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * t);
     outboard.alpha = inboard.alpha + hinge.fold;
 
@@ -90,9 +85,8 @@ export function createHingedWingtip() {
     return out;
   }
 
-  /* The strobe of the fold: the outboard piece a breath and two breaths
-     ago, hung from where the hinge then was - the oscillation drawn in
-     the same language as the beam and flutter pages. */
+  /* Draw the outboard piece at two earlier times, faded, hung from the
+     hinge position at those times. This strobe shows the fold motion. */
   function drawGhosts(ctx, t, ink) {
     for (const [ago, alpha] of [[0.5, 0.09], [0.25, 0.18]]) {
       const when = t - ago;
@@ -138,7 +132,7 @@ export function createHingedWingtip() {
 
   /** The joint, and the angle currently held across it. */
   function drawHinge(ctx, ink) {
-    // Eased in with the fold itself, so it never pops at a threshold.
+    // Fade in with the fold, so the arc does not pop at a threshold.
     const presence = Math.min(1, Math.max(0, (Math.abs(hinge.fold) - 0.015) / 0.06));
     if (presence > 0) {
       const r = outboard.half * 0.8;
@@ -157,7 +151,7 @@ export function createHingedWingtip() {
     ctx.stroke();
   }
 
-  /** The hinge angle over time: the joint's whole state, scrolling away. */
+  /** The hinge angle over time: the joint state, scrolling left. */
   function drawTrace(ctx, ink) {
     if (trace.w <= 0 || history.length < 3) return;
     const steps = Math.round(TRACE_SECONDS / TRACE_STEP);
@@ -170,8 +164,8 @@ export function createHingedWingtip() {
       const py = midY - (history[i] / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
-    /* The trace is sampled on a clock, but its head is the live fold, so
-       the marker moves every frame instead of at the sampling rate. */
+    /* The trace is sampled on a clock. The head is the live fold, so
+       the marker moves every frame. */
     const headX = trace.x + (history.length / (steps - 1)) * trace.w;
     const headY = midY - (hinge.fold / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
     ctx.lineTo(Math.min(headX, trace.x + trace.w), headY);
@@ -186,7 +180,7 @@ export function createHingedWingtip() {
   }
 
   return {
-    // A drawn figure, redrawn whole each frame: nothing smears or tints.
+    // A drawn figure. The engine clears it fully each frame.
     fade: 1,
 
     layout(w, h) {

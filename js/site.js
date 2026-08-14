@@ -1,6 +1,5 @@
-/* Site composition: the features every page carries. Pages call this and
-   then add whatever is theirs alone, so the shared wiring lives in exactly
-   one place and a new page cannot forget half of it. */
+/* Site composition: the features every page shares. A page calls
+   initSite and then adds its own features. */
 
 import { initTheme } from './theme.js';
 import { initReveal } from './reveal.js';
@@ -8,8 +7,8 @@ import { initEmail } from './email.js';
 import { initNav } from './nav.js';
 
 /**
- * @param {() => void} [onThemeChange] Runs after the palette changes, for
- *   anything a page paints itself from the current theme colours.
+ * @param {() => void} [onThemeChange] Runs after the theme changes.
+ *   Use it to repaint theme-dependent canvases.
  */
 export function initSite(onThemeChange = () => {}) {
   initTheme(onThemeChange);

@@ -1,9 +1,9 @@
-/* Entry point for an individual paper page: the shared site features, the
-   paper's own animated field and the citation copy button.
+/* Entry point for a paper page: the shared site features, the paper's
+   animated field, and the citation copy button.
 
-   Every paper page uses this one entry point and names its field in the
-   canvas markup. The map below keeps one static import per scene, so a
-   page fetches the scene it uses and none of the others. */
+   Each paper page names its scene in the canvas data-field attribute.
+   The map keeps one dynamic import per scene, so a page fetches only
+   the scene it uses. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';

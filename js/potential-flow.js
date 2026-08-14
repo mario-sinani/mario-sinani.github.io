@@ -1,9 +1,9 @@
-/* Potential-flow building blocks shared by the scenes that draw a flow:
-   singularities superposed on a uniform stream, plus the geometry test
-   that keeps particles out of a body.
+/* Potential flow: the singularities the flow scenes superpose on a
+   uniform stream, plus the geometry test that keeps samples out of a
+   body.
 
-   Everything works in screen axes - x right, y down - so a nose-up section
-   is a negative rotation and carries positive circulation. */
+   All functions use screen axes: x right, y down. A nose-up section is a
+   negative rotation and carries positive circulation. */
 
 export const TWO_PI = 6.2832;
 

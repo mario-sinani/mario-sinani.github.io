@@ -1,19 +1,15 @@
-/* Flowlines: the figure a wind-tunnel schematic draws - a fixed family of
-   streamlines through whatever velocity field it is handed, with the flow's
-   motion carried by a few tracers riding it.
+/* Flowlines: a fixed family of streamlines through a velocity field,
+   with tracer strokes that ride the flow.
 
-   The streamlines are integrated fresh every frame from the same seeds, so
-   the family visibly bends as the body moves. They are drawn solid and
-   faint: a dashed treatment was tried and dropped, because dashes are
-   positioned by arclength along the path, and in an unsteady field the
-   upstream path length flutters a little every frame - which made every
-   dash downstream of the body wobble at frame rate.
+   The module integrates each streamline from the same seed every frame,
+   so the family bends as the body moves. The lines are solid, not
+   dashed. Dash positions follow the path length, and in an unsteady
+   field the path length changes each frame, which made dashes wobble.
 
-   The tracers are what move instead: short comet strokes advected by the
-   actual field velocity, so their motion is continuous by construction.
-   Each fades in as it is born, out as it dies or nears the edge, and its
-   tail is integrated backwards through the field so the comet always lies
-   along its own streamline. Nothing accumulates on the canvas. */
+   The tracers carry the motion. The field velocity advects each tracer,
+   so its movement is continuous. A tracer fades in at birth, and fades
+   out at death or near the right edge. Its tail is integrated backward
+   through the field, so the tracer lies on its own streamline. */
 
 import { withAlpha } from './ink.js';
 
@@ -38,8 +34,8 @@ export function createFlowlines(options = {}) {
     return tracer;
   }
 
-  /* One streamline appended to the current path, ending where it leaves
-     the canvas or meets the body - the stagnation streamline just stops. */
+  /* Append one streamline to the current path. Stop at the canvas edge
+     or at the body. */
   function integrate(ctx, velocity, y0) {
     let x = -6;
     let y = y0;
@@ -56,9 +52,8 @@ export function createFlowlines(options = {}) {
     }
   }
 
-  /* Fine and close-set, like the ruling of a chart: the family is the
-     texture of the drawing, so it stays light and lets the bodies and
-     instruments carry the weight. */
+  /* Draw the family fine and close-set. It is the texture of the
+     drawing. The bodies and the instruments carry the visual weight. */
   function drawSkeleton(ctx, velocity, ink) {
     for (let i = 0; i < lines; i++) {
       const accent = i % accentEvery === accentEvery >> 1;
@@ -79,9 +74,8 @@ export function createFlowlines(options = {}) {
       tr.y += v.v * dt * tracerGain;
       tr.age += dt;
 
-      // Presence eases in over the first EASE seconds and out over the
-      // last, and again approaching the right edge, so a respawn is a
-      // fade rather than a pop.
+      // Presence ramps in after birth, out before death, and out near
+      // the right edge. A respawn is a fade, not a pop.
       const presence = Math.min(
         1,
         tr.age / EASE,
@@ -90,9 +84,8 @@ export function createFlowlines(options = {}) {
       );
       if (presence <= 0 || tr.y < -10 || tr.y > height + 10) { spawn(tr, false); continue; }
 
-      /* The tail, integrated backwards so the comet lies on its own
-         streamline, and drawn segment by segment so it tapers - full
-         weight at the head, thinning and fading to nothing behind. */
+      /* Integrate the tail backward, so it lies on the streamline. Draw
+         it segment by segment, so it tapers from the head to nothing. */
       const points = [[tr.x, tr.y]];
       let bx = tr.x;
       let by = tr.y;
@@ -126,7 +119,7 @@ export function createFlowlines(options = {}) {
       width = w;
       height = h;
       tracers = Array.from({ length: tracerCount }, () => spawn({}, true));
-      // Stagger the first lives so the field does not breathe in unison.
+      // Stagger the first lives, so the tracers do not fade in unison.
       tracers.forEach((tr) => { tr.age = Math.random() * tr.life * 0.6; });
     },
 
@@ -135,8 +128,7 @@ export function createFlowlines(options = {}) {
       drawTracers(ctx, dt, velocity, ink);
     },
 
-    /* Frozen frame: the skeleton alone already carries the whole shape of
-       the flow, which is what a reader without motion needs. */
+    /* Frozen frame: the skeleton alone shows the shape of the flow. */
     still(ctx, velocity, ink) {
       drawSkeleton(ctx, velocity, ink);
     },

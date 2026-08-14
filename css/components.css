@@ -31,8 +31,7 @@
   letter-spacing: -0.015em;
 }
 
-/* Quiet links a section can carry beneath its title, as a subtitle row -
-   the same small mono register the rest of the site's links speak. */
+/* Small links under a section title, in the site's mono link style. */
 .section-head { flex-wrap: wrap; }
 
 .section-head .head-links {

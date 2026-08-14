@@ -1,9 +1,6 @@
-/* Individual paper page: a hero over the paper's own animated field, then
-   the snapshot, the overview and the citation.
-
-   The hero borrows hero.css and narrows it - a paper title is far longer
-   than a name, so it takes a smaller face and the panel is not asked to
-   fill the viewport. */
+/* Paper page: a hero over the paper's field, then the snapshot, the
+   overview, and the citation. The hero uses hero.css with a smaller
+   title face, because paper titles are long. */
 
 #paper-field {
   position: absolute;
@@ -11,10 +8,9 @@
   width: 100%;
   height: 100%;
   display: block;
-  /* A from-only keyframe eases toward the element's own computed opacity,
-     so the same rule serves desktop (1) and the faded mobile canvas. Under
-     reduced motion base.css disables all animation and the field simply
-     shows its still frame. */
+  /* A from-only keyframe eases to the element's computed opacity, so
+     one rule serves desktop (1) and the faded mobile canvas. Reduced
+     motion disables all animation in base.css. */
   animation: field-in 900ms ease-out;
 }
 
@@ -53,9 +49,8 @@
   color: var(--muted);
 }
 
-/* A quiet line naming what is moving behind the words, so the animation
-   reads as the paper's subject rather than as decoration. It sits in the
-   panel's bottom padding, which .hero-inner already reserves. */
+/* One line that names the moving scene. It sits in the panel's bottom
+   padding. */
 .field-note {
   position: absolute;
   left: 1.5rem;
@@ -71,9 +66,9 @@
 
 /* Snapshot ------------------------------------------------------------ */
 
-/* The hairlines are the 1px gaps letting the container's colour through,
-   so any cell the last row does not fill would read as a grey block. Every
-   count below divides six, which is how many facts a paper is given. */
+/* The hairlines are 1px gaps that show the container colour. An
+   unfilled cell would show as a grey block, so each column count
+   divides six. */
 .snapshot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -219,9 +214,8 @@
 @media (max-width: 720px) {
   .paper-hero { min-height: 0; }
 
-  /* On a phone the panel fills the hero, so there is no clear band for the
-     scene to occupy and it ends up behind the title. Fading it keeps it
-     legible as a background instead of competing with the words. */
+  /* On a phone the panel fills the hero and the scene sits behind the
+     title. Fade the canvas, so the text stays legible. */
   #paper-field { opacity: 0.45; }
 
   .paper-hero h1 {
@@ -232,7 +226,7 @@
   .paper-authors { font-size: 0.96rem; }
   .paper-venue { font-size: 0.71rem; gap: 0.5rem 0.8rem; }
 
-  /* Too tight to tuck into the panel's padding; it follows the links. */
+  /* Not enough room in the padding; the note follows the links. */
   .field-note {
     position: static;
     margin-top: 1.7rem;

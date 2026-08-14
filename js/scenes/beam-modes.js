@@ -1,28 +1,25 @@
-/* Scene: a clamped-free beam vibrating in its first three modes, with the
-   energy sloshing between them and a bound sitting over the total.
+/* Scene: a clamped-free beam in its first three modes, with energy
+   that moves between them and a bound over the total.
 
-   Behind "Capturing & Bounding Nonlinear Modal Energy Transfer for
-   Geometrically Exact Beams using Semidefinite Programming".
+   Background for "Capturing & Bounding Nonlinear Modal Energy Transfer
+   for Geometrically Exact Beams using Semidefinite Programming".
 
-   The mode shapes are the real ones - the clamped-free eigenfunctions,
-   with the usual roots of cos(bL)cosh(bL) = -1 - and the frequencies keep
-   their true ratios, which is why the third mode blurs while the first is
-   still swinging.
+   The mode shapes are the clamped-free eigenfunctions, with the roots
+   of cos(bL)cosh(bL) = -1. The frequencies keep their true ratios, so
+   the third mode blurs while the first still swings.
 
-   Three things are drawn on top of each other, the way a vibration figure
-   normally is. The strobe is the beam at a run of recent instants, so the
-   shape of the motion reads without waiting for it. The envelope is the
-   largest deflection the current modal energies could ever reach, taken
-   with every mode in phase; the strobe lives inside it by construction.
-   And the bars are the share of energy in each mode, measured against the
-   bound the paper's semidefinite program provides. */
+   The scene draws three layers. The strobe is the beam at recent
+   instants, so the motion shape is visible at once. The envelope is the
+   largest deflection the current modal energies allow, with all modes
+   in phase. The bars are the energy share per mode, measured against
+   the bound from the paper's semidefinite program. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
 
-// Roots of cos(bL)cosh(bL) = -1, and the frequency of each mode goes as
+// Roots of cos(bL)cosh(bL) = -1. Each mode's frequency scales with
 // the square of its root.
 const ROOTS = [1.8751, 4.6941, 7.8548];
 const SLOSH_SECONDS = 14;       // period of the energy exchange
@@ -56,8 +53,7 @@ export function createBeamModes() {
     };
   });
 
-  // The mode shapes never change, so they are evaluated once per layout
-  // rather than three times per sample per frame.
+  // The mode shapes are constant. Evaluate them once per layout.
   const shape = modes.map(() => new Float32Array(SAMPLES + 1));
   const beam = { x: 0, y: 0, length: 200, amplitude: 30 };
   const bars = { x: 0, y: 0, w: 0, gap: 0 };
@@ -71,8 +67,8 @@ export function createBeamModes() {
     }
   }
 
-  /* Energy moves between modes and back; the three shares are normalised
-     every frame, so the total is conserved exactly. */
+  /* Move energy between the modes. Normalise the three shares each
+     frame, so the total is constant. */
   function slosh(t) {
     const phase = (TWO_PI * t) / SLOSH_SECONDS;
     let sum = 0;
@@ -142,8 +138,7 @@ export function createBeamModes() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    // The clamp: a short upright with hatching, so which end is fixed
-    // reads at a glance.
+    // The clamp: a short upright with hatching to mark the fixed end.
     const reach = beam.amplitude * 0.72;
     ctx.beginPath();
     ctx.moveTo(beam.x, beam.y - reach);
@@ -195,8 +190,8 @@ export function createBeamModes() {
   }
 
   return {
-    // Cleared each frame: the strobe already carries the history, and
-    // letting it smear as well would only blur it.
+    // The strobe carries the history. The engine clears the canvas
+    // each frame.
     fade: 1,
 
     layout(w, h) {
@@ -216,7 +211,7 @@ export function createBeamModes() {
 
     frame(ctx, dt, t, ink) {
       slosh(t);
-      // The datum is the beam at rest, run on to the bars that measure it.
+      // The datum is the beam at rest, extended to the bars.
       drawDatum(ctx, stage, ink);
       drawEnvelope(ctx, ink);
       drawStrobe(ctx, t, ink);

@@ -1,19 +1,18 @@
-/* Scene: a multirotor tracking a contour, replanning only when it has to.
+/* Scene: a multirotor that tracks a contour and replans only on
+   events.
 
-   Behind "An Event-Triggered Visual Servoing Predictive Control Strategy
-   for the Surveillance of Contour-Based Areas using Multirotor Aerial
-   Vehicles".
+   Background for "An Event-Triggered Visual Servoing Predictive Control
+   Strategy for the Surveillance of Contour-Based Areas using Multirotor
+   Aerial Vehicles".
 
-   The triggering is real rather than staged: the vehicle follows the last
-   plan open loop, and a new optimal control problem is solved only when
-   the tracking error crosses a threshold or the horizon runs out. That is
-   why the ticks along the rail fall unevenly - they bunch up where the
-   coastline turns and thin out where it runs straight, which is exactly
-   the saving the scheme is after.
+   The triggering is simulated, not staged. The craft follows the last
+   plan open loop. It solves a new plan only when the tracking error
+   crosses a threshold or the horizon expires. For this reason the tick
+   marks on the rail fall unevenly: dense where the coastline turns,
+   sparse where it runs straight.
 
-   The ground is drawn the way a chart draws it: offset copies of the
-   coastline standing in for depth contours, which also gives the eye
-   something to read the vehicle's motion against. */
+   The ground is drawn like a chart: offset copies of the coastline
+   stand in for depth contours and give the motion a reference. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -50,11 +49,11 @@ export function createEventTracking() {
 
   function replan(t) {
     plan.from = craft.y;
-    // Aim at where the contour will have moved to by the end of the horizon.
+    // Aim at the contour position at the end of the horizon.
     plan.to = target(t + HORIZON);
     plan.at = t;
-    // The new plan starts at the velocity the craft already has, so a
-    // trigger bends its path rather than halting it for an instant.
+    // Start the new plan at the craft's current velocity, so a trigger
+    // bends the path and does not stop it.
     plan.v0 = craftVel;
   }
 
@@ -67,9 +66,8 @@ export function createEventTracking() {
       ticks.push(t);
       if (ticks.length > MAX_TICKS) ticks.shift();
     } else {
-      /* Open loop between triggers: no feedback, just the stored
-         trajectory - a Hermite arc from where the craft was, at the
-         velocity it had, to where the contour will be. */
+      /* Between triggers the craft is open loop: it follows the stored
+         Hermite arc from its start state to the target. */
       const s = Math.min(age / HORIZON, 1);
       const s2 = s * s;
       const s3 = s2 * s;
@@ -90,8 +88,8 @@ export function createEventTracking() {
     }
   }
 
-  /* Depth contours: the same coastline offset downward, fading as it goes,
-     so the land side has the texture of a chart rather than being blank. */
+  /* Depth contours: the coastline offset downward and faded step by
+     step, like a chart. */
   function drawContours(ctx, t, ink) {
     for (let i = CONTOURS; i >= 1; i--) {
       traceShore(ctx, t, i * shore.spacing);
@@ -108,8 +106,8 @@ export function createEventTracking() {
     ctx.stroke();
   }
 
-  /* The camera footprint, and the stretch of coastline currently inside
-     it: what the controller actually has to work with. */
+  /* The camera footprint, and the part of the coastline inside it:
+     the controller's input. */
   function drawFootprint(ctx, t, ink) {
     const spread = craft.standoff * 0.8;
     ctx.beginPath();
@@ -133,7 +131,7 @@ export function createEventTracking() {
     ctx.stroke();
   }
 
-  /** Where the vehicle has actually been, scrolling away behind it. */
+  /** The flown path, scrolling away behind the craft. */
   function drawTrack(ctx, t, ink) {
     if (track.length < 2) return;
     ctx.beginPath();
@@ -180,8 +178,8 @@ export function createEventTracking() {
     }
   }
 
-  /* Every solve leaves a mark on the rail, and the marks scroll away with
-     the world, so the uneven spacing of the triggers is visible. */
+  /* Each solve leaves a tick on the rail. The ticks scroll with the
+     world, so the uneven trigger spacing stays visible. */
   function drawTicks(ctx, t, ink) {
     const railY = shore.y + shore.a1 + CONTOURS * shore.spacing + view.h * 0.022;
     // The rail spans the text column below, not the whole viewport.
@@ -194,7 +192,7 @@ export function createEventTracking() {
 
     for (const at of ticks) {
       const x = craft.x - (t - at) * DRIFT;
-      // Born fading in, and gone fading out at the column's edge.
+      // Fade in at birth. Fade out at the column's left edge.
       const presence = Math.min(1, (t - at) / 0.3, (x - stage.left) / 30);
       if (presence <= 0) continue;
       ctx.beginPath();
@@ -207,7 +205,7 @@ export function createEventTracking() {
   }
 
   return {
-    fade: 1,   // a drawn scene rather than a trailing one: no ghosting
+    fade: 1,   // a drawn figure; the engine clears it each frame
 
     layout(w, h) {
       view.w = w;
