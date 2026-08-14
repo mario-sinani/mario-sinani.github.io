@@ -1,15 +1,18 @@
 /* ---------------------------------------------------------------------------
-   Design tokens - single source of truth for color, type and layout.
-   Palette: ink navy on cool paper, Imperial Blue accent. The dark theme
-   lightens the accent (#0000cd reaches only 1.7:1 on the dark ground,
-   below the 3:1 minimum for UI elements) while keeping the same hue.
-   Type: Archivo (display) · Source Serif 4 (body) · IBM Plex Mono (meta).
+   Design tokens: the single source for colour, type and layout.
 
-   Theming: the bare :root block defines the light palette. The media block
-   applies the dark palette when the OS prefers it and no explicit choice is
-   stamped; [data-theme="dark"] applies it when the user chooses explicitly.
-   color-scheme travels with each palette so form controls, scrollbars and
-   other native widgets follow the page even when it overrides the OS.
+   Palette: navy ink on cool paper, with an Imperial Blue accent. The dark
+   theme keeps the hue but makes the accent lighter. On the dark ground
+   #0000cd gives a contrast ratio of 1.7:1, below the 3:1 minimum for UI
+   elements.
+
+   Type: Archivo (display), Source Serif 4 (body), IBM Plex Mono (meta).
+
+   Themes: the :root block sets the light palette. The media block applies
+   the dark palette when the device prefers dark and no explicit choice is
+   set. [data-theme="dark"] applies it when the visitor selects dark. Each
+   palette sets color-scheme, so form controls, scrollbars and other
+   native widgets agree with the page.
 --------------------------------------------------------------------------- */
 
 :root {

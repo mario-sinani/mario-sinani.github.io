@@ -1,6 +1,7 @@
-/* Publications page: the full record. Extends the chronological rail from
-   publications.css with a page head, a type filter, abstracts and BibTeX,
-   so the home page can stay a summary and this page carry the detail. */
+/* Publications page: the full record. It extends the rail from
+   publications.css with a page head, a type filter, abstracts and
+   BibTeX. The home page keeps the summary; this page holds the
+   detail. */
 
 .page-head {
   max-width: var(--w-content);
@@ -138,8 +139,8 @@
 
 /* Entries ------------------------------------------------------------- */
 
-/* .pub sets display:grid, which would otherwise defeat the hidden
-   attribute the filter toggles. */
+/* .pub sets display:grid, which overrides the hidden attribute. This
+   rule restores it for the filter. */
 .pub[hidden] { display: none; }
 
 /* The rail caps belong to the first and last visible entry, and the
@@ -154,8 +155,8 @@
 .pub.rail-end .pub-node::before { bottom: auto; height: 1.25rem; }
 .pub.rail-end .pub-body { padding-bottom: 0; }
 
-/* The rail's 1fr track sizes to its content by default, which the wide
-   BibTeX block would stretch; min-width lets it hold the column instead. */
+/* The 1fr track sizes to its content, and the wide BibTeX block would
+   stretch it. min-width keeps the track at the column width. */
 .pubs-page .pub-body {
   min-width: 0;
   padding-bottom: 3.2rem;
@@ -174,8 +175,8 @@
   color: var(--muted);
 }
 
-/* Clamped only where the toggle that undoes it exists; without JavaScript
-   the whole abstract is on the page. */
+/* Clamp the abstract only where the toggle exists. Without JavaScript
+   the full abstract shows. */
 .js .pub-abstract.is-clamped p {
   display: -webkit-box;
   -webkit-line-clamp: 3;

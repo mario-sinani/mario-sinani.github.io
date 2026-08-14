@@ -1,4 +1,4 @@
-/* Motion: scroll-reveal transitions, disabled under reduced motion. */
+/* Motion: the scroll-reveal transitions. Reduced motion disables them. */
 
 .reveal {
   opacity: 0;

@@ -39,10 +39,10 @@ export function createVortexWake(options) {
     },
 
     /**
-     * Bank the change in bound circulation. Shed one vortex at the given
-     * edge point when the shed interval has passed. A new vortex starts
-     * at zero effective strength and ramps in, so the induced field
-     * changes continuously.
+     * Add the change in bound circulation to the bank. Shed one vortex
+     * at the given edge point when the interval has passed. A new vortex
+     * starts at zero strength and ramps up, so the induced field changes
+     * continuously.
      */
     shed(dt, gammaChange, edge) {
       pending -= gammaChange;

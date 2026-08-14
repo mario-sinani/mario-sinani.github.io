@@ -42,8 +42,8 @@ const ORBIT_STEP = 0.05;        // seconds between orbit samples
 const CORE2 = 210;              // squared vortex core radius
 
 export function createPitchingSection() {
-  /* Step 5 instead of 4: this field carries a full wake, and a hairline
-     stroke does not show the coarser polyline. */
+  /* Use a 5px integration step, not 4px. This field also samples a full
+     wake, and a hairline stroke hides the coarser polyline. */
   const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28, step: 5 });
   const wake = createVortexWake({
     interval: 0.14,

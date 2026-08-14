@@ -17,9 +17,9 @@ export function stageFor(w, h) {
 }
 
 /* Draw the datum: one dashed hairline across the stage. Each scene uses
-   it as its zero line - the freestream, the beam at rest, the joint with
-   no fold. The subject sits on it and the instrument measures from it,
-   so the two drawings read as one scene. */
+   it as its zero line: the freestream, the beam at rest, or the joint
+   with no fold. The subject sits on the datum and the instrument
+   measures from it. The datum joins the two drawings. */
 export function drawDatum(ctx, stage, ink) {
   ctx.beginPath();
   ctx.setLineDash([3, 4]);

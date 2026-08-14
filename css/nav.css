@@ -50,8 +50,7 @@
 
 .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
 
-/* The section the visitor is already on, once the site has more than one
-   page to be on. */
+/* The page the visitor is on. */
 .nav-links a[aria-current="page"] { color: var(--accent); }
 
 .nav-actions {
@@ -79,8 +78,8 @@
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 
-/* Both buttons need JavaScript to do anything, so neither is offered
-   without it. The menu button is additionally limited to small screens. */
+/* Both buttons need JavaScript, so CSS hides them without it. The menu
+   button also shows only on small screens. */
 .theme-toggle, .nav-toggle { display: none; }
 
 .js .theme-toggle { display: inline-flex; }
@@ -104,10 +103,10 @@
 :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
-/* Below ~760px the brand, five section links and the action buttons no
-   longer fit on one line, so the links move to their own full-width row.
-   With JavaScript that row collapses behind the menu button; without it the
-   links simply stay visible and wrap, so every section stays reachable. */
+/* Below 760px the brand, the five links and the buttons do not fit on
+   one line, so the links move to their own row. With JavaScript the menu
+   button collapses that row. Without JavaScript the links stay visible
+   and wrap, so every section is reachable. */
 @media (max-width: 760px) {
   .site-nav .nav-inner {
     flex-wrap: wrap;
@@ -130,8 +129,8 @@
   .js .nav-links {
     display: none;
     flex-direction: column;
-    /* stretch, so each row is tappable across its full width rather than
-       only where the label sits */
+    /* Stretch each row to the full width, so the whole row is a touch
+       target, not only the label. */
     align-items: stretch;
     gap: 0;
     margin-top: 0.1rem;
@@ -144,7 +143,7 @@
     animation: nav-reveal 180ms ease;
   }
 
-  /* Comfortable touch targets once the links are stacked. */
+  /* Touch targets for the stacked links. */
   .js .nav-links a {
     padding: 0.72rem 0.15rem;
     font-size: 0.78rem;

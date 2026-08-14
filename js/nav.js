@@ -1,6 +1,6 @@
-/* Navigation: drives the small-screen menu disclosure. The button itself is
-   revealed by CSS only when JavaScript is present, so the links stay visible
-   and usable if this module never runs. */
+/* Navigation: operates the menu on small screens. CSS shows the button
+   only when JavaScript is available. If this module does not run, the
+   links stay visible. */
 
 const DESKTOP = '(min-width: 761px)';
 
@@ -18,7 +18,7 @@ export function initNav() {
 
   toggle.addEventListener('click', () => setOpen(!isOpen()));
 
-  // Jumping to a section should leave the menu closed behind it.
+  // Close the menu after a jump to a section.
   links.addEventListener('click', (event) => {
     if (event.target.closest('a')) setOpen(false);
   });
@@ -29,13 +29,13 @@ export function initNav() {
     toggle.focus();
   });
 
-  // A tap anywhere outside the header dismisses the menu.
+  // Close the menu on a tap outside the header.
   document.addEventListener('click', (event) => {
     if (isOpen() && !event.target.closest('.site-nav')) setOpen(false);
   });
 
-  // Widening past the breakpoint restores the inline row; drop the open
-  // state so returning to a narrow width starts closed.
+  // Above the breakpoint the links return to one row. Clear the open
+  // state, so a return to a narrow width starts closed.
   window.matchMedia(DESKTOP).addEventListener('change', (event) => {
     if (event.matches) setOpen(false);
   });

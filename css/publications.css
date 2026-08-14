@@ -1,5 +1,6 @@
-/* Publications: chronological rail - a continuous vertical line with a
-   typed node per entry (conference / journal / thesis). */
+/* Publications: a chronological rail. One vertical line, with one node
+   per entry. The node icon shows the type: conference, journal or
+   thesis. */
 
 .pub-list { display: grid; }
 
@@ -138,8 +139,9 @@
 
 .pubs-footer a:hover, .pubs-footer a:focus-visible { text-decoration: underline; }
 
-/* Small screens: the year drops above the entry and the rail moves to the
-   first column, spanning both rows so the line stays continuous. */
+/* Small screens: the year moves above the entry, and the rail moves to
+   the first column. The rail spans both rows, so the line stays
+   continuous. */
 @media (max-width: 720px) {
   .pub { grid-template-columns: 2.2rem 1fr; column-gap: 1rem; }
 

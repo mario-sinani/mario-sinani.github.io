@@ -1,7 +1,7 @@
 /* Education: degree cards with institution logo chips. */
 
-/* min() keeps the track from forcing a minimum wider than the viewport
-   on narrow phones, which would push the page into horizontal scroll. */
+/* min() keeps the track minimum below the viewport width. A wider
+   minimum would cause horizontal scroll on a narrow phone. */
 .edu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));

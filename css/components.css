@@ -1,4 +1,4 @@
-/* Shared components: section chrome, pill links, organization logo chips. */
+/* Shared components: section heads, pill links, and logo chips. */
 
 .section {
   max-width: var(--w-content);
@@ -95,8 +95,8 @@
   color: #ffffff;
 }
 
-/* Logo chips: square avatar-style marks on a white ground in both themes,
-   so institutional colors stay legible on the dark surface. */
+/* Logo chips: square marks on a white ground in both themes. The white
+   ground keeps the institutional colours legible on the dark surface. */
 .org-icon {
   flex-shrink: 0;
   width: 2.7rem;

@@ -18,8 +18,8 @@ export function withAlpha(colour, alpha) {
  * ground - the page background, taken from the CSS custom property.
  * line   - grey strokes.
  * accent - the brand blue. Use it for instruments and key marks.
- * wash   - a quieter indigo. Use it for field elements, so the accent
- *          stays reserved.
+ * wash   - a low-contrast indigo. Use it for field elements. The accent
+ *          then stays available for the instruments.
  * body   - the outline colour for bodies (wing sections, beams).
  * faint  - hairlines and reference lines.
  */

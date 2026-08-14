@@ -1,6 +1,6 @@
-/* Reveal: fades `.reveal` elements in the first time they scroll into view.
-   Everything is shown immediately when IntersectionObserver is missing or
-   the visitor prefers reduced motion. */
+/* Reveal: fades in each .reveal element when it first scrolls into
+   view. If IntersectionObserver is not available, or the visitor
+   prefers reduced motion, the module shows all elements at once. */
 
 export function initReveal() {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

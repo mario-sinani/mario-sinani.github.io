@@ -1,10 +1,10 @@
-/* Hero: full-height intro over the animated flow-field canvas. */
+/* Hero: a full-height introduction over the animated field canvas. */
 
 .hero {
   position: relative;
   min-height: calc(92vh - 3.2rem);
-  /* svh ignores the mobile browser's collapsing toolbars, so the hero does
-     not jump as the address bar hides on scroll. */
+  /* svh ignores the mobile browser toolbars, so the hero does not jump
+     when the address bar hides on scroll. */
   min-height: calc(92svh - 3.2rem);
   display: flex;
   align-items: center;
@@ -71,7 +71,7 @@
   color: var(--muted);
 }
 
-/* A quiet link inside the meta line: same colour, hairline underline. */
+/* A link in the meta line: the text colour, with a hairline underline. */
 .hero-meta a {
   color: inherit;
   text-decoration: none;
@@ -94,8 +94,8 @@
 @media (max-width: 720px) {
   .hero-inner { padding: 3.25rem 1.15rem 3.5rem; }
 
-  /* Let the name shrink further than the desktop floor so it does not
-     overflow a 320px screen. */
+  /* Allow a smaller size than the desktop minimum, so the name fits a
+     320px screen. */
   .hero h1 {
     font-size: clamp(2.3rem, 11vw, 3.6rem);
     margin: 0.9rem 0 1.25rem;

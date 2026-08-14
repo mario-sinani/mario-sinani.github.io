@@ -6,10 +6,11 @@
    dashed. Dash positions follow the path length, and in an unsteady
    field the path length changes each frame, which made dashes wobble.
 
-   The tracers carry the motion. The field velocity advects each tracer,
-   so its movement is continuous. A tracer fades in at birth, and fades
-   out at death or near the right edge. Its tail is integrated backward
-   through the field, so the tracer lies on its own streamline. */
+   The tracers show the motion. The field velocity advects each tracer,
+   so its movement is continuous. A tracer fades in at birth. It fades
+   out at the end of its life, or near the right edge. The module
+   integrates each tail backward through the field, so the tracer stays
+   on its own streamline. */
 
 import { withAlpha } from './ink.js';
 

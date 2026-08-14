@@ -22,7 +22,7 @@ import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 100;         // px/s
 const WING_HZ = 0.075;
-const HINGE_HZ = 0.115;         // deliberately close, so the two beat
+const HINGE_HZ = 0.115;         // close to WING_HZ, so the two beat
 const WING_INCIDENCE = 0.16;    // radians
 const HINGE_TRAVEL = 0.5;       // radians of fold, peak to zero
 const FLARE = 0.55;             // radians the hinge axis is swept back by

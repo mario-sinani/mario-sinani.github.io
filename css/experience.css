@@ -59,8 +59,8 @@
   .timeline-what h3 { font-size: 1.02rem; }
 }
 
-/* Quiet links inside an entry: same colour as their text, hairline
-   underline, accent on hover. */
+/* Links in an entry: the text colour, a hairline underline, and the
+   accent colour on hover. */
 .timeline-text h3 a,
 .timeline-text p a {
   color: inherit;

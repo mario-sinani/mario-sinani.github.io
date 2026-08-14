@@ -1,7 +1,7 @@
-/* Email: assembles mailto links at runtime so the address never appears
-   as a scrapeable `user@domain` string in the static HTML. Links carry the
-   address split across data-u / data-d attributes; without JavaScript the
-   human-readable [at]/[dot] fallback text remains. */
+/* Email: builds the mailto links at run time. The address is never a
+   complete user@domain string in the HTML, so a scraper cannot read it.
+   Each link holds the address in the data-u and data-d attributes.
+   Without JavaScript the [at] and [dot] text stays. */
 
 export function initEmail() {
   document.querySelectorAll('a[data-u][data-d]').forEach((link) => {

@@ -23,7 +23,7 @@ h1, h2, h3 { text-wrap: balance; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* Keyboard users get a way past the navigation; hidden until focused. */
+/* A skip link for keyboard users. It stays hidden until it has focus. */
 .skip-link {
   position: fixed;
   top: -4rem;

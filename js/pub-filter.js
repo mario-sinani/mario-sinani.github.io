@@ -1,13 +1,12 @@
-/* Publication filter: narrows the list to one publication type.
+/* Publication filter: shows one publication type at a time.
 
-   The controls are revealed by CSS only when JavaScript is present, so
-   without it every entry simply stays on the page.
+   CSS shows the controls only when JavaScript is available. Without it,
+   every entry stays on the page.
 
-   Filtering breaks two things the rail relies on, and both are repaired
-   here rather than in CSS, which cannot address "the first still-visible
-   element": the line caps at the top and bottom of the rail, and the
-   scroll-reveal state of entries that were hidden before they were ever
-   scrolled past. */
+   The filter repairs two things that CSS cannot: CSS has no selector for
+   "the first visible element". The two are the rail caps at the top and
+   the bottom of the list, and the reveal state of an entry that was
+   hidden before it scrolled into view. */
 
 const ALL = 'all';
 
@@ -27,8 +26,8 @@ export function initPubFilter() {
       const shown = type === ALL || entry.dataset.type === type;
       entry.hidden = !shown;
       entry.classList.remove('rail-start', 'rail-end');
-      // An entry hidden before it ever scrolled into view never got its
-      // reveal class; grant it now so it does not return invisible.
+      // An entry hidden before it scrolled into view has no reveal
+      // class. Add it now, so the entry does not return invisible.
       if (shown) {
         entry.classList.add('in');
         visible.push(entry);
