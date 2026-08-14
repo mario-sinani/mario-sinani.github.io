@@ -5,7 +5,7 @@
    than a name, so it takes a smaller face and the panel is not asked to
    fill the viewport. */
 
-#aerofield {
+#paper-field {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -209,6 +209,11 @@
 
 @media (max-width: 720px) {
   .paper-hero { min-height: 0; }
+
+  /* On a phone the panel fills the hero, so there is no clear band for the
+     scene to occupy and it ends up behind the title. Fading it keeps it
+     legible as a background instead of competing with the words. */
+  #paper-field { opacity: 0.45; }
 
   .paper-hero h1 {
     font-size: clamp(1.6rem, 7.2vw, 2.2rem);
