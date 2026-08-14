@@ -59,9 +59,8 @@
   .timeline-what h3 { font-size: 1.02rem; }
 }
 
-/* Links in an entry: the text colour, a hairline underline, and the
+/* A link in an entry: the text colour, a hairline underline, and the
    accent colour on hover. */
-.timeline-text h3 a,
 .timeline-text p a {
   color: inherit;
   text-decoration: none;
@@ -69,7 +68,6 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-.timeline-text h3 a:hover, .timeline-text h3 a:focus-visible,
 .timeline-text p a:hover, .timeline-text p a:focus-visible {
   color: var(--accent);
   border-bottom-color: var(--accent);
