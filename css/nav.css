@@ -48,10 +48,10 @@
   transition: color 140ms ease;
 }
 
-.nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
+.nav-links a:hover, .nav-links a:focus-visible { color: var(--accent-strong); }
 
 /* The page the visitor is on. */
-.nav-links a[aria-current="page"] { color: var(--accent); }
+.nav-links a[aria-current="page"] { color: var(--accent-strong); }
 
 .nav-actions {
   display: flex;
@@ -74,7 +74,7 @@
 }
 
 .theme-toggle:hover, .theme-toggle:focus-visible,
-.nav-toggle:hover, .nav-toggle:focus-visible { color: var(--accent); border-color: var(--accent); }
+.nav-toggle:hover, .nav-toggle:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 

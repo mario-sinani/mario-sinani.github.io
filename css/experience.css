@@ -69,6 +69,6 @@
 }
 
 .timeline-text p a:hover, .timeline-text p a:focus-visible {
-  color: var(--accent);
+  color: var(--accent-strong);
   border-bottom-color: var(--accent);
 }

@@ -6,6 +6,15 @@
    #0000cd gives a contrast ratio of 1.7:1, below the 3:1 minimum for UI
    elements.
 
+   Accent roles. --accent is the mark colour: rules, glyphs, borders and
+   the punctuation flourishes. It must reach 3:1 on the page ground.
+   --accent-strong is the same hue at text contrast, for a link that is
+   in a hover, focus or current state. It must reach 4.5:1.
+   --accent-fill is the accent as a filled ground, and --accent-fill-ink
+   is the only colour that may sit on it. The pair changes with the
+   theme, because a fill that reads with white in light needs dark text
+   in dark.
+
    Type: Archivo (display), Source Serif 4 (body), IBM Plex Mono (meta).
 
    Themes: the :root block sets the light palette. The media block applies
@@ -24,6 +33,8 @@
   --line: #becad5;
   --accent: #0000cd;
   --accent-strong: #0000a0;
+  --accent-fill: #0000cd;
+  --accent-fill-ink: #ffffff;
   --hairline: rgba(15, 25, 38, 0.2);
 
   --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
@@ -44,6 +55,8 @@
     --line: #34455a;
     --accent: #6a6aff;
     --accent-strong: #9191ff;
+    --accent-fill: #9191ff;
+    --accent-fill-ink: #0d141d;
     --hairline: rgba(237, 242, 246, 0.22);
   }
 }
@@ -57,5 +70,7 @@
   --line: #34455a;
   --accent: #6a6aff;
   --accent-strong: #9191ff;
+  --accent-fill: #9191ff;
+  --accent-fill-ink: #0d141d;
   --hairline: rgba(237, 242, 246, 0.22);
 }

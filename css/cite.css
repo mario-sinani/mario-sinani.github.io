@@ -70,7 +70,7 @@
 
 .js .copy-btn { display: inline-flex; }
 
-.copy-btn:hover, .copy-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.copy-btn:hover, .copy-btn:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
 
 .copy-btn.is-copied { color: var(--accent-strong); border-color: var(--accent); }
 

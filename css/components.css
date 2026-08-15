@@ -80,7 +80,7 @@
 
 .pill:hover, .pill:focus-visible {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .pill.primary {
@@ -90,9 +90,9 @@
 }
 
 .pill.primary:hover, .pill.primary:focus-visible {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+  color: var(--accent-fill-ink);
 }
 
 /* Logo chips: square marks on a white ground in both themes. The white

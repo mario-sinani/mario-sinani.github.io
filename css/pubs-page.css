@@ -26,7 +26,7 @@
 }
 
 .page-head .eyebrow a:hover, .page-head .eyebrow a:focus-visible {
-  color: var(--accent);
+  color: var(--accent-strong);
   border-bottom-color: var(--accent);
 }
 
@@ -121,7 +121,7 @@
   transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
-.chip:hover, .chip:focus-visible { color: var(--accent); border-color: var(--accent); }
+.chip:hover, .chip:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
 
 .chip[aria-pressed="true"] {
   color: var(--paper);
