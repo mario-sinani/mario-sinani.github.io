@@ -98,8 +98,20 @@ export function initFieldCanvas(canvas, isDark, scene) {
     if (reducedMotion) scene.still(ctx, ink, clock);
   }
 
+  /* A resize event can arrive many times a second while a window edge is
+     dragged, and each resize() allocates the canvas bitmap again. One
+     call per frame is enough, because the screen cannot show more. */
+  let resizePending = 0;
+  function onResize() {
+    if (resizePending) return;
+    resizePending = requestAnimationFrame(() => {
+      resizePending = 0;
+      resize();
+    });
+  }
+
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', sync);
 
   /* Without IntersectionObserver the field counts as always on screen,
