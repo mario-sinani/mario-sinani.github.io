@@ -105,57 +105,71 @@
 }
   </script>
 
-  <!-- The person the site is about. -->
+  <!-- This page, as the profile of one person. The wrapper tells a search
+       engine that the page is about the person in mainEntity, and not
+       only that the person is mentioned on it. -->
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Person",
-  "@id": "https://mariosinani.com/#person",
-  "mainEntityOfPage": "https://mariosinani.com/",
-  "name": "Mario A. Sinani",
+  "@type": "ProfilePage",
+  "@id": "https://mariosinani.com/#profile",
   "url": "https://mariosinani.com/",
-  "image": "https://mariosinani.com/assets/og-image.png",
-  "jobTitle": "Marie Skłodowska-Curie Researcher",
-  "worksFor": [
-    {
-      "@type": "Organization",
-      "name": "Imperial College London",
-      "url": "https://www.imperial.ac.uk/"
-    },
-    {
-      "@type": "Organization",
-      "name": "NSF AI Institute in Dynamic Systems",
-      "url": "https://dynamicsai.org/"
-    },
-    {
-      "@type": "Organization",
-      "name": "University of Washington",
-      "url": "https://www.washington.edu/"
-    }
-  ],
-  "alumniOf": [
-    {
-      "@type": "CollegeOrUniversity",
-      "name": "Imperial College London"
-    },
-    {
-      "@type": "CollegeOrUniversity",
-      "name": "National Technical University of Athens"
-    }
-  ],
-  "knowsAbout": [
-    "Dynamical Systems",
-    "Machine Learning",
-    "Control",
-    "Aeroelasticity",
-    "Fluid-Structure Interaction"
-  ],
-  "sameAs": [
-    "https://www.linkedin.com/in/mariosinani",
-    "https://github.com/mariosinani",
-    "https://scholar.google.com/citations?user=zb5_6PwAAAAJ",
-    "https://profiles.imperial.ac.uk/mario.sinani"
-  ]
+  "name": "Mario A. Sinani - Aeronautics, Machine Learning, Control",
+  "isPartOf": { "@id": "https://mariosinani.com/#website" },
+  "inLanguage": "en-GB",
+  "dateModified": "2026-08-15",
+  "mainEntity": {
+    "@type": "Person",
+    "@id": "https://mariosinani.com/#person",
+    "mainEntityOfPage": "https://mariosinani.com/",
+    "name": "Mario A. Sinani",
+    "givenName": "Mario",
+    "familyName": "Sinani",
+    "url": "https://mariosinani.com/",
+    "image": "https://mariosinani.com/assets/og-image.png",
+    "jobTitle": "Marie Skłodowska-Curie Researcher",
+    "description": "PhD candidate in Aeronautics at Imperial College London. Data-driven modelling and nonlinear control of highly flexible structures that interact with fluid flows.",
+    "worksFor": [
+      {
+        "@type": "Organization",
+        "name": "Imperial College London",
+        "url": "https://www.imperial.ac.uk/"
+      },
+      {
+        "@type": "Organization",
+        "name": "NSF AI Institute in Dynamic Systems",
+        "url": "https://dynamicsai.org/"
+      },
+      {
+        "@type": "Organization",
+        "name": "University of Washington",
+        "url": "https://www.washington.edu/"
+      }
+    ],
+    "alumniOf": [
+      {
+        "@type": "CollegeOrUniversity",
+        "name": "Imperial College London"
+      },
+      {
+        "@type": "CollegeOrUniversity",
+        "name": "National Technical University of Athens"
+      }
+    ],
+    "knowsAbout": [
+      "Dynamical Systems",
+      "Machine Learning",
+      "Control",
+      "Aeroelasticity",
+      "Fluid-Structure Interaction"
+    ],
+    "sameAs": [
+      "https://www.linkedin.com/in/mariosinani",
+      "https://github.com/mariosinani",
+      "https://scholar.google.com/citations?user=zb5_6PwAAAAJ",
+      "https://profiles.imperial.ac.uk/mario.sinani"
+    ]
+  }
 }
   </script>
 </head>
