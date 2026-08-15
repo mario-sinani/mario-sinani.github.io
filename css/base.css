@@ -19,6 +19,16 @@ body {
 
 a { color: inherit; }
 
+/* A form control does not inherit the page type: the browser gives it a
+   font of its own, at weight 400. Every button on this site carries a
+   mono label beside other mono labels at weight 500, so the two must
+   agree. Each button still sets its own size and colour. */
+button { font: inherit; color: inherit; }
+
+/* The browser also forces its own monospace family on pre and code, and
+   that rule beats inheritance. Name the site face instead. */
+pre, code { font-family: var(--font-mono); }
+
 h1, h2, h3 { text-wrap: balance; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
