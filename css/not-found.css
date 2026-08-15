@@ -1,0 +1,60 @@
+/* Not-found page: the site's hero over a field, then the places a lost
+   visitor is most likely to want.
+
+   The destination cells reuse the research grid, so this file holds only
+   what the page adds: a shorter hero, and the behaviour of a cell whose
+   whole area is a link. */
+
+/* The page carries no long content. A full-height hero would push every
+   destination below the fold, which is the opposite of the purpose, so
+   the hero is shorter and its foot is tighter than a section foot. */
+.not-found-hero { min-height: calc(58vh - 3.2rem); }
+.not-found-hero { min-height: calc(58svh - 3.2rem); }
+
+.not-found-hero .hero-inner { padding-bottom: 2.4rem; }
+
+/* "Page not found" is longer than a name, so it starts smaller. */
+.not-found-hero h1 { font-size: clamp(2.2rem, 6.5vw, 4rem); }
+
+.not-found-hero .thesis { max-width: 30em; }
+
+/* The title carries the link, so a screen reader announces the
+   destination and not the whole cell. The pseudo-element then spreads
+   that one link across the cell, so a pointer can hit anywhere. */
+.go-cell { position: relative; transition: background 140ms ease; }
+
+.go-cell h3 a {
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+
+.go-cell h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.go-cell:hover { background: var(--paper); }
+.go-cell:hover h3 a { color: var(--accent-strong); }
+
+/* The link fills the cell, so its focus ring belongs on the cell. The
+   ring moves only where :has can draw it. Without :has the link keeps
+   the ring from base.css, which is smaller but never absent. */
+.go-cell:focus-within { background: var(--paper); }
+.go-cell:focus-within h3 a { color: var(--accent-strong); }
+
+@supports selector(:has(*)) {
+  .go-cell h3 a:focus-visible { outline: none; }
+  .go-cell:has(a:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+}
+
+/* A mono index above the title, in the style the site uses for a label. */
+.go-cell .go-label {
+  margin-top: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.go-cell h3 { margin-top: 0.35rem; }
