@@ -86,7 +86,26 @@
     })();
   </script>
 
-  <!-- Structured data for search engines -->
+  <!-- Structured data for search engines.
+
+       The site itself. A search engine reads the name here to title the
+       result, in place of the bare domain. The publisher points at the
+       person record below, so the two are one entity. -->
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://mariosinani.com/#website",
+  "url": "https://mariosinani.com/",
+  "name": "Mario A. Sinani",
+  "alternateName": "Mario Sinani",
+  "description": "Research site of Mario A. Sinani: data-driven modelling and nonlinear control of highly flexible aeroelastic structures.",
+  "inLanguage": "en-GB",
+  "publisher": { "@id": "https://mariosinani.com/#person" }
+}
+  </script>
+
+  <!-- The person the site is about. -->
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
