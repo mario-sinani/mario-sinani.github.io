@@ -13,7 +13,11 @@
      still(ctx, ink, t)      draw one frozen frame
 
    The engine gives each call a resolved palette (see ink.js), so scenes
-   do not read the CSS. The isDark function reports the active theme. */
+   do not read the CSS. The isDark function reports the active theme.
+
+   The loop runs only while the canvas is on the screen and the tab is in
+   front. A field in the hero is off the screen for most of a visit, and
+   a loop that continues there drains the battery for no result. */
 
 import { resolveInk } from './ink.js';
 
@@ -27,6 +31,8 @@ export function initFieldCanvas(canvas, isDark, scene) {
   let height = 0;
   let clock = 0;
   let lastFrameTime = 0;
+  let handle = 0;
+  let onScreen = true;
 
   function readInk() {
     const ground = getComputedStyle(document.documentElement)
@@ -62,7 +68,28 @@ export function initFieldCanvas(canvas, isDark, scene) {
     wash(scene.fade);
     ctx.lineCap = 'butt';
     scene.frame(ctx, dt, clock, ink);
-    requestAnimationFrame(frame);
+    handle = requestAnimationFrame(frame);
+  }
+
+  /* Start and stop are safe to call again in the same state. On a start
+     the frame time resets to zero. The first step after a pause then
+     hits the 0.05 s clamp in frame(), so the scene does not jump forward
+     by the length of the pause. */
+  function start() {
+    if (handle || reducedMotion) return;
+    lastFrameTime = 0;
+    handle = requestAnimationFrame(frame);
+  }
+
+  function stop() {
+    if (!handle) return;
+    cancelAnimationFrame(handle);
+    handle = 0;
+  }
+
+  function sync() {
+    if (onScreen && !document.hidden) start();
+    else stop();
   }
 
   function repaint() {
@@ -73,7 +100,18 @@ export function initFieldCanvas(canvas, isDark, scene) {
 
   resize();
   window.addEventListener('resize', resize);
-  if (!reducedMotion) requestAnimationFrame(frame);
+  document.addEventListener('visibilitychange', sync);
+
+  /* Without IntersectionObserver the field counts as always on screen,
+     which is the behaviour before this gate. */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting;
+      sync();
+    }).observe(canvas);
+  }
+
+  sync();
 
   return { repaint };
 }
