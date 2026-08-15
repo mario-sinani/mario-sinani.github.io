@@ -88,19 +88,23 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the resolved theme: sun in light, moon in
-   dark. The three blocks mirror the palette resolution in tokens.css,
-   so the icon and the colours agree. The label and the tooltip carry
-   the mode. */
+/* The theme button shows the mode, and the button has three: system,
+   light and dark. A mark for each lets the visitor see whether the site
+   follows the device or holds a fixed theme. The earlier pair of marks
+   could not show that, because system and the matching fixed mode drew
+   the same icon.
+
+   System mode sets no data-theme, so the bare selector is that mode. The
+   inline script in the document head applies any stored mode before the
+   first paint, so the correct mark is on screen from the start. */
+.theme-toggle .icon-sun,
 .theme-toggle .icon-moon { display: none; }
-.theme-toggle .icon-sun { display: block; }
+.theme-toggle .icon-system { display: block; }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: none; }
-  :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: block; }
-}
+:root[data-theme="light"] .theme-toggle .icon-system { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
 
-:root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-system { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
 /* Below 760px the brand, the five links and the buttons do not fit on
