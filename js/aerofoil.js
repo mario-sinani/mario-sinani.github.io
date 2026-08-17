@@ -1,21 +1,18 @@
-/* Aerofoil geometry: the NACA 4-digit symmetric section.
+/* Aerofoil geometry: the NACA 4-digit symmetric section. An ellipse is
+   the same at the front and at the back, but a wing has a round nose and
+   a pointed tail, and that difference makes the outline look like a
+   wing.
 
-   An ellipse has the same shape at the front and at the back. A wing is
-   different: the nose is round, and the tail comes to a point. That
-   difference makes the outline look like a wing.
-
-   The NACA 4-digit thickness law gives the shape from one polynomial:
+   The thickness law is one polynomial:
 
      yt(x) = (t / 0.2) * (0.2969*sqrt(x) - 0.1260*x - 0.3516*x^2
                           + 0.2843*x^3 - 0.1036*x^4)
 
-   The x term is the fraction of the chord. It is 0 at the leading edge
-   and 1 at the trailing edge. The yt term is half of the thickness, as
-   a fraction of the chord. The t term is the thickness ratio. The last
-   coefficient is -0.1036 and not -0.1015, because -0.1036 closes the
-   trailing edge to a point.
-
-   The Pazy wing benchmark uses a NACA 0018 section, where t = 0.18. */
+   Here x is the fraction of the chord, 0 at the leading edge and 1 at
+   the trailing edge, yt is half of the thickness, and t is the thickness
+   ratio. The last coefficient is -0.1036 and not -0.1015, because
+   -0.1036 closes the trailing edge to a point. The Pazy wing uses NACA
+   0018, where t = 0.18. */
 
 import { chordDirection } from './potential-flow.js';
 

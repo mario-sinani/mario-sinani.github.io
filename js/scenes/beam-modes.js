@@ -4,17 +4,13 @@
    Background for "Capturing & Bounding Nonlinear Modal Energy Transfer
    for Geometrically Exact Beams using Semidefinite Programming".
 
-   The mode shapes are the clamped-free eigenfunctions, with the roots
-   of cos(bL)cosh(bL) = -1. The frequencies keep their true ratios. The
-   third mode moves too quickly to see clearly, and the first mode still
-   moves slowly.
+   The mode shapes are the clamped-free eigenfunctions, with the roots of
+   cos(bL)cosh(bL) = -1, and the frequencies keep their true ratios.
 
-   The scene draws three layers. The strobe shows the beam at several
-   recent times, and the shape of the motion is then visible in one
-   view. The envelope is the largest deflection that the modal energies
-   permit, with all the modes in phase. Each bar gives the part of the
-   energy in one mode. The scene compares each part with the bound from
-   the semidefinite program in the paper. */
+   The scene draws three layers: the strobe, which is the beam at several
+   recent times; the envelope, which is the largest deflection the modal
+   energies permit with all the modes in phase; and the bars, which
+   compare the energy in each mode with the bound from the paper. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';

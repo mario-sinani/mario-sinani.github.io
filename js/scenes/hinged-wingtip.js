@@ -4,18 +4,14 @@
    Background for "Absolute Nodal Coordinate Formulation for Nonlinear
    Multibody Modeling of Flared Hinged Wings".
 
-   Two bodies and one revolute joint make the smallest multibody
-   system. The hinge angle is its own degree of freedom, and each body
-   has its own bound circulation. The beat between two frequencies that
-   are near to each other shows the coupling between the wing and the
-   hinge.
+   Two bodies and one revolute joint make the smallest multibody system.
+   The hinge angle is its own degree of freedom, and the beat between two
+   close frequencies shows the coupling between the wing and the hinge.
 
-   Above the flow the scene draws three items. The first item is the
-   hinge axis at its flare angle. The flare is the reason why a fold
-   changes the incidence of the outboard piece. The second item is the
-   arc of the hinge angle, from the inboard piece. The third item is the
-   trace of that angle with time, which is the state of the joint that a
-   multibody solver integrates. */
+   Over the flow: the hinge axis at its flare angle, the arc of the hinge
+   angle, and the trace of that angle, which is the joint state a solver
+   integrates. The flare is the reason a fold changes the outboard
+   incidence. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';

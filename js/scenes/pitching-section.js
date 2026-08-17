@@ -3,24 +3,17 @@
    Background for "Data-Driven Parametric Aeroelastic Modeling of the
    Pazy Wing".
 
-   The physics:
-   - The section has a bound vortex. Its strength follows the effective
-     incidence, and the flow turns while the wing moves.
-   - The wake gets the change in the bound circulation (the theorem of
-     Kelvin). The shed vortices make the vortex street.
-   - The amplitude of the oscillation changes slowly. This shows the
-     range of trim conditions in the paper.
+   The section has a bound vortex whose strength follows the effective
+   incidence, so the flow turns while the wing moves. The wake gets the
+   change in the bound circulation (the theorem of Kelvin), and the shed
+   vortices make the street. The amplitude changes slowly, which shows
+   the range of trim conditions in the paper.
 
-   Above the streamlines the scene draws four items. The first item is
-   the wake vortices, where the radius shows the strength and the colour
-   shows the sign. The second item is the incidence arc from the datum.
-   The third item is two faint outlines of the section at earlier times.
-   The fourth item is the pitch-plunge orbit. The area in the loop of
-   the orbit is the work that the flow does on the wing in one cycle.
-
-   The speeds and the chord set the reduced frequency
-   k = omega * chord / (2 * freestream). This value keeps the motion in
-   the flutter range. */
+   Over the streamlines: the wake vortices, the incidence arc, two faint
+   outlines at earlier times, and the pitch-plunge orbit, whose loop area
+   is the work the flow does in one cycle. The reduced frequency
+   k = omega * chord / (2 * freestream) keeps the motion in the flutter
+   range. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';

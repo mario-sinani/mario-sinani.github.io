@@ -5,17 +5,14 @@
    Strategy for the Surveillance of Contour-Based Areas using Multirotor
    Aerial Vehicles".
 
-   The scene computes the triggering, and it does not repeat a fixed
-   sequence. The craft follows the last plan in an open loop. It
-   calculates a new plan only when the tracking error goes past a
-   threshold, or when the horizon ends. For this reason the spaces
-   between the tick marks on the rail are not equal. The marks are near
-   to each other where the coastline turns, and far from each other
-   where the coastline is straight.
+   The craft follows the last plan in an open loop. It calculates a new
+   plan only when the tracking error goes past a threshold, or when the
+   horizon ends. For this reason the tick marks on the rail have unequal
+   spaces: close where the coastline turns, far apart where it is
+   straight.
 
-   The scene draws the ground like a chart. Copies of the coastline at
-   an offset are the depth contours, and they give a reference for the
-   motion. */
+   Copies of the coastline at an offset are the depth contours, which
+   give a reference for the motion. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';

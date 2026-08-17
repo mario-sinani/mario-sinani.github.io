@@ -1,15 +1,13 @@
 /* Vortex wake: the vortices that a lifting body sheds from its
    trailing edge.
 
-   This module controls the state of the wake and its physics. It keeps
-   the change in the bound circulation. It sheds that change as discrete
-   vortices. It increases each new vortex to its full strength. It
-   convects the wake downstream. It adds the induced velocity of the
-   wake to a sample of the field. The scene that has the body selects
-   how to draw the wake.
+   The module keeps the change in the bound circulation, sheds it as
+   discrete vortices, increases each new vortex to full strength,
+   convects the wake downstream, and adds its induced velocity to a
+   sample of the field. The scene that has the body draws the wake.
 
-   The theorem of Kelvin sets the strength of the shed vortex: the wake
-   gets the opposite of the increase in the bound circulation. */
+   The theorem of Kelvin sets the shed strength: the wake gets the
+   opposite of the increase in the bound circulation. */
 
 import { addVortex } from './potential-flow.js';
 

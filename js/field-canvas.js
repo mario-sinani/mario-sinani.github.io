@@ -1,12 +1,11 @@
 /* Field canvas: the engine for one moving background.
 
-   The engine controls the canvas. It sets the size of the canvas to the
-   size of the parent element, at the device pixel ratio. It makes the
-   last frame fade to the colour of the page background. It runs the
-   animation loop. It draws one fixed frame if the visitor asks for
-   reduced motion.
+   The engine sizes the canvas to its parent at the device pixel ratio,
+   fades the last frame toward the page background, runs the animation
+   loop, and draws one fixed frame if the visitor asks for reduced
+   motion.
 
-   The scene object gives the drawing. A scene has these members:
+   A scene object gives the drawing, with these members:
 
      fade                    the fade to the background in each frame,
                              from 0 to 1
@@ -14,13 +13,10 @@
      frame(ctx, dt, t, ink)  draw one frame
      still(ctx, ink, t)      draw one fixed frame
 
-   The engine gives a palette of colours to each call (see ink.js), and
-   a scene does not read the CSS. The isDark function gives the theme in
-   use.
-
-   The loop runs only while the canvas is on the screen and the tab is
-   in front. A field in the hero is off the screen for most of a visit.
-   A loop that continues there uses the battery with no result. */
+   The engine passes a palette and the theme to each call (see ink.js),
+   so a scene does not read the CSS. The loop runs only while the canvas
+   is on the screen and the tab is in front, because a hero field is off
+   the screen for most of a visit. */
 
 import { resolveInk } from './ink.js';
 

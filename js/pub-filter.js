@@ -1,18 +1,14 @@
-/* Publication filter: shows one type of publication at a time.
+/* Publication filter: shows one type of publication at a time. CSS
+   shows the controls only if JavaScript is available, and each entry
+   stays on the page if no script runs.
 
-   CSS shows the controls only if JavaScript is available. If no script
-   runs, each entry stays on the page.
+   The filter corrects the two things CSS cannot, because CSS has no
+   selector for the first visible element: the caps of the rail, and the
+   reveal state of an entry that was hidden before it came into view.
 
-   The filter corrects two items that CSS cannot correct, because CSS
-   has no selector for the first visible element. The first item is the
-   caps of the rail at the top and at the bottom of the list. The second
-   item is the reveal state of an entry that was not visible before it
-   came into view.
-
-   The choice goes in the address bar as ?type=journal. A list with a
-   filter is then a link that the visitor can send or keep, and the back
-   button gives the list from before. The "all" state writes no
-   parameter, and the plain address stays plain. */
+   The choice goes in the address bar as ?type=journal, so a filtered
+   list is a link the visitor can send or keep. The "all" state writes no
+   parameter. */
 
 const ALL = 'all';
 const PARAM = 'type';

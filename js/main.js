@@ -1,9 +1,9 @@
 /* Entry point for the home page: the features of all pages, and the
-   field in the hero. This file connects the modules.
+   field in the hero.
 
-   The hero has two fields, and the page selects one of them at random
-   in each visit. The two fields show a cylinder in a stream, with the
-   two methods that this site uses to draw a flow:
+   The hero has two fields, and the page selects one at random in each
+   visit. Both show a cylinder in a stream, by the two methods this site
+   uses to draw a flow:
 
      vortex-street     the Karman street, as streamlines through the
                        vortices that the body sheds

@@ -1,15 +1,12 @@
 /* Theme: the page follows the colour scheme of the device until the
-   visitor selects a theme. The button goes through the three modes in
-   this order: system, light, dark. The visitor can always give the
-   control back to the device.
+   visitor selects a theme. The button goes through system, light and
+   dark, so the visitor can always give the control back to the device.
 
-   In the system mode the module sets no data-theme attribute, and the
-   prefers-color-scheme rules in tokens.css select the palette. A mode
-   that the visitor selects sets data-theme, and that attribute
-   overrides the media query. The module keeps the mode in storage. The
-   script in the head of the document applies the mode before the
-   browser shows the page. The visitor then never sees the wrong
-   theme. */
+   The system mode sets no data-theme attribute, and the
+   prefers-color-scheme rules in tokens.css select the palette. A
+   selected mode sets data-theme, which overrides the media query. The
+   script in the head applies the stored mode before the browser shows
+   the page, so the wrong theme is never visible. */
 
 const STORAGE_KEY = 'theme';
 const MODES = ['system', 'light', 'dark'];

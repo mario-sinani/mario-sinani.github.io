@@ -1,31 +1,21 @@
 /* ---------------------------------------------------------------------------
    Design tokens: the one source for the colours, the fonts and the
-   layout.
+   layout. Fonts: Archivo displays, Source Serif 4 for the body text,
+   IBM Plex Mono for the labels.
 
    Palette: navy text on cool paper, with an Imperial Blue accent. The
-   dark theme keeps the hue, but it makes the accent lighter. On the dark
-   background the colour #0000cd gives a contrast ratio of 1.7:1. That
-   ratio is less than the minimum of 3:1 for a UI element.
+   dark theme keeps the hue but makes the accent lighter, because #0000cd
+   gives only 1.7:1 on the dark background.
 
-   Accent roles. The --accent token is the colour of a mark: a rule, a
-   glyph, a border or a punctuation mark. It must give a ratio of 3:1 on
-   the background of the page. The --accent-strong token is the same hue
-   at the contrast for text. Use it for a link in a hover, focus or
-   current state. It must give a ratio of 4.5:1. The --accent-fill token
-   is the accent as a background, and --accent-fill-ink is the only
-   colour that can go on it. The two tokens change with the theme. In
-   the light theme the background gives enough contrast with white text.
-   The same background in the dark theme needs dark text.
+   Accent roles. --accent marks rules, glyphs and borders, and must give
+   3:1 on the page background. --accent-strong is for a link in a hover,
+   focus or current state, and must give 4.5:1. --accent-fill is the
+   accent as a background, and only --accent-fill-ink goes on it.
 
-   Fonts: Archivo for the display text, Source Serif 4 for the body text
-   and IBM Plex Mono for the labels.
-
-   Themes: the :root block sets the light palette. The media block
-   applies the dark palette if the device asks for dark and the visitor
-   made no choice. The [data-theme="dark"] block applies the dark palette
-   if the visitor selects dark. Each palette sets color-scheme, and the
-   form controls, the scrollbars and the other native widgets then match
-   the page.
+   Themes: :root is light. The media block applies dark if the device
+   asks and the visitor made no choice, and [data-theme="dark"] applies it
+   on request. Each palette sets color-scheme, so the native widgets
+   match.
 --------------------------------------------------------------------------- */
 
 :root {

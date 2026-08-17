@@ -2,16 +2,13 @@
    tracer strokes that move with the flow.
 
    The module integrates each streamline from the same start point in
-   each frame. The set of lines then bends while the body moves. The
-   lines are solid and not dashed. The position of a dash comes from the
-   length of the path. In an unsteady field that length changes in each
-   frame, and the dashes moved without control.
+   each frame, so the set bends while the body moves. The lines are solid
+   and not dashed, because a dash position follows the path length, and
+   in an unsteady field that length changes in each frame.
 
-   The tracers show the motion. The velocity of the field advects each
-   tracer, and the movement is continuous. A tracer fades in when it
-   starts. It fades out at the end of its life, or near the right edge.
-   The module integrates each tail backward through the field, and the
-   tracer stays on its own streamline. */
+   The field velocity advects each tracer, so its movement is continuous.
+   Each tail integrates backward, so the tracer stays on its own
+   streamline. */
 
 import { withAlpha } from './ink.js';
 

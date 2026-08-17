@@ -5,22 +5,15 @@
    Background for "Coastline Tracking for UAVs Using Event-Triggered
    Image-Based Visual Servoing Nonlinear Model Predictive Control".
 
-   Image-based servoing closes the loop in the image. The error is the
-   distance between the position of a feature on the sensor and its
-   correct position. The left panel is the sensor. The crosses are the
-   correct positions of the features. The dots are their positions at
-   this moment. The curves behind the dots are their trajectories.
-   The camera rolls and it also translates, and the trajectories are
-   arcs.
+   The loop closes in the image: the error is the distance between where
+   a feature is on the sensor and where it belongs. The left panel is the
+   sensor, with crosses for the correct positions, dots for the positions
+   now, and curves for the trajectories. The camera rolls, so the
+   trajectories are arcs.
 
-   The scene computes the triggering. One solution gives one velocity
-   command, and the craft then keeps that command. A new solution runs
-   only when the pose moves a set distance from the last solution point,
-   or when the horizon ends. The ticks below the error plot are the
-   times of the solutions. They are near to each other while the error
-   falls quickly, and far from each other while it falls slowly. The
-   dashed line in front of each feature shows where the command in use
-   moves that feature. */
+   One solution gives one velocity command, and the craft keeps it until
+   the pose moves a set distance or the horizon ends. The ticks below the
+   error plot are the solution times. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';

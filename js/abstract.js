@@ -1,12 +1,11 @@
 /* Abstracts: limit each abstract to three lines and add a toggle
-   button. A long list is then easy to read quickly. This is most
-   important on a phone, where one abstract fills the screen.
+   button, so a long list stays easy to read. This is most important on a
+   phone, where one abstract fills the screen.
 
-   A CSS rule sets the limit, and that rule needs the js class. If this
-   module does not run, each abstract shows in full. An abstract that
-   fits in three lines gets no toggle button. The module waits for the
-   web fonts before it measures, because a substitute font gives the
-   wrong height. */
+   A CSS rule sets the limit, and it needs the js class. Each abstract
+   shows in full if this module does not run, and an abstract that
+   already fits gets no button. The module waits for the web fonts before
+   it measures, because a substitute font gives the wrong height. */
 
 const CLAMP_CLASS = 'is-clamped';
 

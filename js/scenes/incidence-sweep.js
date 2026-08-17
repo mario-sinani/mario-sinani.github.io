@@ -4,14 +4,12 @@
    Background for "Physics-Informed Data-Driven Modelling of Nonlinear
    Aerodynamic Forces of the Pazy Wing".
 
-   The motion is quasi-steady, because the subject is the force and
-   not the unsteadiness. The comb of arrows on the chord is the load
-   from thin-aerofoil theory. That load is proportional to
-   sqrt((1-x)/x). It is large at the leading edge and zero at the
-   trailing edge. The arrow at the quarter chord is the resultant. The
-   inset plots the lift against the incidence. The dashed line is the
-   linear prediction, and the distance from that line to the curve is
-   the nonlinearity that the paper models. */
+   The motion is quasi-steady, because the subject is the force and not
+   the unsteadiness. The comb of arrows on the chord is the thin-aerofoil
+   load, proportional to sqrt((1-x)/x), and the arrow at the quarter
+   chord is the resultant. In the inset, the distance from the dashed
+   linear prediction to the curve is the nonlinearity the paper
+   models. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';

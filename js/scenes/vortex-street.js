@@ -1,30 +1,19 @@
-/* Scene: the Karman vortex street behind a circular cylinder. This is
-   one of the fields behind the hero of the site.
+/* Scene: the Karman vortex street behind a circular cylinder, one of
+   the two fields behind the hero.
 
-   A cylinder in a steady stream does not give a steady wake. Above a
-   low Reynolds number the two shear layers roll up one after the other.
-   The cylinder sheds one vortex from each side in alternation. The
-   result is the double row with a stagger that Karman analysed. It is
-   the most well-known figure in fluid dynamics, and it is the start of
-   each description of flow-induced vibration.
+   A cylinder in a steady stream sheds one vortex from each side in
+   turn. The module sheds them, convects them with the stream and with
+   each other, and integrates the streamlines through the total field in
+   each frame. The wave in the lines is the effect of the vortices, and
+   not a fixed oscillation.
 
-   The module sheds the vortices. It convects them with the stream and
-   with each other. It integrates the streamlines through the total
-   field in each frame. The lines then wave while the vortices pass. No
-   part of this scene has an oscillation from a fixed instruction. The
-   rhythm is the shedding frequency, and the wave in the streamlines is
-   the effect of the vortices on the flow.
+   Two numbers come from the literature: St = f D / U sets the shedding
+   frequency, and Karman puts the row spacing h over the vortex spacing a
+   at 0.281. The street is shorter than a real one, because more of it
+   must fit the canvas, but the stagger keeps the ratio.
 
-   Two numbers come from the literature. The Strouhal number
-   St = f D / U sets the shedding frequency. The stability analysis of
-   Karman puts the ratio of the row spacing h to the vortex spacing a at
-   0.281. The street here is shorter than a real street, because more of
-   it must fit on the canvas, but the stagger keeps the correct ratio.
-
-   The cylinder also moves. At lock-in the shedding moves the body at
-   the frequency of the body. This is vortex-induced vibration: a fluid
-   and a structure that exchange energy. This is the subject of the
-   research on this site. */
+   The cylinder also moves: at lock-in the shedding drives it at its own
+   frequency, which is vortex-induced vibration. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
