@@ -1,35 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Each lastmod is the date of the last change that a visitor can see on
+     that page. A change to a comment or to a script is not such a change.
+     A date that is too recent makes a search engine ignore the field. For
+     this reason the dates here must stay true.
+
+     The not-found page is not in this file, because it must not be
+     indexed. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://mariosinani.com/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-17</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/ancf-flared-hinged-wings/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/physics-informed-pazy-wing/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/modal-energy-transfer-beams/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/event-triggered-visual-servoing/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
   <url>
     <loc>https://mariosinani.com/publications/coastline-tracking-uavs/</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-15</lastmod>
   </url>
 </urlset>
