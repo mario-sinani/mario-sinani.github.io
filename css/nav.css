@@ -89,25 +89,10 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the mode. The button has three modes: system,
-   light and dark. Each mode has its own mark. The visitor can then see
-   if the site follows the device or keeps one theme. The earlier set of
-   two marks could not show this. The system mode and the fixed mode of
-   the same colour showed the same icon.
-
-   The button must show one mark and never two. The first rule hides each
-   icon in the button, and a new icon is also hidden until a rule shows
-   it. Then one rule shows one icon for each mode. The three conditions
-   cannot be true together, and two marks can never be on the screen at
-   the same time. No rule must override another rule. The order of the
-   rules and their specificity do not change the result.
-
-   The system mode sets no data-theme attribute. The condition for the
-   system mark is "not light and not dark", and it is also true for a
-   value that neither mode uses. The button is never empty. The script
-   in the head of the document applies a stored mode before the browser
-   shows the page, and the correct mark is on the screen from the
-   start. */
+/* The theme button shows the mode: system, light or dark. Every icon is
+   hidden, and one rule shows one icon. Two marks can never show
+   together. "Not light and not dark" is the system mode, so a value that
+   neither mode uses still shows one mark. */
 .theme-toggle svg { display: none; }
 
 :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .icon-system { display: block; }
