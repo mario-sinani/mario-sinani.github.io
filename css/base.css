@@ -13,6 +13,11 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* The site ships every style it asks for: the serif has a real italic
+     and a real 600. Without this rule a browser can draw a style that
+     has no file, and a slanted or thickened shape is worse than the
+     shape that exists. */
+  font-synthesis: none;
 }
 
 ::selection { background: var(--accent); color: var(--paper); }
