@@ -1,7 +1,7 @@
-/* Publications page: the full record. It extends the rail from
-   publications.css with a page head, a type filter, abstracts and
-   BibTeX. The home page keeps the summary; this page holds the
-   detail. */
+/* Publications page: the full record. This page adds a page head, a
+   filter for the type, an abstract for each entry and BibTeX to the
+   rail from publications.css. The home page shows the summary, and this
+   page shows the detail. */
 
 .page-head {
   max-width: var(--w-content);
@@ -48,8 +48,8 @@
   font-size: 1.06rem;
 }
 
-/* Counts show the shape of the record: plain text between hairlines,
-   no boxes. */
+/* The counts give the size of the record. They are plain text between
+   two 1px lines, with no box. */
 .pub-stats {
   display: flex;
   flex-wrap: wrap;
@@ -96,8 +96,8 @@
   margin-bottom: 2.6rem;
 }
 
-/* Without JavaScript the buttons do nothing, so they stay hidden and
-   the full list shows. */
+/* If no script runs, the buttons do nothing. CSS then hides them, and
+   the page shows the full list. */
 .pub-toolbar { display: none; }
 .js .pub-toolbar { display: flex; }
 
@@ -139,14 +139,16 @@
 
 /* Entries ------------------------------------------------------------- */
 
-/* .pub sets display:grid, which overrides the hidden attribute. This
-   rule restores it for the filter. */
+/* The .pub rule sets display:grid, and that value cancels the hidden
+   attribute. This rule makes the attribute effective again for the
+   filter. */
 .pub[hidden] { display: none; }
 
-/* The rail caps belong to the first and last visible entry, and the
-   filter moves them. Neutralise the child-based caps from
-   publications.css and drive them from classes. The classes are in the
-   markup, so the caps are correct before any script runs. */
+/* The caps of the rail belong to the first visible entry and the last
+   visible entry, and the filter moves them. Cancel the caps from
+   publications.css, because those caps use the position of the child.
+   Then control the caps with classes. The classes are in the HTML, and
+   the caps are correct before a script runs. */
 .pub:first-child .pub-node::before { top: 0; }
 .pub:last-child .pub-node::before { bottom: 0; height: auto; }
 .pub:last-child .pub-body { padding-bottom: 3.2rem; }
@@ -155,8 +157,9 @@
 .pub.rail-end .pub-node::before { bottom: auto; height: 1.25rem; }
 .pub.rail-end .pub-body { padding-bottom: 0; }
 
-/* The 1fr track sizes to its content, and the wide BibTeX block would
-   stretch it. min-width keeps the track at the column width. */
+/* The width of the 1fr track comes from its content, and the wide
+   BibTeX block makes the track too wide. The min-width property keeps
+   the track at the width of the column. */
 .pubs-page .pub-body {
   min-width: 0;
   padding-bottom: 3.2rem;
@@ -175,8 +178,8 @@
   color: var(--muted);
 }
 
-/* Clamp the abstract only where the toggle exists. Without JavaScript
-   the full abstract shows. */
+/* Limit the height of the abstract only if the page has the toggle
+   button. If no script runs, the page shows the full abstract. */
 .js .pub-abstract.is-clamped p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -233,9 +236,10 @@
 
 .pub-doi { color: var(--muted); overflow-wrap: anywhere; }
 
-/* The record's style lives in cite.css. Here it takes its own row in
-   .pub-actions, so an open record does not reflow the links beside it.
-   min-width lets the row collapse around the scrolling <pre>. */
+/* The style of the record is in cite.css. On this page the record has
+   its own row in .pub-actions. An open record then does not move the
+   links near it. The min-width property lets the row become as narrow
+   as the <pre> element that scrolls. */
 .pub-actions .cite {
   flex: 1 1 100%;
   min-width: 0;
@@ -253,8 +257,8 @@
     padding: 0.9rem 0.9rem 0.95rem 0;
   }
 
-  /* Two stats per row. The third starts a new row, so its left rule
-     must reset. */
+  /* Each row has two statistics. The third statistic starts a new row,
+     and it must not keep the line on its left. */
   .pub-stat:nth-child(odd) + .pub-stat { border-left: 1px solid var(--hairline); padding-left: 1rem; }
   .pub-stat:nth-child(odd) { border-left: 0; padding-left: 0; }
 

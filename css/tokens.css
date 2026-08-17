@@ -1,27 +1,31 @@
 /* ---------------------------------------------------------------------------
-   Design tokens: the single source for colour, type and layout.
+   Design tokens: the one source for the colours, the fonts and the
+   layout.
 
-   Palette: navy ink on cool paper, with an Imperial Blue accent. The dark
-   theme keeps the hue but makes the accent lighter. On the dark ground
-   #0000cd gives a contrast ratio of 1.7:1, below the 3:1 minimum for UI
-   elements.
+   Palette: navy text on cool paper, with an Imperial Blue accent. The
+   dark theme keeps the hue, but it makes the accent lighter. On the dark
+   background the colour #0000cd gives a contrast ratio of 1.7:1. That
+   ratio is less than the minimum of 3:1 for a UI element.
 
-   Accent roles. --accent is the mark colour: rules, glyphs, borders and
-   the punctuation flourishes. It must reach 3:1 on the page ground.
-   --accent-strong is the same hue at text contrast, for a link that is
-   in a hover, focus or current state. It must reach 4.5:1.
-   --accent-fill is the accent as a filled ground, and --accent-fill-ink
-   is the only colour that may sit on it. The pair changes with the
-   theme, because a fill that reads with white in light needs dark text
-   in dark.
+   Accent roles. The --accent token is the colour of a mark: a rule, a
+   glyph, a border or a punctuation mark. It must give a ratio of 3:1 on
+   the background of the page. The --accent-strong token is the same hue
+   at the contrast for text. Use it for a link in a hover, focus or
+   current state. It must give a ratio of 4.5:1. The --accent-fill token
+   is the accent as a background, and --accent-fill-ink is the only
+   colour that can go on it. The two tokens change with the theme,
+   because a background that gives enough contrast with white text in
+   the light theme needs dark text in the dark theme.
 
-   Type: Archivo (display), Source Serif 4 (body), IBM Plex Mono (meta).
+   Fonts: Archivo for the display text, Source Serif 4 for the body text
+   and IBM Plex Mono for the labels.
 
-   Themes: the :root block sets the light palette. The media block applies
-   the dark palette when the device prefers dark and no explicit choice is
-   set. [data-theme="dark"] applies it when the visitor selects dark. Each
-   palette sets color-scheme, so form controls, scrollbars and other
-   native widgets agree with the page.
+   Themes: the :root block sets the light palette. The media block
+   applies the dark palette if the device asks for dark and the visitor
+   made no choice. The [data-theme="dark"] block applies the dark palette
+   if the visitor selects dark. Each palette sets color-scheme, and the
+   form controls, the scrollbars and the other native widgets then match
+   the page.
 --------------------------------------------------------------------------- */
 
 :root {

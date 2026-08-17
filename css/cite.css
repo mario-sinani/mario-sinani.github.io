@@ -1,6 +1,7 @@
-/* Citation record: a BibTeX entry behind a native disclosure, shared by the
-   publication list and the individual paper pages. The disclosure works on
-   its own; only the copy button needs a script, so only it is gated. */
+/* Citation record: a BibTeX entry in a native disclosure element. The
+   publication list and each paper page use this record. The disclosure
+   element opens without a script. Only the copy button needs a script,
+   and CSS hides only that button if no script runs. */
 
 .cite {
   min-width: 0;
@@ -42,8 +43,8 @@
   font-size: 0.72rem;
   line-height: 1.65;
   color: var(--muted);
-  /* Long lines scroll inside the box. They must not widen the page or
-     reflow the record. */
+  /* A long line scrolls in the box. It must not make the page wider,
+     and it must not change the layout of the record. */
   white-space: pre;
   -webkit-overflow-scrolling: touch;
 }

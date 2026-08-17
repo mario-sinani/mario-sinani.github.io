@@ -1,4 +1,4 @@
-/* Base: reset, page ground and global typography. */
+/* Base: the reset, the page background and the fonts for all pages. */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -19,21 +19,23 @@ body {
 
 a { color: inherit; }
 
-/* A form control does not inherit the page type: the browser gives it a
-   font of its own, at weight 400. Every button on this site carries a
-   mono label beside other mono labels at weight 500, so the two must
-   agree. Each button still sets its own size and colour. */
+/* A form control does not inherit the fonts of the page. The browser
+   gives the control its own font, at weight 400. Each button on this
+   site has a mono label, and the other mono labels near it use weight
+   500. The two weights must be the same. Each button sets its own size
+   and colour. */
 button { font: inherit; color: inherit; }
 
-/* The browser also forces its own monospace family on pre and code, and
-   that rule beats inheritance. Name the site face instead. */
+/* The browser also applies its own monospace family to pre and code.
+   That rule has more weight than inheritance. These elements must name
+   the font of the site. */
 pre, code { font-family: var(--font-mono); }
 
 h1, h2, h3 { text-wrap: balance; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* A skip link for keyboard users. It stays hidden until it has focus. */
+/* A skip link for keyboard users. The link shows only if it has focus. */
 .skip-link {
   position: fixed;
   top: -4rem;
@@ -51,11 +53,12 @@ h1, h2, h3 { text-wrap: balance; }
 
 .skip-link:focus { top: 1rem; }
 
-/* Touch targets. Several controls are small by design, which is correct
-   for a pointer but below the 24px minimum for a finger. On a touch
-   screen each one gets an invisible pad through a pseudo-element, so the
-   hit area grows and the drawing does not move. The rows that can wrap
-   also open up, so two stacked pads do not overlap. */
+/* Touch areas. Some controls are small, which is correct for a
+   pointer. But these controls are smaller than the minimum of 24px for
+   a finger. On a touch screen, a pseudo-element gives each control an
+   invisible pad. The area that accepts a touch becomes larger, and the
+   control does not move. The rows that can wrap get more space, because
+   two pads in a column must not overlap. */
 @media (pointer: coarse) {
   .head-links a,
   .pubs-footer a,
@@ -81,7 +84,7 @@ h1, h2, h3 { text-wrap: balance; }
     inset: -0.35rem 0;
   }
 
-  /* The icon buttons keep their 2rem circle and reach 44px to the touch. */
+  /* The icon buttons keep their circle of 2rem. Their touch area is 44px. */
   .theme-toggle::after,
   .nav-toggle::after {
     content: "";

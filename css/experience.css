@@ -1,4 +1,5 @@
-/* Experience: chronological timeline with organization logo chips. */
+/* Experience: a timeline in order of date, with an organisation logo
+   chip for each entry. */
 
 .timeline { display: grid; gap: 0; }
 
@@ -59,8 +60,8 @@
   .timeline-what h3 { font-size: 1.02rem; }
 }
 
-/* A link in an entry: the text colour, a hairline underline, and the
-   accent colour on hover. */
+/* A link in an entry uses the text colour and a 1px underline. On
+   hover it changes to the accent colour. */
 .timeline-text p a {
   color: inherit;
   text-decoration: none;

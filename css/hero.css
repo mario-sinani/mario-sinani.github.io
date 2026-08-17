@@ -1,10 +1,12 @@
-/* Hero: a full-height introduction over the animated field canvas. */
+/* Hero: an introduction at full height, above the canvas that shows
+   the flow field. */
 
 .hero {
   position: relative;
   min-height: calc(92vh - 3.2rem);
-  /* svh ignores the mobile browser toolbars, so the hero does not jump
-     when the address bar hides on scroll. */
+  /* The svh unit does not include the toolbars of a mobile browser.
+     The hero then does not move when the browser hides the address bar
+     during a scroll. */
   min-height: calc(92svh - 3.2rem);
   display: flex;
   align-items: center;
@@ -81,8 +83,8 @@
 @media (max-width: 720px) {
   .hero-inner { padding: 3.25rem 1.15rem 3.5rem; }
 
-  /* Allow a smaller size than the desktop minimum, so the name fits a
-     320px screen. */
+  /* Permit a size smaller than the minimum for a desktop, because the
+     name must fit a screen of 320px. */
   .hero h1 {
     font-size: clamp(2.3rem, 11vw, 3.6rem);
     margin: 0.9rem 0 1.25rem;

@@ -1,26 +1,28 @@
-/* Not-found page: the site's hero over a field, then the places a lost
-   visitor is most likely to want.
+/* Not-found page: the hero of the site above a flow field, then the
+   pages that a lost visitor most probably wants.
 
-   The destination cells reuse the research grid, so this file holds only
-   what the page adds: a shorter hero, and the behaviour of a cell whose
-   whole area is a link. */
+   The destination cells use the research grid again. This file has only
+   the rules that the page adds: a shorter hero, and the behaviour of a
+   cell that is a link across its full area. */
 
-/* The page carries no long content. A full-height hero would push every
-   destination below the fold, which is the opposite of the purpose, so
-   the hero is shorter and its foot is tighter than a section foot. */
+/* The page has no long text. A hero at full height moves each
+   destination off the screen, and this is the opposite of the purpose
+   of the page. For this reason the hero is shorter, and the space below
+   it is less than the space below a section. */
 .not-found-hero { min-height: calc(58vh - 3.2rem); }
 .not-found-hero { min-height: calc(58svh - 3.2rem); }
 
 .not-found-hero .hero-inner { padding-bottom: 2.4rem; }
 
-/* "Page not found" is longer than a name, so it starts smaller. */
+/* "Page not found" is longer than a name, and it starts at a smaller
+   size. */
 .not-found-hero h1 { font-size: clamp(2.2rem, 6.5vw, 4rem); }
 
 .not-found-hero .thesis { max-width: 30em; }
 
-/* The title carries the link, so a screen reader announces the
-   destination and not the whole cell. The pseudo-element then spreads
-   that one link across the cell, so a pointer can hit anywhere. */
+/* The title has the link. A screen reader then reads the destination
+   and not the full cell. The pseudo-element makes that one link fill
+   the cell, and a pointer can hit any part of it. */
 .go-cell { position: relative; transition: background 140ms ease; }
 
 .go-cell h3 a {
@@ -37,9 +39,10 @@
 .go-cell:hover { background: var(--paper); }
 .go-cell:hover h3 a { color: var(--accent-strong); }
 
-/* The link fills the cell, so its focus ring belongs on the cell. The
-   ring moves only where :has can draw it. Without :has the link keeps
-   the ring from base.css, which is smaller but never absent. */
+/* The link fills the cell, and the focus ring must be on the cell for
+   this reason. The ring moves only in a browser that has :has. Without
+   :has, the link keeps the ring from base.css. That ring is smaller,
+   but it is always there. */
 .go-cell:focus-within { background: var(--paper); }
 .go-cell:focus-within h3 a { color: var(--accent-strong); }
 
@@ -48,7 +51,7 @@
   .go-cell:has(a:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 }
 
-/* A mono index above the title, in the style the site uses for a label. */
+/* A mono number above the title, in the label style of the site. */
 .go-cell .go-label {
   margin-top: 0.9rem;
   font-family: var(--font-mono);

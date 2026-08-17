@@ -1,4 +1,5 @@
-/* Site navigation: sticky bar with brand, section links and theme toggle. */
+/* Site navigation: a sticky bar with the name, the section links and
+   the theme button. */
 
 .site-nav {
   position: sticky;
@@ -50,7 +51,7 @@
 
 .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent-strong); }
 
-/* The page the visitor is on. */
+/* The mark for the current page. */
 .nav-links a[aria-current="page"] { color: var(--accent-strong); }
 
 .nav-actions {
@@ -78,8 +79,8 @@
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 
-/* Both buttons need JavaScript, so CSS hides them without it. The menu
-   button also shows only on small screens. */
+/* The two buttons need JavaScript. CSS hides them if no script runs.
+   The menu button also shows only on a small screen. */
 .theme-toggle, .nav-toggle { display: none; }
 
 .js .theme-toggle { display: inline-flex; }
@@ -88,15 +89,16 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the mode, and the button has three: system,
-   light and dark. A mark for each lets the visitor see whether the site
-   follows the device or holds a fixed theme. The earlier pair of marks
-   could not show that, because system and the matching fixed mode drew
-   the same icon.
+/* The theme button shows the mode. The button has three modes: system,
+   light and dark. Each mode has its own mark. The visitor can then see
+   if the site follows the device or keeps one theme. The earlier set of
+   two marks could not show this, because the system mode and the fixed
+   mode of the same colour showed the same icon.
 
-   System mode sets no data-theme, so the bare selector is that mode. The
-   inline script in the document head applies any stored mode before the
-   first paint, so the correct mark is on screen from the start. */
+   The system mode sets no data-theme attribute. A selector with no
+   attribute selects that mode. The script in the head of the document
+   applies a stored mode before the browser shows the page. The correct
+   mark is then on the screen from the start. */
 .theme-toggle .icon-sun,
 .theme-toggle .icon-moon { display: none; }
 .theme-toggle .icon-system { display: block; }
@@ -107,10 +109,11 @@
 :root[data-theme="dark"] .theme-toggle .icon-system { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
-/* Below 760px the brand, the five links and the buttons do not fit on
-   one line, so the links move to their own row. With JavaScript the menu
-   button collapses that row. Without JavaScript the links stay visible
-   and wrap, so every section is reachable. */
+/* At a width less than 760px, the name, the five links and the buttons
+   do not fit on one line. The links then move to their own row. If
+   JavaScript runs, the menu button hides that row. If no script runs,
+   the links stay visible and wrap. The visitor can then reach each
+   section. */
 @media (max-width: 760px) {
   .site-nav .nav-inner {
     flex-wrap: wrap;
@@ -133,8 +136,8 @@
   .js .nav-links {
     display: none;
     flex-direction: column;
-    /* Stretch each row to the full width, so the whole row is a touch
-       target, not only the label. */
+    /* Make each row as wide as the bar. A touch then hits the full row
+       and not only the label. */
     align-items: stretch;
     gap: 0;
     margin-top: 0.1rem;
@@ -147,7 +150,7 @@
     animation: nav-reveal 180ms ease;
   }
 
-  /* Touch targets for the stacked links. */
+  /* The touch areas for the links in a column. */
   .js .nav-links a {
     padding: 0.72rem 0.15rem;
     font-size: 0.78rem;
