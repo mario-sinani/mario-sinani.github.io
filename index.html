@@ -13,7 +13,8 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d141d">
 
-  <!-- Open Graph: the link preview on LinkedIn, Slack, iMessage and WhatsApp -->
+  <!-- Open Graph: the preview of the link on LinkedIn, Slack, iMessage
+       and WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://mariosinani.com/">
   <meta property="og:site_name" content="Mario A. Sinani">
@@ -36,20 +37,21 @@
   <!-- Google Search Console -->
   <meta name="google-site-verification" content="iYdqCPBniWsodqhbYm3SBSEj9CaYcx9twYFROuvLI-I" />
   
-  <!-- Icons & manifest -->
+  <!-- The icons and the manifest -->
   <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/icons/icon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="site.webmanifest">
 
-  <!-- Performance: preload the critical fonts and modules -->
+  <!-- Performance: preload the most important fonts and modules -->
   <link rel="preload" href="assets/fonts/Archivo-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/SourceSerif4-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/IBMPlexMono-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="modulepreload" href="js/site.js">
   <link rel="modulepreload" href="js/theme.js">
   <link rel="modulepreload" href="js/field-canvas.js">
-  <!-- Both hero fields, because the page selects one at random -->
+  <!-- The two hero fields, because the page selects one of them at
+       random -->
   <link rel="modulepreload" href="js/scenes/vortex-street.js">
   <link rel="modulepreload" href="js/scenes/lifting-cylinder.js">
   <link rel="modulepreload" href="js/flowlines.js">
@@ -74,10 +76,12 @@
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/motion.css">
   <script>
-    // Apply the saved theme before first paint, so there is no flash.
-    // Add the js class, so CSS can enable script-dependent controls.
-    // With no stored choice, data-theme stays unset and the page follows
-    // the device through prefers-color-scheme.
+    // Apply the theme from storage before the browser shows the page,
+    // because the visitor must not see the wrong theme.
+    // Add the js class, and CSS can then show the controls that need a
+    // script.
+    // If storage has no choice, data-theme stays unset, and the page
+    // follows the device through prefers-color-scheme.
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}
@@ -86,11 +90,12 @@
     })();
   </script>
 
-  <!-- Structured data for search engines.
+  <!-- Structured data for the search engines.
 
-       The site itself. A search engine reads the name here to title the
-       result, in place of the bare domain. The publisher points at the
-       person record below, so the two are one entity. -->
+       This block is the site. A search engine reads the name here and
+       uses it as the title of the result, in place of the domain only.
+       The publisher points to the person record below, and the two
+       records are then one entity. -->
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -105,9 +110,9 @@
 }
   </script>
 
-  <!-- This page, as the profile of one person. The wrapper tells a search
-       engine that the page is about the person in mainEntity, and not
-       only that the person is mentioned on it. -->
+  <!-- This block is the page, as the profile of one person. It tells a
+       search engine that the page is about the person in mainEntity. The
+       person is not only a name on the page. -->
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -266,7 +271,7 @@
           <a href="https://scholar.google.com/citations?user=zb5_6PwAAAAJ" rel="noopener">Google Scholar ↗</a>
         </div>
       </div>
-      <!-- Node icons. Each timeline entry below refers to one of these. -->
+      <!-- The node icons. Each entry below uses one of these. -->
       <svg style="display:none" aria-hidden="true">
         <symbol id="icon-conference" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></symbol>
         <symbol id="icon-journal" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 15.5h6"/></symbol>

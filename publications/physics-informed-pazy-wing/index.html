@@ -13,7 +13,8 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d141d">
 
-  <!-- Open Graph: the link preview on LinkedIn, Slack, iMessage and WhatsApp -->
+  <!-- Open Graph: the preview of the link on LinkedIn, Slack, iMessage
+       and WhatsApp -->
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mariosinani.com/publications/physics-informed-pazy-wing/">
   <meta property="og:site_name" content="Mario A. Sinani">
@@ -35,7 +36,7 @@
   <meta name="twitter:image" content="https://mariosinani.com/assets/og/physics-informed-pazy-wing.png">
   <meta name="twitter:image:alt" content="Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces of the Pazy Wing - M. A. Sinani, R. Palacios, A. Wynn, AIAA SciTech 2025 - over a drawing of a wing section and its lift curve.">
 
-  <!-- Scholarly indexing: Google Scholar reads these tags -->
+  <!-- Google Scholar reads these tags -->
   <meta name="citation_title" content="Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces of the Pazy Wing">
   <meta name="citation_author" content="Sinani, Mario A.">
   <meta name="citation_author" content="Palacios, Rafael">
@@ -44,13 +45,13 @@
   <meta name="citation_conference_title" content="AIAA SCITECH 2025 Forum">
   <meta name="citation_doi" content="10.2514/6.2025-0422">
 
-  <!-- Icons & manifest -->
+  <!-- The icons and the manifest -->
   <link rel="icon" href="../../assets/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="../../assets/icons/icon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="../../site.webmanifest">
 
-  <!-- Performance: preload the critical fonts and modules -->
+  <!-- Performance: preload the most important fonts and modules -->
   <link rel="preload" href="../../assets/fonts/Archivo-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../../assets/fonts/SourceSerif4-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../../assets/fonts/IBMPlexMono-500.woff2" as="font" type="font/woff2" crossorigin>
@@ -79,10 +80,12 @@
   <link rel="stylesheet" href="../../css/footer.css">
   <link rel="stylesheet" href="../../css/motion.css">
   <script>
-    // Apply the saved theme before first paint, so there is no flash.
-    // Add the js class, so CSS can enable script-dependent controls.
-    // With no stored choice, data-theme stays unset and the page follows
-    // the device through prefers-color-scheme.
+    // Apply the theme from storage before the browser shows the page,
+    // because the visitor must not see the wrong theme.
+    // Add the js class, and CSS can then show the controls that need a
+    // script.
+    // If storage has no choice, data-theme stays unset, and the page
+    // follows the device through prefers-color-scheme.
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}
