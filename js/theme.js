@@ -56,8 +56,8 @@ function syncThemeColor() {
 
 function syncButton() {
   if (!button) return;
-  button.setAttribute('aria-label', `Colour theme: ${mode}. Switch to ${nextMode()}.`);
-  button.title = `Colour theme: ${mode}`;
+  button.setAttribute('aria-label', `Color theme: ${mode}. Switch to ${nextMode()}.`);
+  button.title = `Color theme: ${mode}`;
 }
 
 function apply() {
