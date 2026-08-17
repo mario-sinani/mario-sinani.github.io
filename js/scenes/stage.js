@@ -1,10 +1,11 @@
-/* Stage: where a paper scene sits on the page.
+/* Stage: the position of a paper scene on the page.
 
-   The hero text is a centred column with a maximum width. A scene placed
-   by viewport fractions drifts from that column on wide screens. This
-   module anchors the scene to the same column: subject on the left,
-   instrument on the right, both in one band above the hero panel. The
-   panel's vertical centring keeps that band clear at every height. */
+   The text of the hero is a column at the centre, with a maximum width.
+   A scene at a fraction of the viewport moves away from that column on
+   a wide screen. This module holds the scene on the same column: the
+   subject on the left, the instrument on the right, and the two items
+   in one band above the hero panel. The panel is at the centre in the
+   vertical direction, and that band stays clear at each height. */
 
 const CONTENT_WIDTH = 1060;   // matches --w-content
 const COLUMN_PADDING = 24;    // matches the column's 1.5rem side padding
@@ -16,10 +17,10 @@ export function stageFor(w, h) {
   return { left, right: left + width, width, y: h * BAND };
 }
 
-/* Draw the datum: one dashed hairline across the stage. Each scene uses
-   it as its zero line: the freestream, the beam at rest, or the joint
-   with no fold. The subject sits on the datum and the instrument
-   measures from it. The datum joins the two drawings. */
+/* Draw the datum: one dashed thin line across the stage. Each scene
+   uses it as its zero line: the freestream, the beam at rest, or the
+   joint with no fold. The subject is on the datum, and the instrument
+   starts from it. The datum joins the two drawings. */
 export function drawDatum(ctx, stage, ink) {
   ctx.beginPath();
   ctx.setLineDash([3, 4]);

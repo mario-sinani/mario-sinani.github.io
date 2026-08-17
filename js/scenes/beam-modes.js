@@ -1,26 +1,28 @@
 /* Scene: a clamped-free beam in its first three modes, with energy
-   that moves between them and a bound over the total.
+   that moves between the modes and a bound on the total.
 
    Background for "Capturing & Bounding Nonlinear Modal Energy Transfer
    for Geometrically Exact Beams using Semidefinite Programming".
 
    The mode shapes are the clamped-free eigenfunctions, with the roots
-   of cos(bL)cosh(bL) = -1. The frequencies keep their true ratios, so
-   the third mode blurs while the first still swings.
+   of cos(bL)cosh(bL) = -1. The frequencies keep their true ratios. The
+   third mode moves too quickly to see clearly, and the first mode still
+   moves slowly.
 
-   The scene draws three layers. The strobe is the beam at recent
-   instants, so the motion shape is visible at once. The envelope is the
-   largest deflection the current modal energies allow, with all modes
-   in phase. The bars are the energy share per mode, measured against
-   the bound from the paper's semidefinite program. */
+   The scene draws three layers. The strobe shows the beam at several
+   recent times, and the shape of the motion is then visible in one
+   view. The envelope is the largest deflection that the modal energies
+   permit, with all the modes in phase. Each bar gives the part of the
+   energy in one mode. The scene compares each part with the bound from
+   the semidefinite program in the paper. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
 
-// Roots of cos(bL)cosh(bL) = -1. Each mode's frequency scales with
-// the square of its root.
+// The roots of cos(bL)cosh(bL) = -1. The frequency of a mode is
+// proportional to the square of its root.
 const ROOTS = [1.8751, 4.6941, 7.8548];
 const SLOSH_SECONDS = 14;       // period of the energy exchange
 const BASE_HZ = 0.09;           // first mode; the rest follow the ratios
@@ -32,7 +34,7 @@ function sigmaFor(bL) {
   return (Math.cosh(bL) + Math.cos(bL)) / (Math.sinh(bL) + Math.sin(bL));
 }
 
-/** Clamped-free mode shape, normalised so its largest value is one. */
+/** A clamped-free mode shape. Its largest value is one. */
 function modeShape(bL, sigma, xi) {
   const b = bL * xi;
   const raw = Math.cosh(b) - Math.cos(b) - sigma * (Math.sinh(b) - Math.sin(b));
@@ -47,13 +49,14 @@ export function createBeamModes() {
       bL,
       sigma,
       omega: TWO_PI * BASE_HZ * ((bL * bL) / (ROOTS[0] * ROOTS[0])),
-      // Higher modes carry the same energy in less displacement.
+      // A higher mode has the same energy with less displacement.
       reach: 1 / (i + 1) ** 1.6,
       energy: 0,
     };
   });
 
-  // The mode shapes are constant. Evaluate them once per layout.
+  // The mode shapes are constant. Calculate them one time in each
+  // layout.
   const shape = modes.map(() => new Float32Array(SAMPLES + 1));
   const beam = { x: 0, y: 0, length: 200, amplitude: 30 };
   const bars = { x: 0, y: 0, w: 0, gap: 0 };
@@ -67,8 +70,8 @@ export function createBeamModes() {
     }
   }
 
-  /* Move energy between the modes. Normalise the three shares each
-     frame, so the total is constant. */
+  /* Move energy between the modes. Divide the three parts by their
+     total in each frame, and the total then stays constant. */
   function slosh(t) {
     const phase = (TWO_PI * t) / SLOSH_SECONDS;
     let sum = 0;
@@ -89,7 +92,8 @@ export function createBeamModes() {
     return w;
   }
 
-  /** Largest deflection these energies allow, every mode in phase. */
+  /** The largest deflection that these energies permit, with all the
+      modes in phase. */
   function envelope(i) {
     let w = 0;
     for (let m = 0; m < modes.length; m++) {
@@ -138,7 +142,8 @@ export function createBeamModes() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    // The clamp: a short upright with hatching to mark the fixed end.
+    // The clamp: a short vertical line with hatch lines. It shows the
+    // fixed end.
     const reach = beam.amplitude * 0.72;
     ctx.beginPath();
     ctx.moveTo(beam.x, beam.y - reach);
@@ -177,7 +182,7 @@ export function createBeamModes() {
       ctx.stroke();
     }
 
-    // The bound: the line the shares are measured against.
+    // The bound: the line that the scene compares the parts with.
     const boundX = bars.x + bars.w * 0.62;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
@@ -190,8 +195,8 @@ export function createBeamModes() {
   }
 
   return {
-    // The strobe carries the history. The engine clears the canvas
-    // each frame.
+    // The strobe shows the earlier states. The engine clears the
+    // canvas in each frame.
     fade: 1,
 
     layout(w, h) {
@@ -211,7 +216,7 @@ export function createBeamModes() {
 
     frame(ctx, dt, t, ink) {
       slosh(t);
-      // The datum is the beam at rest, extended to the bars.
+      // The datum is the beam at rest, and it continues to the bars.
       drawDatum(ctx, stage, ink);
       drawEnvelope(ctx, ink);
       drawStrobe(ctx, t, ink);

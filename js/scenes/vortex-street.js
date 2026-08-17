@@ -1,30 +1,30 @@
 /* Scene: the Karman vortex street behind a circular cylinder. This is
-   the field behind the site's hero.
+   one of the fields behind the hero of the site.
 
-   A cylinder in a steady stream does not give a steady wake. Above a low
-   Reynolds number the two shear layers roll up in turn, and the cylinder
-   sheds one vortex from each side in alternation. The result is the
-   staggered double row that Karman analysed: the most familiar figure in
-   fluid dynamics, and the start of every account of flow-induced
-   vibration.
+   A cylinder in a steady stream does not give a steady wake. Above a
+   low Reynolds number the two shear layers roll up one after the other,
+   and the cylinder sheds one vortex from each side in alternation. The
+   result is the double row with a stagger that Karman analysed. It is
+   the most well-known figure in fluid dynamics, and it is the start of
+   each description of flow-induced vibration.
 
-   The module sheds the vortices, convects them with the stream and with
-   each other, and integrates the streamlines through the total field
-   each frame. The lines therefore wave as the vortices pass. Nothing
-   here oscillates because it was told to: the rhythm is the shedding
-   frequency, and the wave in the streamlines is what the vortices do to
-   the flow.
+   The module sheds the vortices. It convects them with the stream and
+   with each other. It integrates the streamlines through the total
+   field in each frame. The lines then wave while the vortices pass. No
+   part of this scene has an oscillation from a fixed instruction. The
+   rhythm is the shedding frequency, and the wave in the streamlines is
+   the effect of the vortices on the flow.
 
-   Two numbers come from the literature. The Strouhal number St = f D / U
-   sets the shedding frequency, and Karman's stability analysis puts the
-   ratio of the row spacing h to the vortex spacing a at 0.281. The
-   street here is shorter than a real one, so that more of it fits on the
-   canvas, but the stagger keeps the correct ratio.
+   Two numbers come from the literature. The Strouhal number
+   St = f D / U sets the shedding frequency. The stability analysis of
+   Karman puts the ratio of the row spacing h to the vortex spacing a at
+   0.281. The street here is shorter than a real street, because more of
+   it must fit on the canvas, but the stagger keeps the correct ratio.
 
-   The cylinder also moves. At lock-in the shedding drives the body at
-   its own frequency, which is vortex-induced vibration - a fluid and a
-   structure exchanging energy, which is the subject of the research this
-   site is about. */
+   The cylinder also moves. At lock-in the shedding moves the body at
+   the frequency of the body. This is vortex-induced vibration: a fluid
+   and a structure that exchange energy. This is the subject of the
+   research on this site. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -49,7 +49,7 @@ export function createVortexStreet() {
   let sinceShed = 0;
   let nextSide = 1;
 
-  /** Add the wake's induced velocity at a point. */
+  /** Add the induced velocity of the wake at a point. */
   function addWake(out, x, y) {
     for (let i = 0; i < vortices.length; i++) {
       const v = vortices[i];
@@ -67,9 +67,9 @@ export function createVortexStreet() {
     return out;
   }
 
-  /* One vortex leaves each side in turn. The upper row turns clockwise
-     on screen and the lower row turns the other way, which is the sense
-     that gives the wake its velocity deficit. */
+  /* One vortex leaves each side, one after the other. The upper row
+     turns clockwise on the screen, and the lower row turns in the other
+     direction. These directions give the wake its velocity deficit. */
   function shed(dt) {
     sinceShed += dt;
     if (sinceShed < street.period / 2) return;
@@ -84,9 +84,9 @@ export function createVortexStreet() {
     if (vortices.length > MAX_VORTICES) vortices.shift();
   }
 
-  /* Each vortex travels with the stream and with the field of the
-     others. Mutual induction is what keeps the two rows staggered as
-     they go. */
+  /* Each vortex moves with the stream and with the field of the other
+     vortices. Their mutual induction keeps the stagger between the two
+     rows. */
   function convect(dt) {
     const moved = vortices.map((v) => {
       const out = { u: FREESTREAM * CONVECTION, v: 0 };
@@ -105,8 +105,8 @@ export function createVortexStreet() {
     vortices = vortices.filter((v) => v.x < width + street.spacing);
   }
 
-  /* Vortex-induced vibration: the shedding drives the cylinder across
-     the stream at the shedding frequency. */
+  /* Vortex-induced vibration: the shedding moves the cylinder across
+     the stream, at the shedding frequency. */
   function move(t) {
     body.y = body.baseY
       + Math.sin((TWO_PI * t) / street.period) * VIV_AMPLITUDE * body.r * 2;
@@ -120,8 +120,8 @@ export function createVortexStreet() {
     ctx.stroke();
   }
 
-  /* The vortex cores, as light rings. They mark the centres the
-     streamlines wind around. */
+  /* The cores of the vortices, as light rings. They show the centres
+     that the streamlines turn around. */
   function drawCores(ctx, ink) {
     for (let i = 0; i < vortices.length; i++) {
       const v = vortices[i];
@@ -136,7 +136,8 @@ export function createVortexStreet() {
   }
 
   return {
-    // A drawn figure. The engine clears it fully each frame.
+    // A figure with lines. The engine clears it completely in each
+    // frame.
     fade: 1,
 
     layout(w, h) {
@@ -170,8 +171,8 @@ export function createVortexStreet() {
     },
 
     still(ctx, ink, t) {
-      /* Build one street, so the frozen frame shows the pattern rather
-         than an empty wake. */
+      /* Make one street, because the fixed frame must show the pattern
+         and not an empty wake. */
       const at = t || 0;
       vortices = [];
       for (let k = MAX_VORTICES - 1; k >= 0; k--) {

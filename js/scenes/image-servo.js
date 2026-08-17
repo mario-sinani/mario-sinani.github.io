@@ -1,22 +1,26 @@
 /* Scene: event-triggered image-based visual servoing. The camera sees
-   the coastline, and the controller drives it back to where it belongs.
+   the coastline, and the controller moves it back to the correct
+   position.
 
    Background for "Coastline Tracking for UAVs Using Event-Triggered
    Image-Based Visual Servoing Nonlinear Model Predictive Control".
 
-   Image-based servoing closes the loop in the image: the error is the
-   gap between where the features sit on the sensor and where they
-   should sit. The left panel is the sensor. The crosses are the desired
-   feature positions, the dots are the current positions, and the curves
-   behind the dots are the feature trajectories. The camera rolls as
-   well as translates, so the trajectories are arcs.
+   Image-based servoing closes the loop in the image. The error is the
+   distance between the position of a feature on the sensor and its
+   correct position. The left panel is the sensor. The crosses are the
+   correct positions of the features, the dots are their positions at
+   this moment, and the curves behind the dots are their trajectories.
+   The camera rolls and it also translates, and the trajectories are
+   arcs.
 
-   The triggering is simulated. One solve fixes one velocity command,
-   which is then held. A new solve runs only when the pose drifts a set
-   distance from the last solve point, or when the horizon expires. The
-   ticks under the error plot are the solve instants: dense while the
-   error is steep, sparse as it flattens. The dashed continuation ahead
-   of each feature shows where the held command would carry it. */
+   The scene computes the triggering. One solution gives one velocity
+   command, and the craft then keeps that command. A new solution runs
+   only when the pose moves a set distance from the last solution point,
+   or when the horizon ends. The ticks below the error plot are the
+   times of the solutions. They are near to each other while the error
+   falls quickly, and far from each other while it falls slowly. The
+   dashed line in front of each feature shows where the command in use
+   moves that feature. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -52,7 +56,8 @@ export function createImageServo() {
   const kickFrom = { u: 0, v: 0, roll: 0 };
   const kickTo = { u: 0, v: 0, roll: 0 };
 
-  /** The contour in sensor coordinates: a gentle meander across the view. */
+  /** The contour in the coordinates of the sensor: a smooth curve
+      across the view. */
   function shoreY(u) {
     return Math.sin(u * 3.1) * 0.17 + Math.sin(u * 6.7 + 0.9) * 0.07;
   }
@@ -64,8 +69,8 @@ export function createImageServo() {
     };
   }
 
-  /* Project a point through the camera pose. Roll is about the sensor
-     centre, so features sweep arcs. */
+  /* Project a point through the pose of the camera. The roll is around
+     the centre of the sensor, and a feature moves along an arc. */
   function project(point, at) {
     const cx = frame.x + frame.w / 2;
     const cy = frame.y + frame.h / 2;
@@ -87,7 +92,8 @@ export function createImageServo() {
     return project(desiredPoint(u), at || pose);
   }
 
-  /** Mean distance between where the features are and where they belong. */
+  /** The mean distance between the position of a feature and its
+      correct position. */
   function errorNorm() {
     let sum = 0;
     for (let i = 0; i < FEATURES; i++) {
@@ -99,9 +105,9 @@ export function createImageServo() {
     return sum / FEATURES;
   }
 
-  /* One solve fixes one velocity command. The next solve runs when the
-     pose drifts far enough from the last solve point, or when the
-     horizon expires. That is the event. */
+  /* One solution gives one velocity command. The next solution runs
+     when the pose moves a sufficient distance from the last solution
+     point, or when the horizon ends. This is the event. */
   function solve(t) {
     held.u = -GAIN * pose.u;
     held.v = -GAIN * pose.v;
@@ -121,14 +127,15 @@ export function createImageServo() {
 
   function step(dt, t) {
     if (t > nextKick) {
-      /* The knock-off is a gust, not a jump. An eased ramp carries the
-         pose to its displaced value. The trails keep running, so the
-         excursion is part of the drawn trajectory. */
+      /* The disturbance is a gust, and the pose does not move
+         suddenly. A smooth ramp moves the pose to its new value. The
+         trails continue, and the movement is then part of the
+         trajectory on the screen. */
       kicks += 1;
       kickFrom.u = pose.u;
       kickFrom.v = pose.v;
       kickFrom.roll = pose.roll;
-      // Deterministic values, so the rhythm stays even.
+      // The values are deterministic, and the rhythm stays constant.
       kickTo.u = frame.w * 0.16 * Math.sin(kicks * 2.4);
       kickTo.v = frame.h * 0.42 * Math.cos(kicks * 1.1);
       kickTo.roll = 0.2 * Math.sin(kicks * 1.7);
@@ -142,11 +149,13 @@ export function createImageServo() {
       pose.u = kickFrom.u + (kickTo.u - kickFrom.u) * e;
       pose.v = kickFrom.v + (kickTo.v - kickFrom.v) * e;
       pose.roll = kickFrom.roll + (kickTo.roll - kickFrom.roll) * e;
-      // The controller solves the moment the gust lets go.
+      // The controller calculates a new solution at the end of the
+      // gust.
       lastSolve = -99;
     } else {
       if (t - lastSolve > HORIZON || drift() > DRIFT_TRIGGER * frame.h) solve(t);
-      // Held open loop between solves: the command does not change.
+      // Between two solutions the loop is open, and the command does
+      // not change.
       pose.u += held.u * dt;
       pose.v += held.v * dt;
       pose.roll += held.roll * dt;
@@ -163,7 +172,7 @@ export function createImageServo() {
   }
 
   function drawFrame(ctx, ink) {
-    // The pixel grid the features are measured against.
+    // The grid of pixels that gives the scale for the features.
     ctx.beginPath();
     for (let i = 1; i < GRID_X; i++) {
       const x = frame.x + (i / GRID_X) * frame.w;
@@ -185,7 +194,7 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    // Corner marks make the frame read as a viewfinder.
+    // The marks at the corners make the frame look like a viewfinder.
     const c = Math.min(frame.w, frame.h) * 0.09;
     ctx.beginPath();
     for (const [cx, sx] of [[frame.x, 1], [frame.x + frame.w, -1]]) {
@@ -200,8 +209,8 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The contour extends past the sensor edges, so a roll does not pull
-     its ends into view. */
+  /* The contour continues past the edges of the sensor, because a roll
+     must not move its ends into the view. */
   function traceContour(ctx, at, from = -0.3, to = 1.3) {
     ctx.beginPath();
     const span = to - from;
@@ -212,9 +221,9 @@ export function createImageServo() {
     }
   }
 
-  /* Draw the coastline faintly outside the sensor. The viewfinder is a
-     window onto a longer coast, and the craft servos only on the part
-     it can see. */
+  /* Draw the coastline faint outside the sensor. The viewfinder is a
+     window on a longer coast, and the craft uses only the part that it
+     can see. */
   function drawBeyond(ctx, ink) {
     traceContour(ctx, pose, -2.2, 3.2);
     ctx.lineWidth = 1.2;
@@ -236,7 +245,8 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /** Where the held command would carry the features if nothing changed. */
+  /** The positions of the features if the command in use continues
+      with no change. */
   function drawHorizon(ctx, ink) {
     const ahead = {
       u: pose.u + held.u * HORIZON,
@@ -258,7 +268,7 @@ export function createImageServo() {
     ctx.setLineDash([]);
   }
 
-  /** Each feature's path across the sensor. */
+  /** The path of each feature across the sensor. */
   function drawTrails(ctx, ink) {
     for (let i = 0; i < FEATURES; i++) {
       const path = trails[i];
@@ -306,8 +316,8 @@ export function createImageServo() {
     }
   }
 
-  /* The error over time, and the instants when a new command was
-     computed. */
+  /* The error with time, and the times when the controller calculated
+     a new command. */
   function drawPlot(ctx, t, ink) {
     if (plot.w <= 0 || errorLog.length < 2) return;
     const baseY = plot.y + plot.h;
@@ -324,8 +334,8 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    /* The log is sampled on a clock. The curve ends at the live error,
-       so the head moves every frame. */
+    /* A clock samples the log. The curve ends at the error at this
+       moment, and the head moves in each frame. */
     const liveE = errorNorm();
     ctx.beginPath();
     for (let i = 0; i < errorLog.length; i++) {
@@ -340,7 +350,7 @@ export function createImageServo() {
 
     for (const at of triggers) {
       const px = toX(at);
-      // Fade in at birth. Fade out at the plot's left edge.
+      // Fade in at the start. Fade out at the left edge of the plot.
       const presence = Math.min(1, (t - at) / 0.3, (px - plot.x) / 14);
       if (presence <= 0) continue;
       ctx.beginPath();
@@ -360,7 +370,7 @@ export function createImageServo() {
   function paint(ctx, t, ink) {
     drawBeyond(ctx, ink);
     drawFrame(ctx, ink);
-    // Everything that lives on the sensor is bounded by it.
+    // The sensor is the limit for each item on it.
     ctx.save();
     ctx.beginPath();
     ctx.rect(frame.x, frame.y, frame.w, frame.h);
@@ -397,8 +407,8 @@ export function createImageServo() {
       frame.w = Math.min(stage.width * 0.52, 620);
       frame.h = Math.min(h * 0.16, frame.w * 0.46);
       frame.x = stage.left;
-      // Sit above the band centre: the viewfinder is the tallest
-      // element in these scenes.
+      // Put the panel above the centre of the band, because the
+      // viewfinder is the highest element in these scenes.
       frame.y = stage.y - h * 0.03 - frame.h / 2;
 
       const room = w > 760;
@@ -417,7 +427,7 @@ export function createImageServo() {
     },
 
     still(ctx, ink, t) {
-      /* Replay one settling episode, so the still frame shows the
+      /* Do one sequence again, because the fixed frame must show the
          trajectories and the plot. */
       const at = t || 5;
       reset();

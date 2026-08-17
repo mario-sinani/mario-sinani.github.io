@@ -1,16 +1,17 @@
-/* Scene: a wing section swept slowly through incidence, with its load
-   drawn as it moves.
+/* Scene: a wing section that moves slowly through a range of
+   incidence. The scene draws the load during the motion.
 
    Background for "Physics-Informed Data-Driven Modelling of Nonlinear
    Aerodynamic Forces of the Pazy Wing".
 
-   The motion is quasi-steady: the subject is the force, not the
-   unsteadiness. The comb of arrows on the chord is the thin-aerofoil
-   load, proportional to sqrt((1-x)/x): high at the leading edge, zero at
-   the trailing edge. The arrow at the quarter chord is its resultant.
-   The inset plots lift against incidence. The dashed line is the linear
-   prediction, and the gap to the curve is the nonlinearity the paper
-   models. */
+   The motion is quasi-steady, because the subject is the force and
+   not the unsteadiness. The comb of arrows on the chord is the load
+   from thin-aerofoil theory. That load is proportional to
+   sqrt((1-x)/x). It is large at the leading edge and zero at the
+   trailing edge. The arrow at the quarter chord is the resultant. The
+   inset plots the lift against the incidence. The dashed line is the
+   linear prediction, and the distance from that line to the curve is
+   the nonlinearity that the paper models. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -24,13 +25,15 @@ const STALL_BEND = 0.38;        // how far the lift curve falls below linear
 const CORE2 = 240;
 const COMB = 13;                // arrows in the load distribution
 
-/** Normalised lift: linear near zero, bending over as incidence grows. */
+/** The lift as a fraction of its maximum. It is linear near zero, and
+    the curve bends while the incidence increases. */
 function liftCoefficient(alpha) {
   const ratio = Math.abs(alpha) / ALPHA_MAX;
   return Math.sin(alpha) * (1 - STALL_BEND * ratio * ratio);
 }
 
-/** Thin-aerofoil chordwise loading, strongest at the leading edge. */
+/** The load along the chord from thin-aerofoil theory. It is largest
+    at the leading edge. */
 function loading(xi) {
   const x = Math.min(Math.max(xi, 0.02), 0.995);
   return Math.sqrt((1 - x) / x);
@@ -72,15 +75,16 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* Draw the load along the chord, normal to it. The comb collapses at
-     zero incidence and flips with the sign. */
+  /* Draw the load along the chord, normal to the chord. The comb goes
+     to zero at zero incidence, and it changes side with the sign. */
   function drawLoading(ctx, ink) {
     const cl = liftCoefficient(section.alpha) / liftCoefficient(ALPHA_MAX);
-    // Fade in with the load, so the comb does not pop at a threshold.
+    // Fade in with the load, because the comb must not appear
+    // suddenly at a threshold.
     const presence = Math.min(1, Math.max(0, (Math.abs(cl) - 0.02) / 0.12));
     if (presence <= 0) return;
     const dir = chordDirection(section.alpha);
-    // Normal to the chord, pointing the way positive lift acts.
+    // Normal to the chord, in the direction of a positive lift.
     const nx = dir.y;
     const ny = -dir.x;
     const scale = section.half * 0.95 * cl;
@@ -96,12 +100,12 @@ export function createIncidenceSweep() {
       ctx.lineTo(bx + nx * len, by + ny * len);
     }
     ctx.lineWidth = 1;
-    // The comb is a field element, so it uses the wash. The resultant
-    // keeps the full accent.
+    // The comb is an element of the field, and it uses the wash. The
+    // resultant keeps the full accent.
     ctx.strokeStyle = withAlpha(ink.wash, 0.55 * presence);
     ctx.stroke();
 
-    // The curve through the arrow tips: the distribution itself.
+    // The curve through the ends of the arrows: the distribution.
     ctx.beginPath();
     for (let i = 0; i <= COMB; i++) {
       const xi = i / COMB;
@@ -116,9 +120,9 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* Kutta-Joukowski: lift is proportional to circulation and acts at
-     the quarter chord. Screen y points down, so positive lift points up
-     the page. */
+  /* The Kutta-Joukowski theorem: the lift is proportional to the
+     circulation, and it acts at the quarter chord. The screen y axis
+     points down, and a positive lift points up the page. */
   function drawResultant(ctx, ink) {
     const root = quarterChord();
     const span = (section.gamma / section.gain) * section.half * 2.4;
@@ -137,8 +141,8 @@ export function createIncidenceSweep() {
     ctx.stroke();
   }
 
-  /* The inset: the lift curve, the linearized line, and a marker at the
-     current incidence. */
+  /* The inset: the lift curve, the linear line, and a marker at the
+     incidence at this moment. */
   function drawInset(ctx, ink) {
     if (inset.w <= 0) return;
     const midY = inset.y + inset.h / 2;
@@ -147,7 +151,7 @@ export function createIncidenceSweep() {
     const toX = (a) => inset.x + inset.w * (0.5 + a / (2 * ALPHA_MAX));
     const toY = (cl) => midY - half * (cl / peak);
 
-    // The datum already carries the horizontal axis through midY.
+    // The datum has the horizontal axis through midY.
     ctx.beginPath();
     ctx.moveTo(inset.x + inset.w / 2, inset.y);
     ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h);
@@ -155,7 +159,7 @@ export function createIncidenceSweep() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    // The prediction of a model linearized about zero incidence.
+    // The prediction of a model that is linear near zero incidence.
     const slope = 1 / ALPHA_MAX;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
@@ -193,7 +197,8 @@ export function createIncidenceSweep() {
   }
 
   return {
-    // A drawn figure. The engine clears it fully each frame.
+    // A figure with lines. The engine clears it completely in each
+    // frame.
     fade: 1,
 
     layout(w, h) {
@@ -205,8 +210,8 @@ export function createIncidenceSweep() {
       section.x = stage.left + stage.width * 0.22;
       section.y = stage.y;
 
-      // Right-aligned on the stage. Dropped when the canvas is too
-      // narrow to hold it.
+      // The inset is on the right of the stage. The scene removes it
+      // if the canvas is too narrow.
       const room = w > 760;
       inset.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       inset.h = inset.w * 0.62;

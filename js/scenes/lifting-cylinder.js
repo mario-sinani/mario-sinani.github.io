@@ -1,9 +1,10 @@
-/* Scene: potential flow past a lifting cylinder. This is the field
-   behind the site's hero: uniform stream, doublet, and vortex.
+/* Scene: potential flow past a lifting cylinder. This is one of the
+   fields behind the hero of the site. It has a uniform stream, a
+   doublet and a vortex.
 
-   The cylinder is the simplest body with circulation, and so with lift.
-   The circulation makes the streaks above the body run faster than the
-   streaks below it. */
+   The cylinder is the most simple body that has a circulation and a
+   lift. The circulation makes the streaks above the body move more
+   quickly than the streaks below it. */
 
 import { createStreaklines } from '../streaklines.js';
 import { addVortex, addDoublet } from '../potential-flow.js';
@@ -22,8 +23,8 @@ export function createLiftingCylinder() {
     if (dx * dx + dy * dy < body.r * body.r * 1.02) return null;
     const out = { u: FREESTREAM, v: 0 };
     addDoublet(out, x, y, body.x, body.y, body.r, FREESTREAM);
-    // Negative gamma makes this vortex clockwise, which puts the fast
-    // side on top.
+    // A negative gamma makes this vortex turn clockwise, and the fast
+    // side is then at the top.
     addVortex(out, x, y, body.x, body.y, -CIRCULATION, 0);
     return out;
   }

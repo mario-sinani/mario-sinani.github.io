@@ -4,18 +4,19 @@
    Pazy Wing".
 
    The physics:
-   - The section carries a bound vortex. Its strength follows the
-     effective incidence, so the flow turns as the wing moves.
-   - The wake receives the change in bound circulation (Kelvin's
-     theorem). The shed vortices draw the vortex street.
-   - The oscillation amplitude sweeps slowly. This stands for the sweep
-     across trim conditions in the paper.
+   - The section has a bound vortex. Its strength follows the effective
+     incidence, and the flow turns while the wing moves.
+   - The wake gets the change in the bound circulation (the theorem of
+     Kelvin). The shed vortices make the vortex street.
+   - The amplitude of the oscillation changes slowly. This shows the
+     range of trim conditions in the paper.
 
-   Over the streamlines the scene draws: the wake vortices (radius shows
-   strength, colour shows sign), the incidence arc against the datum, two
-   ghost outlines of the section at earlier times, and the pitch-plunge
-   orbit. The area of the orbit loop is the work the flow does on the
-   wing in one cycle.
+   Above the streamlines the scene draws four items. The first item is
+   the wake vortices, where the radius shows the strength and the colour
+   shows the sign. The second item is the incidence arc from the datum.
+   The third item is two faint outlines of the section at earlier times.
+   The fourth item is the pitch-plunge orbit. The area in the loop of
+   the orbit is the work that the flow does on the wing in one cycle.
 
    The speeds and the chord set the reduced frequency
    k = omega * chord / (2 * freestream). This value keeps the motion in
@@ -35,23 +36,25 @@ const PITCH_AMPLITUDE = 0.26;   // radians
 const PLUNGE_FRACTION = 0.04;   // fraction of the canvas height
 const SWEEP_SECONDS = 26;       // period of the slow amplitude sweep
 
-/* Sample the orbit on a clock, and keep a little more than one flutter
-   cycle. A frame-counted buffer would depend on the refresh rate, and the
-   loop would not close. */
+/* Sample the orbit with a clock, and keep a little more than one
+   flutter cycle. A buffer with a count of frames changes with the
+   refresh rate, and the loop then does not close. */
 const ORBIT_SECONDS = 1.05 / FLUTTER_HZ;
 const ORBIT_STEP = 0.05;        // seconds between orbit samples
 const CORE2 = 210;              // squared vortex core radius
 
-/* The doublet stands for the volume the section displaces. Its radius
-   is a fraction of the half chord, not of the thickness, so the outline
-   can change without a change to the flow field. */
+/* The doublet shows the volume that the section displaces. Its radius
+   is a fraction of the half chord and not a fraction of the thickness.
+   The outline can then change with no change to the flow field. */
 const DOUBLET_RATIO = 0.22;
-/* Wake marker radius, as a fraction of the section thickness. */
+/* The radius of a wake marker, as a fraction of the thickness of the
+   section. */
 const WAKE_MARKER = 0.42;
 
 export function createPitchingSection() {
-  /* Use a 5px integration step, not 4px. This field also samples a full
-     wake, and a hairline stroke hides the coarser polyline. */
+  /* Use an integration step of 5px and not 4px. This field also
+     samples a full wake, and a thin stroke hides the larger
+     segments. */
   const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28, step: 5 });
   const wake = createVortexWake({
     interval: 0.14,
@@ -73,9 +76,10 @@ export function createPitchingSection() {
   let lastOrbitSample = -99;
   let strongestEma = 1;
 
-  /* Pure function of time, so the ghosts can ask for earlier states.
-     Plunge is positive upward. A downward plunge rate raises the
-     effective incidence, the same as a nose-up rotation. */
+  /* The function uses only the time, and the faint outlines can ask
+     for an earlier state. A plunge up is positive. A plunge rate down
+     increases the effective incidence, the same as a rotation
+     nose-up. */
   function kinematics(t) {
     const omega = TWO_PI * FLUTTER_HZ;
     const sweep = 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
@@ -108,8 +112,8 @@ export function createPitchingSection() {
     return { x: section.x + section.half * dir.x, y: section.y + section.half * dir.y };
   }
 
-  /* Field sample: freestream + thickness doublet + bound vortex + wake.
-     Returns null inside the body. */
+  /* A sample of the field: the freestream, the thickness doublet, the
+     bound vortex and the wake. The function gives null in the body. */
   function velocity(x, y) {
     if (isInsideAerofoil(section, x, y)) return null;
 
@@ -121,10 +125,11 @@ export function createPitchingSection() {
     return out;
   }
 
-  /* Draw the shed vortices. Radius follows the square root of strength,
-     so area shows circulation. Sign selects the colour. The strength
-     scale is a slow moving average, so the street does not pulse when one
-     strong vortex arrives or leaves. */
+  /* Draw the shed vortices. The radius is proportional to the square
+     root of the strength, and the area shows the circulation. The sign
+     selects the colour. The scale of the strength is a slow mean value.
+     The street then does not change its size when one strong vortex
+     comes or goes. */
   function drawWake(ctx, dt, ink) {
     let strongest = 1;
     wake.forEach((w) => { strongest = Math.max(strongest, Math.abs(w.gamma)); });
@@ -133,7 +138,8 @@ export function createPitchingSection() {
       const strength = Math.min(Math.abs(w.gamma) / strongestEma, 1) * w.ramp;
       const r = 1 + Math.sqrt(strength) * section.thickness * WAKE_MARKER;
       if (r < 1.2) return;
-      // Grow in with the ramp. Fade out near the right edge.
+      // Increase the size with the ramp. Fade out near the right
+      // edge.
       const fade = w.ramp * Math.min(1, (width + 30 - w.x) / 130);
       ctx.beginPath();
       ctx.arc(w.x, w.y, r, 0, TWO_PI);
@@ -143,8 +149,8 @@ export function createPitchingSection() {
     });
   }
 
-  /* Draw the section at two earlier times, faded. This strobe shows the
-     motion in a single glance, like the beam scene. */
+  /* Draw the section at two earlier times, more faint. This strobe
+     shows the motion in one view, like the beam scene. */
   function drawGhosts(ctx, t, ink) {
     for (const [ago, alpha] of [[0.34, 0.09], [0.17, 0.18]]) {
       const k = kinematics(t - ago);
@@ -155,8 +161,9 @@ export function createPitchingSection() {
     }
   }
 
-  /* A hairline outline, not a filled shape. The hero text sits over this
-     canvas, and an outline stays legible behind it. */
+  /* A thin outline, and not a filled shape. The text of the hero is
+     above this canvas, and an outline behind the text stays easy to
+     read. */
   function drawSection(ctx, ink) {
     traceAerofoil(ctx, section);
     ctx.lineWidth = 1.3;
@@ -165,22 +172,25 @@ export function createPitchingSection() {
     ctx.stroke();
   }
 
-  /* The incidence arc measures the chord against the datum. It fades in
-     with the angle, so it does not appear at a hard threshold. */
+  /* The incidence arc gives the angle from the datum to the chord. It
+     fades in with the angle, because it must not appear suddenly at a
+     threshold. */
   function drawIncidence(ctx, ink) {
     const presence = Math.min(1, Math.max(0, (Math.abs(section.alpha) - 0.015) / 0.05));
     if (presence <= 0) return;
     const r = section.half * 0.85;
     ctx.beginPath();
-    // Screen y points down, so a nose-up angle sweeps the arc negative.
+    // The screen y axis points down, and a nose-up angle makes the
+    // arc negative.
     ctx.arc(section.x, section.y, r, Math.min(0, -section.alpha), Math.max(0, -section.alpha));
     ctx.lineWidth = 1.1;
     ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
     ctx.stroke();
   }
 
-  /* The orbit instrument: pitch on x, plunge on y. One flutter cycle is a
-     closed loop. The datum carries the horizontal axis. */
+  /* The orbit instrument: the pitch on x and the plunge on y. One
+     flutter cycle is a closed loop. The datum is the horizontal
+     axis. */
   function drawOrbit(ctx, ink) {
     if (orbit.w <= 0 || path.length < 3) return;
     const cx = orbit.x + orbit.w / 2;
@@ -203,8 +213,8 @@ export function createPitchingSection() {
       if (i === 0) ctx.moveTo(toPx(path[i]), toPy(path[i]));
       else ctx.lineTo(toPx(path[i]), toPy(path[i]));
     }
-    /* The loop is sampled on a clock. The head is the live state, so the
-       marker moves every frame. */
+    /* A clock samples the loop. The head is the state at this moment,
+       and the marker moves in each frame. */
     const head = { a: section.alpha, h: plunge };
     ctx.lineTo(toPx(head), toPy(head));
     ctx.lineWidth = 1;
@@ -218,7 +228,8 @@ export function createPitchingSection() {
   }
 
   return {
-    // A drawn figure. The engine clears it fully each frame.
+    // A figure with lines. The engine clears it completely in each
+    // frame.
     fade: 1,
 
     layout(w, h) {
@@ -231,11 +242,12 @@ export function createPitchingSection() {
       // Thin-aerofoil bound circulation per radian: pi * chord * U.
       section.gain = Math.PI * chord * FREESTREAM;
       stage = stageFor(w, h);
-      // Left of the stage, so the wake streams right toward the orbit.
+      // On the left of the stage, because the wake must move to the
+      // right, toward the orbit.
       section.x = stage.left + stage.width * 0.22;
       section.baseY = stage.y;
 
-      // Drop the orbit when the canvas is too narrow to hold it.
+      // Remove the orbit if the canvas is too narrow for it.
       const room = w > 760;
       orbit.w = room ? Math.min(stage.width * 0.15, 150) : 0;
       orbit.h = orbit.w * 0.78;
@@ -276,7 +288,8 @@ export function createPitchingSection() {
     still(ctx, ink, t) {
       const at = t || 9;
       move(at);
-      // Rebuild one orbit cycle, so the loop is visible without motion.
+      // Make one cycle of the orbit again, because the loop must be
+      // visible with no motion.
       path = [];
       const steps = Math.round(ORBIT_SECONDS / ORBIT_STEP);
       for (let k = 0; k <= steps; k++) {
