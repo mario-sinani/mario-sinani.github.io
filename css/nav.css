@@ -95,18 +95,23 @@
    two marks could not show this. The system mode and the fixed mode of
    the same colour showed the same icon.
 
-   The system mode sets no data-theme attribute. A selector with no
-   attribute selects that mode. The script in the head of the document
-   applies a stored mode before the browser shows the page. The correct
-   mark is then on the screen from the start. */
-.theme-toggle .icon-sun,
-.theme-toggle .icon-moon { display: none; }
-.theme-toggle .icon-system { display: block; }
+   The button must show one mark and never two. The first rule hides each
+   icon in the button, and a new icon is also hidden until a rule shows
+   it. Then one rule shows one icon for each mode. The three conditions
+   cannot be true together, and two marks can never be on the screen at
+   the same time. No rule must override another rule. The order of the
+   rules and their specificity do not change the result.
 
-:root[data-theme="light"] .theme-toggle .icon-system { display: none; }
+   The system mode sets no data-theme attribute. The condition for the
+   system mark is "not light and not dark", and it is also true for a
+   value that neither mode uses. The button is never empty. The script
+   in the head of the document applies a stored mode before the browser
+   shows the page, and the correct mark is on the screen from the
+   start. */
+.theme-toggle svg { display: none; }
+
+:root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .icon-system { display: block; }
 :root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
-
-:root[data-theme="dark"] .theme-toggle .icon-system { display: none; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
 /* At a width less than 760px, the name, the five links and the buttons
