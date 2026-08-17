@@ -243,7 +243,7 @@ export function createPitchingSection() {
       section.gain = Math.PI * chord * FREESTREAM;
       stage = stageFor(w, h);
       // On the left of the stage, because the wake must move to the
-      // right, toward the orbit.
+      // right, to the orbit.
       section.x = stage.left + stage.width * 0.22;
       section.baseY = stage.y;
 

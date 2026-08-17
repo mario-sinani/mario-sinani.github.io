@@ -13,9 +13,9 @@
    at the contrast for text. Use it for a link in a hover, focus or
    current state. It must give a ratio of 4.5:1. The --accent-fill token
    is the accent as a background, and --accent-fill-ink is the only
-   colour that can go on it. The two tokens change with the theme,
-   because a background that gives enough contrast with white text in
-   the light theme needs dark text in the dark theme.
+   colour that can go on it. The two tokens change with the theme. In
+   the light theme the background gives enough contrast with white text.
+   The same background in the dark theme needs dark text.
 
    Fonts: Archivo for the display text, Source Serif 4 for the body text
    and IBM Plex Mono for the labels.

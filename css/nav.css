@@ -92,8 +92,8 @@
 /* The theme button shows the mode. The button has three modes: system,
    light and dark. Each mode has its own mark. The visitor can then see
    if the site follows the device or keeps one theme. The earlier set of
-   two marks could not show this, because the system mode and the fixed
-   mode of the same colour showed the same icon.
+   two marks could not show this. The system mode and the fixed mode of
+   the same colour showed the same icon.
 
    The system mode sets no data-theme attribute. A selector with no
    attribute selects that mode. The script in the head of the document

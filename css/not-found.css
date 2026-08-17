@@ -2,8 +2,8 @@
    pages that a lost visitor most probably wants.
 
    The destination cells use the research grid again. This file has only
-   the rules that the page adds: a shorter hero, and the behaviour of a
-   cell that is a link across its full area. */
+   the rules that the page adds. Those rules are a shorter hero, and the
+   behaviour of a cell that is a link across its full area. */
 
 /* The page has no long text. A hero at full height moves each
    destination off the screen, and this is the opposite of the purpose

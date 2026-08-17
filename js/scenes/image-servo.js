@@ -8,8 +8,8 @@
    Image-based servoing closes the loop in the image. The error is the
    distance between the position of a feature on the sensor and its
    correct position. The left panel is the sensor. The crosses are the
-   correct positions of the features, the dots are their positions at
-   this moment, and the curves behind the dots are their trajectories.
+   correct positions of the features. The dots are their positions at
+   this moment. The curves behind the dots are their trajectories.
    The camera rolls and it also translates, and the trajectories are
    arcs.
 

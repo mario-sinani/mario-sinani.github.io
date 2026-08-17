@@ -2,8 +2,8 @@
    one of the fields behind the hero of the site.
 
    A cylinder in a steady stream does not give a steady wake. Above a
-   low Reynolds number the two shear layers roll up one after the other,
-   and the cylinder sheds one vortex from each side in alternation. The
+   low Reynolds number the two shear layers roll up one after the other.
+   The cylinder sheds one vortex from each side in alternation. The
    result is the double row with a stagger that Karman analysed. It is
    the most well-known figure in fluid dynamics, and it is the start of
    each description of flow-induced vibration.

@@ -27,9 +27,9 @@ export const PAZY_RATIO = 0.18;
 const SAMPLES = 44;
 
 /**
- * A section is a record. It has x and y at the middle of the chord,
- * half of the chord in px, the nose-up incidence in radians, and the
- * thickness ratio.
+ * A section is a record. It has the position of the middle of the
+ * chord, and half of the chord in px. It also has the nose-up incidence
+ * in radians and the thickness ratio.
  */
 
 /** Half of the thickness at a point on the chord, as a fraction of

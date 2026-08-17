@@ -1,6 +1,6 @@
 /* Potential flow: the singularities that the flow scenes add to a
-   uniform stream, and the test of the geometry that keeps the samples
-   outside a body.
+   uniform stream. The module also has the test of the geometry that
+   keeps the samples outside a body.
 
    All the functions use the axes of the screen: x to the right and y
    down. A nose-up section has a negative rotation and a positive
