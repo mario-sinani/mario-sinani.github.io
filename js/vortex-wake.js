@@ -1,22 +1,27 @@
-/* Vortex wake: the vortices a lifting body sheds from its trailing edge.
+/* Vortex wake: the vortices that a lifting body sheds from its
+   trailing edge.
 
-   This module owns the wake state and its physics. It banks the change in
-   bound circulation, sheds that change as discrete vortices, ramps each
-   new vortex to full strength, convects the wake downstream, and adds the
-   wake's induced velocity to a field sample. The scene that owns the body
-   decides how to draw the wake.
+   This module controls the state of the wake and its physics. It keeps
+   the change in the bound circulation. It sheds that change as discrete
+   vortices. It increases each new vortex to its full strength. It
+   convects the wake downstream. It adds the induced velocity of the
+   wake to a sample of the field. The scene that has the body selects
+   how to draw the wake.
 
-   Kelvin's theorem sets the shed strength: the wake receives the opposite
-   of what the bound circulation gains. */
+   The theorem of Kelvin sets the strength of the shed vortex: the wake
+   gets the opposite of the increase in the bound circulation. */
 
 import { addVortex } from './potential-flow.js';
 
 /**
- * options.interval    seconds between shed vortices
- * options.ramp        seconds a new vortex takes to reach full strength
- * options.max         maximum number of vortices kept
- * options.core2       squared core radius for the induced velocity
- * options.cullRadius2 squared distance beyond which a vortex adds nothing
+ * options.interval    the seconds between two shed vortices
+ * options.ramp        the seconds for a new vortex to get its full
+ *                     strength
+ * options.max         the maximum number of vortices to keep
+ * options.core2       the square of the core radius for the induced
+ *                     velocity
+ * options.cullRadius2 the square of the distance after which a vortex
+ *                     adds nothing
  */
 export function createVortexWake(options) {
   const { interval, ramp, max, core2, cullRadius2 } = options;
@@ -26,23 +31,23 @@ export function createVortexWake(options) {
   let limitX = Infinity;
 
   return {
-    /** Empty the wake. Call from layout. */
+    /** Remove all the vortices. Call this function from layout. */
     reset() {
       vortices = [];
       sinceShed = 0;
       pending = 0;
     },
 
-    /** Set the x position past which a vortex is removed. */
+    /** Set the x position after which the module removes a vortex. */
     setLimit(x) {
       limitX = x;
     },
 
     /**
-     * Add the change in bound circulation to the bank. Shed one vortex
-     * at the given edge point when the interval has passed. A new vortex
-     * starts at zero strength and ramps up, so the induced field changes
-     * continuously.
+     * Add the change in the bound circulation to the total. Shed one
+     * vortex at the given edge point after the interval. A new vortex
+     * starts at zero strength and increases. The induced field then
+     * changes continuously.
      */
     shed(dt, gammaChange, edge) {
       pending -= gammaChange;
@@ -55,8 +60,9 @@ export function createVortexWake(options) {
     },
 
     /**
-     * Move each vortex with the freestream plus the induced velocity the
-     * caller supplies through induce(out, x, y). Advance each ramp.
+     * Move each vortex with the freestream and with the induced velocity
+     * that the caller gives through induce(out, x, y). Increase the
+     * strength of each new vortex.
      */
     convect(dt, freestream, induce) {
       for (let i = 0; i < vortices.length; i++) {
@@ -71,8 +77,9 @@ export function createVortexWake(options) {
     },
 
     /**
-     * Add the wake's induced velocity at (x, y) to out. Skip vortices
-     * beyond the cull radius: their contribution is below one pixel.
+     * Add the induced velocity of the wake at (x, y) to out. Do not use
+     * a vortex that is farther than the cull radius, because it moves
+     * the sample less than one pixel.
      */
     addTo(out, x, y) {
       for (let i = 0; i < vortices.length; i++) {
@@ -84,7 +91,7 @@ export function createVortexWake(options) {
       }
     },
 
-    /** Visit each vortex, for drawing. */
+    /** Go through each vortex, for the drawing. */
     forEach(fn) {
       vortices.forEach(fn);
     },

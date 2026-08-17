@@ -1,10 +1,10 @@
-/* Ink: the colours a scene draws with.
+/* Ink: the colours that a scene draws with.
 
-   This module owns colour. The canvas engine asks it for a palette, and
-   the scenes ask it for weaker tints of that palette. Scenes do not read
-   the CSS. */
+   This module controls the colours. The canvas engine asks it for a
+   palette, and a scene asks it for a weaker tint of that palette. A
+   scene does not read the CSS. */
 
-/** Return the same colour with a new alpha value. */
+/** Give the same colour with a new alpha value. */
 export function withAlpha(colour, alpha) {
   return colour.replace(/rgba?\(([^)]+)\)/, (whole, parts) => {
     const [r, g, b] = parts.split(',');
@@ -13,15 +13,17 @@ export function withAlpha(colour, alpha) {
 }
 
 /**
- * Build the palette for one theme.
+ * Make the palette for one theme.
  *
- * ground - the page background, taken from the CSS custom property.
- * line   - grey strokes.
- * accent - the brand blue. Use it for instruments and key marks.
- * wash   - a low-contrast indigo. Use it for field elements. The accent
- *          then stays available for the instruments.
- * body   - the outline colour for bodies (wing sections, beams).
- * faint  - hairlines and reference lines.
+ * ground - the background of the page, from the CSS custom property.
+ * line   - the grey strokes.
+ * accent - the blue of the site. Use it for the instruments and the
+ *          most important marks.
+ * wash   - an indigo with low contrast. Use it for the elements of the
+ *          field. The accent then stays free for the instruments.
+ * body   - the colour of the outline of a body, for example a wing
+ *          section or a beam.
+ * faint  - the thin lines and the reference lines.
  */
 export function resolveInk(dark, ground) {
   return {

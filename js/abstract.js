@@ -1,11 +1,12 @@
-/* Abstracts: clamp each abstract to three lines and add a toggle, so a
-   long list stays easy to scan. This is most important on a phone, where
-   one abstract fills the screen.
+/* Abstracts: limit each abstract to three lines and add a toggle
+   button. A long list is then easy to read quickly. This is most
+   important on a phone, where one abstract fills the screen.
 
-   The clamp is a CSS rule that needs the js class. Without this module
-   each abstract shows in full. An abstract that fits without a clamp
-   loses its toggle. The measurement waits for the webfonts, because the
-   fallback face gives the wrong height. */
+   A CSS rule sets the limit, and that rule needs the js class. If this
+   module does not run, each abstract shows in full. An abstract that
+   fits in three lines gets no toggle button. The module waits for the
+   web fonts before it measures, because a substitute font gives the
+   wrong height. */
 
 const CLAMP_CLASS = 'is-clamped';
 
@@ -25,7 +26,8 @@ export function initAbstracts() {
       const toggle = block.querySelector('.abstract-toggle');
       if (!text || !toggle) return;
 
-      // Show the toggle only if the text overflows the clamp.
+      // Show the toggle button only if the text is higher than the
+      // limit.
       if (text.scrollHeight <= text.clientHeight + 1) {
         block.classList.remove(CLAMP_CLASS);
         toggle.hidden = true;

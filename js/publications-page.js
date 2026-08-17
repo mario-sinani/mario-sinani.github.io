@@ -1,5 +1,5 @@
-/* Entry point for the publications page: the shared site features plus
-   the three features that only this page has. */
+/* Entry point for the publications page: the features of all pages,
+   and the three features that only this page has. */
 
 import { initSite } from './site.js';
 import { initPubFilter } from './pub-filter.js';

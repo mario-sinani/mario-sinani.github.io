@@ -1,8 +1,9 @@
 /* Cite: copies a BibTeX record to the clipboard.
 
-   The record sits in a <details> block. It opens, and the visitor can
-   select it by hand, with no JavaScript. This module adds the copy
-   button. CSS keeps that button hidden until the js class is present. */
+   The record is in a <details> element. The element opens without
+   JavaScript, and the visitor can then select the text by hand. This
+   module adds the copy button. CSS hides that button until the js class
+   is on the page. */
 
 const RESET_DELAY = 1800;
 
@@ -11,7 +12,8 @@ async function copy(text) {
     await navigator.clipboard.writeText(text);
     return;
   }
-  // Fallback for http:// origins and older browsers: a hidden textarea.
+  // A hidden textarea is the alternative for an http:// origin and
+  // for an old browser.
   const scratch = document.createElement('textarea');
   scratch.value = text;
   scratch.setAttribute('readonly', '');

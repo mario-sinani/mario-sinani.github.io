@@ -1,17 +1,18 @@
-/* Publication filter: shows one publication type at a time.
+/* Publication filter: shows one type of publication at a time.
 
-   CSS shows the controls only when JavaScript is available. Without it,
-   every entry stays on the page.
+   CSS shows the controls only if JavaScript is available. If no script
+   runs, each entry stays on the page.
 
-   The filter repairs two things that CSS cannot: CSS has no selector for
-   "the first visible element". The two are the rail caps at the top and
-   the bottom of the list, and the reveal state of an entry that was
-   hidden before it scrolled into view.
+   The filter corrects two items that CSS cannot correct, because CSS
+   has no selector for the first visible element. The first item is the
+   caps of the rail at the top and at the bottom of the list. The second
+   item is the reveal state of an entry that was not visible before it
+   came into view.
 
-   The choice goes in the address bar as ?type=journal. A filtered list is
-   then a link the visitor can send or keep, and the back button returns
-   to the list they saw before. The "all" state writes no parameter, so
-   the plain address stays the plain address. */
+   The choice goes in the address bar as ?type=journal. A list with a
+   filter is then a link that the visitor can send or keep, and the back
+   button gives the list from before. The "all" state writes no
+   parameter, and the plain address stays plain. */
 
 const ALL = 'all';
 const PARAM = 'type';
@@ -26,7 +27,8 @@ export function initPubFilter() {
   const count = document.getElementById('pub-count');
   const types = new Set(buttons.map((button) => button.dataset.filter));
 
-  /** The type in the address bar, or "all" if it names no known type. */
+  /** The type in the address bar, or "all" if the address bar gives no
+      known type. */
   function typeFromUrl() {
     const asked = new URLSearchParams(location.search).get(PARAM);
     return types.has(asked) ? asked : ALL;
@@ -47,8 +49,9 @@ export function initPubFilter() {
       const shown = type === ALL || entry.dataset.type === type;
       entry.hidden = !shown;
       entry.classList.remove('rail-start', 'rail-end');
-      // An entry hidden before it scrolled into view has no reveal
-      // class. Add it now, so the entry does not return invisible.
+      // An entry that was not visible before it came into view has no
+      // reveal class. Add the class now, because the entry must not
+      // come back invisible.
       if (shown) {
         entry.classList.add('in');
         visible.push(entry);
@@ -80,9 +83,9 @@ export function initPubFilter() {
   // The back and forward buttons move through the choices.
   window.addEventListener('popstate', () => apply(typeFromUrl()));
 
-  // A visit that arrives with ?type= starts on that filter. The first
-  // write replaces the entry, so back leaves the page instead of
-  // returning to the same list.
+  // A visit that comes with ?type= starts with that filter. The first
+  // write replaces the history entry. The back button then leaves the
+  // page, and it does not give the same list again.
   const start = typeFromUrl();
   apply(start);
   writeUrl(start, true);

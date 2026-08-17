@@ -1,10 +1,10 @@
-/* Streaklines: a pool of particles that a velocity field advects. Each
-   frame extends each particle's path by one hairline segment while the
-   engine fades the canvas.
+/* Streaklines: a set of particles that a velocity field advects. In
+   each frame the module adds one thin segment to the path of each
+   particle, while the engine fades the canvas.
 
-   A particle dies when it leaves the canvas, enters the body, or stalls.
-   Near a stagnation point a particle almost stops, and its segments
-   would pool into a blob. */
+   A particle ends when it goes off the canvas, when it goes into the
+   body, or when it becomes too slow. Near a stagnation point a particle
+   almost stops, and its segments then make a mark with no shape. */
 
 export function createStreaklines(options = {}) {
   const spacing = options.spacing || 9;      // px of width per particle
@@ -52,7 +52,7 @@ export function createStreaklines(options = {}) {
       }
     },
 
-    // Frozen frame: integrate and stroke whole streamlines once.
+    // Fixed frame: integrate and draw each full streamline one time.
     still(ctx, velocity, ink, lines = 26) {
       for (let i = 0; i < lines; i++) {
         let x = -5;

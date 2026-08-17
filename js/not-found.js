@@ -1,10 +1,10 @@
-/* Entry point for the not-found page: the shared site features plus the
-   hero field.
+/* Entry point for the not-found page: the features of all pages, and
+   the field in the hero.
 
-   The page uses the Karman street, the same scene the home page can
-   draw: a body in a stream, and the wake that trails behind it. The
-   import is dynamic, so the scene and the engine load after the page is
-   on screen. */
+   The page uses the Karman street. The home page can draw the same
+   scene: a body in a stream, and the wake behind it. The import is
+   dynamic, and the browser loads the scene and the engine after the
+   page is on the screen. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';

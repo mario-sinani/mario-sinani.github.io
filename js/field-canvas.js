@@ -1,23 +1,26 @@
-/* Field canvas: the engine that runs one animated background.
+/* Field canvas: the engine for one moving background.
 
-   The engine owns the canvas lifecycle: it sizes the canvas to its parent
-   at the device pixel ratio, washes the last frame toward the page
-   ground, runs the animation loop, and draws one still frame when the
-   visitor prefers reduced motion.
+   The engine controls the canvas. It sets the size of the canvas to the
+   size of the parent element, at the device pixel ratio. It makes the
+   last frame fade to the colour of the page background. It runs the
+   animation loop. It draws one fixed frame if the visitor asks for
+   reduced motion.
 
-   What is drawn comes from a scene object. A scene provides:
+   The scene object gives the drawing. A scene has these members:
 
-     fade                    per-frame wash toward the ground, 0..1
-     layout(width, height)   set positions and sizes
+     fade                    the fade to the background in each frame,
+                             from 0 to 1
+     layout(width, height)   set the positions and the sizes
      frame(ctx, dt, t, ink)  draw one frame
-     still(ctx, ink, t)      draw one frozen frame
+     still(ctx, ink, t)      draw one fixed frame
 
-   The engine gives each call a resolved palette (see ink.js), so scenes
-   do not read the CSS. The isDark function reports the active theme.
+   The engine gives a palette of colours to each call (see ink.js), and
+   a scene does not read the CSS. The isDark function gives the theme in
+   use.
 
-   The loop runs only while the canvas is on the screen and the tab is in
-   front. A field in the hero is off the screen for most of a visit, and
-   a loop that continues there drains the battery for no result. */
+   The loop runs only while the canvas is on the screen and the tab is
+   in front. A field in the hero is off the screen for most of a visit.
+   A loop that continues there uses the battery with no result. */
 
 import { resolveInk } from './ink.js';
 
@@ -71,10 +74,10 @@ export function initFieldCanvas(canvas, isDark, scene) {
     handle = requestAnimationFrame(frame);
   }
 
-  /* Start and stop are safe to call again in the same state. On a start
-     the frame time resets to zero. The first step after a pause then
-     hits the 0.05 s clamp in frame(), so the scene does not jump forward
-     by the length of the pause. */
+  /* A second call to start or to stop in the same state has no bad
+     effect. A start sets the frame time to zero. The first step after a
+     pause then gets the limit of 0.05 s in frame(). The scene does not
+     move forward by the length of the pause. */
   function start() {
     if (handle || reducedMotion) return;
     lastFrameTime = 0;
@@ -98,9 +101,10 @@ export function initFieldCanvas(canvas, isDark, scene) {
     if (reducedMotion) scene.still(ctx, ink, clock);
   }
 
-  /* A resize event can arrive many times a second while a window edge is
-     dragged, and each resize() allocates the canvas bitmap again. One
-     call per frame is enough, because the screen cannot show more. */
+  /* A resize event can come many times in one second while the visitor
+     moves the edge of the window. Each call to resize() makes the canvas
+     bitmap again. One call in each frame is enough, because the screen
+     cannot show more. */
   let resizePending = 0;
   function onResize() {
     if (resizePending) return;
@@ -114,8 +118,8 @@ export function initFieldCanvas(canvas, isDark, scene) {
   window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', sync);
 
-  /* Without IntersectionObserver the field counts as always on screen,
-     which is the behaviour before this gate. */
+  /* If the browser has no IntersectionObserver, the field is always on
+     the screen. This is the behaviour before this control. */
   if ('IntersectionObserver' in window) {
     new IntersectionObserver((entries) => {
       onScreen = entries[entries.length - 1].isIntersecting;

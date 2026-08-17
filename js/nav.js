@@ -1,6 +1,6 @@
-/* Navigation: operates the menu on small screens. CSS shows the button
-   only when JavaScript is available. If this module does not run, the
-   links stay visible. */
+/* Navigation: operates the menu on a small screen. CSS shows the
+   button only if JavaScript is available. If this module does not run,
+   the links stay visible. */
 
 const DESKTOP = '(min-width: 761px)';
 
@@ -18,7 +18,7 @@ export function initNav() {
 
   toggle.addEventListener('click', () => setOpen(!isOpen()));
 
-  // Close the menu after a jump to a section.
+  // Close the menu after a move to a section.
   links.addEventListener('click', (event) => {
     if (event.target.closest('a')) setOpen(false);
   });
@@ -34,8 +34,9 @@ export function initNav() {
     if (isOpen() && !event.target.closest('.site-nav')) setOpen(false);
   });
 
-  // Above the breakpoint the links return to one row. Clear the open
-  // state, so a return to a narrow width starts closed.
+  // At a width more than the breakpoint, the links go back to one row.
+  // Remove the open state, because the menu must be closed if the width
+  // becomes narrow again.
   window.matchMedia(DESKTOP).addEventListener('change', (event) => {
     if (event.matches) setOpen(false);
   });
