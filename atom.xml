@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The feed mirrors the Updates section of the home page. Add the new
+     entry at the top, and move the feed date with it. -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Mario A. Sinani</title>
+  <subtitle>Updates from mariosinani.com: papers, talks and positions.</subtitle>
+  <link href="https://mariosinani.com/atom.xml" rel="self"/>
+  <link href="https://mariosinani.com/"/>
+  <id>https://mariosinani.com/</id>
+  <updated>2026-08-20T00:00:00Z</updated>
+  <author>
+    <name>Mario A. Sinani</name>
+    <uri>https://mariosinani.com/</uri>
+  </author>
+  <entry>
+    <title>The site gets a lab, a talks page, a colophon and this feed</title>
+    <link href="https://mariosinani.com/lab/"/>
+    <id>https://mariosinani.com/lab/</id>
+    <updated>2026-08-20T00:00:00Z</updated>
+    <summary>Five live models from the papers now run in the browser, with a control for each. New pages for talks and for how the site is made.</summary>
+  </entry>
+  <entry>
+    <title>I start as a researcher with the NSF AI Institute in Dynamic Systems</title>
+    <link href="https://mariosinani.com/experience/"/>
+    <id>https://mariosinani.com/experience/#dynamicsai-2026</id>
+    <updated>2026-02-01T00:00:00Z</updated>
+    <summary>Deep learning for scientific model discovery, with the NSF AI Institute in Dynamic Systems and the University of Washington, in Seattle.</summary>
+  </entry>
+  <entry>
+    <title>Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing, at AIAA SciTech</title>
+    <link href="https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/"/>
+    <id>https://mariosinani.com/publications/parametric-aeroelastic-modeling-pazy-wing/</id>
+    <updated>2026-01-12T00:00:00Z</updated>
+    <summary>I present the parametric Pazy wing paper at the AIAA SciTech Forum in Orlando.</summary>
+  </entry>
+  <entry>
+    <title>Our multibody model of flared hinged wings appears in Computer Physics Communications</title>
+    <link href="https://mariosinani.com/publications/ancf-flared-hinged-wings/"/>
+    <id>https://mariosinani.com/publications/ancf-flared-hinged-wings/</id>
+    <updated>2025-06-01T00:00:00Z</updated>
+    <summary>An absolute nodal coordinate formulation for the nonlinear multibody modeling of flared hinged wings.</summary>
+  </entry>
+  <entry>
+    <title>Physics-Informed Data-Driven Modelling of the Pazy Wing, at AIAA SciTech</title>
+    <link href="https://mariosinani.com/publications/physics-informed-pazy-wing/"/>
+    <id>https://mariosinani.com/publications/physics-informed-pazy-wing/</id>
+    <updated>2025-01-06T00:00:00Z</updated>
+    <summary>I present the physics-informed Pazy wing paper at the AIAA SciTech Forum in Orlando.</summary>
+  </entry>
+  <entry>
+    <title>Our bound on nonlinear modal energy transfer, at the IEEE CDC</title>
+    <link href="https://mariosinani.com/publications/modal-energy-transfer-beams/"/>
+    <id>https://mariosinani.com/publications/modal-energy-transfer-beams/</id>
+    <updated>2024-12-16T00:00:00Z</updated>
+    <summary>I present the semidefinite-programming bound on modal energy transfer for geometrically exact beams at the IEEE Conference on Decision and Control in Milan.</summary>
+  </entry>
+</feed>
