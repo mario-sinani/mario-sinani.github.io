@@ -50,8 +50,6 @@
   margin: 1.1rem 0 1.6rem;
 }
 
-.hero h1 .accent-mark { color: var(--accent); }
-
 .hero .thesis {
   max-width: 34em;
   font-size: clamp(1.1rem, 2.2vw, 1.3rem);

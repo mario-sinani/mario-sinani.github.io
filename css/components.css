@@ -156,7 +156,9 @@
   margin: 0.7rem 0 0;
 }
 
-.page-head h1 .accent-mark { color: var(--accent); }
+/* The mark after a name or a heading. The hero, the head of an inner
+   page and the footer all use it. */
+.accent-mark { color: var(--accent); }
 
 .page-head .lede {
   margin-top: 1.1rem;
