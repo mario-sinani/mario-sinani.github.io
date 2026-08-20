@@ -2,7 +2,7 @@
    button only if JavaScript is available. If this module does not run,
    the links stay visible. */
 
-const DESKTOP = '(min-width: 761px)';
+const DESKTOP = '(min-width: 901px)';
 
 export function initNav() {
   const toggle = document.getElementById('nav-toggle');

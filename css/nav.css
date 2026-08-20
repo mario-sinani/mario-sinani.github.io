@@ -118,12 +118,12 @@
 :root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
-/* At a width less than 860px, the name, the six links and the buttons
-   do not fit on one line. The links then move to their own row. If
-   JavaScript runs, the menu button hides that row. If no script runs,
-   the links stay visible and wrap. The visitor can then reach each
-   page. */
-@media (max-width: 860px) {
+/* At a width less than 900px, the name, the eight links and the
+   buttons do not fit on one line. The links then move to their own row.
+   If JavaScript runs, the menu button hides that row. If no script
+   runs, the links stay visible and wrap. The visitor can then reach
+   each page. */
+@media (max-width: 900px) {
   .site-nav .nav-inner {
     flex-wrap: wrap;
     gap: 0.75rem;

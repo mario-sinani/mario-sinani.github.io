@@ -5,16 +5,24 @@ Personal website of Mario A. Sinani.
 ## Structure
 
 ```
+├── about
 ├── assets
-│   ├── fonts
-│   ├── icons
-│   ├── logos
-│   └── og
+│   ├── fonts
+│   ├── icons
+│   ├── logos
+│   └── og
+├── atom.xml
 ├── CNAME
+├── colophon
 ├── css
+├── education
+├── experience
 ├── js
-│   └── scenes
+│   └── scenes
+├── lab
 ├── publications
+├── research
+├── talks
 └── index.html
 ```
 
