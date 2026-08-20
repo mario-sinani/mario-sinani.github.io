@@ -154,3 +154,20 @@
   .topic h2 { font-size: 1.08rem; }
   .cross-nav { padding: 0 1.15rem 3.75rem; }
 }
+
+/* Prose in sections of plain text, for example on the colophon. */
+.colophon-prose { max-width: var(--w-prose); }
+
+.colophon-prose p { margin-top: 0.9rem; font-size: 0.99rem; }
+
+.colophon-prose p:first-child { margin-top: 0; }
+
+.colophon-prose a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.colophon-prose a:hover, .colophon-prose a:focus-visible {
+  border-bottom-color: var(--accent-strong);
+}

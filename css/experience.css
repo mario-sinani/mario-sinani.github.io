@@ -140,3 +140,17 @@
   color: var(--accent-strong);
   border-bottom-color: var(--accent);
 }
+
+/* A title in an entry can be a link, for example a talk that links to
+   its paper. The link uses the text colour and a 1px underline. */
+.timeline-text h3 a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.timeline-text h3 a:hover, .timeline-text h3 a:focus-visible {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}

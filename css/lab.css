@@ -1,0 +1,116 @@
+/* Lab: one instrument for each scene. An instrument is the moving
+   figure of a paper page with one control below it. */
+
+.instrument {
+  border-top: 1px solid var(--line);
+  padding: 2.6rem 0 2.9rem;
+}
+
+.instrument:first-of-type { border-top: 0; padding-top: 0; }
+
+.instrument-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+}
+
+.instrument-head .index {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.instrument-head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -0.015em;
+}
+
+.instrument-brief {
+  max-width: var(--w-prose);
+  margin-top: 0.7rem;
+  font-size: 0.98rem;
+  color: var(--muted);
+}
+
+/* The stage holds the canvas. The engine sizes the canvas to this
+   box. */
+.instrument-stage {
+  position: relative;
+  margin-top: 1.4rem;
+  height: clamp(250px, 34vw, 400px);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.instrument-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* The control row. The script fills it, so without a script the row is
+   empty and takes no space. */
+.lab-controls {
+  margin-top: 1.05rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  font-family: var(--font-mono);
+}
+
+.lab-controls label {
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lab-controls input[type="range"] {
+  flex: 1 1 11rem;
+  max-width: 19rem;
+  accent-color: var(--accent);
+}
+
+.lab-controls output {
+  font-size: 0.78rem;
+  color: var(--ink);
+  min-width: 3.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The sweep button gives the parameter back to the clock. The pressed
+   state means that the sweep runs. */
+.lab-sweep {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.lab-sweep:hover, .lab-sweep:focus-visible {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+.lab-sweep[aria-pressed="true"] {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .instrument { padding: 2rem 0 2.2rem; }
+  .instrument-stage { height: clamp(220px, 52vw, 320px); }
+}
