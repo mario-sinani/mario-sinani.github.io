@@ -61,6 +61,7 @@
 }
 
 .theme-toggle, .nav-toggle {
+  position: relative;
   border: 1px solid var(--line);
   background: transparent;
   color: var(--muted);
@@ -78,6 +79,24 @@
 .nav-toggle:hover, .nav-toggle:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
+
+/* A finger needs an area of about 44px, and the circle is only 32px. A
+   transparent box around each button gives the area that is missing.
+   The gap goes to 0.75rem, and the two boxes then touch but do not
+   cover each other. */
+@media (pointer: coarse) {
+  .nav-actions { gap: 0.75rem; }
+
+  .theme-toggle::after, .nav-toggle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+}
 
 /* The two buttons need JavaScript. CSS hides them if no script runs.
    The menu button also shows only on a small screen. */
