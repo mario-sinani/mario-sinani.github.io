@@ -3,88 +3,6 @@
    rail from publications.css. The home page shows the summary, and this
    page shows the detail. */
 
-.page-head {
-  max-width: var(--w-content);
-  margin: 0 auto;
-  padding: 4.5rem 1.5rem 0;
-}
-
-.page-head .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.page-head .eyebrow .dot { color: var(--accent); padding: 0 0.35rem; }
-
-.page-head .eyebrow a {
-  text-decoration: none;
-  border-bottom: 1px solid var(--hairline);
-  transition: color 140ms ease, border-color 140ms ease;
-}
-
-.page-head .eyebrow a:hover, .page-head .eyebrow a:focus-visible {
-  color: var(--accent-strong);
-  border-bottom-color: var(--accent);
-}
-
-.page-head h1 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.3rem, 7vw, 3.6rem);
-  letter-spacing: -0.035em;
-  line-height: 1.02;
-  margin: 0.7rem 0 0;
-}
-
-.page-head h1 .accent-mark { color: var(--accent); }
-
-.page-head .lede {
-  margin-top: 1.1rem;
-  max-width: var(--w-prose);
-  color: var(--muted);
-  font-size: 1.06rem;
-}
-
-/* The counts give the size of the record. They are plain text between
-   two 1px lines, with no box. */
-.pub-stats {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 2.4rem;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.pub-stat {
-  flex: 1 1 8rem;
-  padding: 1.1rem 1.2rem 1.15rem 0;
-}
-
-.pub-stat + .pub-stat {
-  border-left: 1px solid var(--hairline);
-  padding-left: 1.4rem;
-}
-
-.pub-stat .figure {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.65rem;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.pub-stat .label {
-  margin-top: 0.2rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
 
 /* Filter -------------------------------------------------------------- */
 
@@ -247,21 +165,6 @@
 }
 
 @media (max-width: 720px) {
-  .page-head { padding: 3rem 1.15rem 0; }
-  .page-head .lede { font-size: 1rem; }
-
-  .pub-stats { margin-top: 1.9rem; }
-
-  .pub-stat {
-    flex: 1 1 45%;
-    padding: 0.9rem 0.9rem 0.95rem 0;
-  }
-
-  /* Each row has two statistics. The third statistic starts a new row,
-     and it must not keep the line on its left. */
-  .pub-stat:nth-child(odd) + .pub-stat { border-left: 1px solid var(--hairline); padding-left: 1rem; }
-  .pub-stat:nth-child(odd) { border-left: 0; padding-left: 0; }
-
   .pub-toolbar { margin-bottom: 2rem; gap: 0.7rem; }
   .pub-count { margin-left: 0; width: 100%; }
 
