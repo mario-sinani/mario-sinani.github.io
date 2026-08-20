@@ -2,7 +2,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+/* The bar at the top of the page stays in place while the page moves.
+   Without this rule the bar covers the target of a link that goes to
+   a part of the same page. The value is the height of the bar plus a
+   small space. */
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
 
 body {
   background: var(--paper);
