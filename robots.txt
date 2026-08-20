@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# The readme is for a person who reads the code, not for a visitor.
+Disallow: /readme.md
 
 Sitemap: https://mariosinani.com/sitemap.xml
