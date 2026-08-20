@@ -3,7 +3,7 @@
    The engine sizes the canvas to its parent at the device pixel ratio,
    fades the last frame toward the page background, runs the animation
    loop, and draws one fixed frame if the visitor asks for reduced
-   motion.
+   motion or for reduced data.
 
    A scene object gives the drawing, with these members:
 
@@ -16,7 +16,8 @@
    The engine passes a palette and the theme to each call (see ink.js),
    so a scene does not read the CSS. The loop runs only while the canvas
    is on the screen and the tab is in front, because a hero field is off
-   the screen for most of a visit. */
+   the screen for most of a visit. The visitor can also stop the loop
+   with setPaused. */
 
 import { resolveInk } from './ink.js';
 
@@ -25,6 +26,10 @@ export function initFieldCanvas(canvas, isDark, scene) {
 
   const ctx = canvas.getContext('2d');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* A visitor on a metered connection asks for reduced data. The scene
+     then draws one fixed frame and does not run. */
+  const reducedData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
+  const fixed = reducedMotion || reducedData;
   let ink = resolveInk(false, '#ffffff');
   let width = 0;
   let height = 0;
@@ -32,6 +37,7 @@ export function initFieldCanvas(canvas, isDark, scene) {
   let lastFrameTime = 0;
   let handle = 0;
   let onScreen = true;
+  let userPaused = false;
 
   function readInk() {
     const ground = getComputedStyle(document.documentElement)
@@ -57,7 +63,10 @@ export function initFieldCanvas(canvas, isDark, scene) {
     readInk();
     scene.layout(width, height);
     wash(1);
-    if (reducedMotion) scene.still(ctx, ink, clock);
+    /* One fixed frame at once. The field then never shows an empty
+       box before the first animation frame, and it shows this frame
+       while the loop is off. */
+    scene.still(ctx, ink, clock);
   }
 
   function frame(time) {
@@ -75,7 +84,7 @@ export function initFieldCanvas(canvas, isDark, scene) {
      pause then gets the limit of 0.05 s in frame(). The scene does not
      move forward by the length of the pause. */
   function start() {
-    if (handle || reducedMotion) return;
+    if (handle || fixed || userPaused) return;
     lastFrameTime = 0;
     handle = requestAnimationFrame(frame);
   }
@@ -91,10 +100,25 @@ export function initFieldCanvas(canvas, isDark, scene) {
     else stop();
   }
 
+  /* Draw the state again with no motion. The theme button and the lab
+     controls use this call while the loop is off. */
   function repaint() {
     readInk();
     wash(1);
-    if (reducedMotion) scene.still(ctx, ink, clock);
+    if (!handle) scene.still(ctx, ink, clock);
+  }
+
+  /* The pause control of the visitor. A pause draws one fixed frame,
+     so the picture does not depend on the moment of the click. */
+  function setPaused(paused) {
+    userPaused = paused;
+    if (paused) {
+      stop();
+      wash(1);
+      scene.still(ctx, ink, clock);
+    } else {
+      sync();
+    }
   }
 
   /* A resize event can come many times in one second while the visitor
@@ -125,5 +149,5 @@ export function initFieldCanvas(canvas, isDark, scene) {
 
   sync();
 
-  return { repaint };
+  return { repaint, setPaused };
 }

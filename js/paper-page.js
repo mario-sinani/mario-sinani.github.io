@@ -8,7 +8,8 @@
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
 import { initSite } from './site.js';
-import { initCite } from './cite.js';
+import { initCite, initCiteFormats } from './cite.js';
+import { initFieldPause } from './field-pause.js';
 
 const SCENES = {
   'pitching-section': () => import('./scenes/pitching-section.js').then((m) => m.createPitchingSection()),
@@ -21,16 +22,19 @@ const SCENES = {
 
 const canvas = document.getElementById('paper-field');
 let field = null;
+const applyPause = initFieldPause(() => field);
 
 initSite(() => {
   if (field) field.repaint();
 });
 
 initCite();
+initCiteFormats();
 
 const load = canvas && SCENES[canvas.dataset.field];
 if (load) {
   load().then((scene) => {
     field = initFieldCanvas(canvas, () => effectiveTheme() === 'dark', scene);
+    applyPause();
   });
 }

@@ -16,6 +16,7 @@
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
 import { initSite } from './site.js';
+import { initFieldPause } from './field-pause.js';
 
 const FIELDS = {
   'vortex-street': () => import('./scenes/vortex-street.js').then((m) => m.createVortexStreet()),
@@ -24,6 +25,7 @@ const FIELDS = {
 
 const canvas = document.getElementById('flowfield');
 let field = null;
+const applyPause = initFieldPause(() => field);
 
 initSite(() => {
   if (field) field.repaint();
@@ -36,5 +38,6 @@ if (canvas) {
   canvas.dataset.field = name;
   FIELDS[name]().then((scene) => {
     field = initFieldCanvas(canvas, () => effectiveTheme() === 'dark', scene);
+    applyPause();
   });
 }

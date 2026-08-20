@@ -28,6 +28,7 @@
   <link rel="modulepreload" href="/js/site.js">
   <link rel="modulepreload" href="/js/theme.js">
   <link rel="modulepreload" href="/js/field-canvas.js">
+  <link rel="modulepreload" href="/js/field-pause.js">
   <link rel="modulepreload" href="/js/scenes/vortex-street.js">
   <link rel="modulepreload" href="/js/flowlines.js">
   <link rel="modulepreload" href="/js/ink.js">
@@ -96,6 +97,10 @@
 
     <section class="hero not-found-hero">
       <canvas id="flowfield" aria-hidden="true"></canvas>
+      <button class="field-pause" id="field-pause" type="button" aria-pressed="false" aria-label="Stop the motion of the background">
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+        <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+      </button>
       <div class="hero-inner">
         <p class="eyebrow">Error 404 <span class="dot">·</span> Dept. of Aeronautics <span class="dot">·</span> Imperial College London</p>
         <h1>Page not found<span class="accent-mark">.</span></h1>

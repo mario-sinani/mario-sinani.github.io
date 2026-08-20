@@ -93,3 +93,57 @@
   .hero-meta { margin-top: 1.8rem; gap: 0.5rem 1.2rem; }
   .hero-links { margin-top: 2rem; gap: 0.55rem; }
 }
+
+/* The button that stops the motion of the field. It sits on the field,
+   away from the text. CSS shows it only if JavaScript runs, because
+   only a script can stop the loop. */
+.field-pause {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 3;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+  color: var(--muted);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.js .field-pause { display: inline-flex; }
+
+.field-pause:hover, .field-pause:focus-visible {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+.field-pause svg { width: 0.8rem; height: 0.8rem; }
+
+.field-pause .icon-play { display: none; }
+.field-pause[aria-pressed="true"] .icon-pause { display: none; }
+.field-pause[aria-pressed="true"] .icon-play { display: block; }
+
+/* A finger needs an area of about 44px. The transparent box gives the
+   area that the circle does not have. */
+@media (pointer: coarse) {
+  .field-pause::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.75rem;
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* With reduced motion or reduced data the field does not move, and the
+   button has no function. */
+@media (prefers-reduced-motion: reduce), (prefers-reduced-data: reduce) {
+  .js .field-pause { display: none; }
+}

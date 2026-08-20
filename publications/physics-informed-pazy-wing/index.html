@@ -68,6 +68,7 @@
   <link rel="modulepreload" href="../../js/reveal.js">
   <link rel="modulepreload" href="../../js/email.js">
   <link rel="modulepreload" href="../../js/nav.js">
+  <link rel="modulepreload" href="../../js/field-pause.js">
   <link rel="modulepreload" href="../../js/cite.js">
 
   <link rel="stylesheet" href="../../assets/fonts/fontfaces.css">
@@ -213,6 +214,10 @@
 
     <section class="hero paper-hero">
       <canvas id="paper-field" data-field="incidence-sweep" aria-hidden="true"></canvas>
+      <button class="field-pause" id="field-pause" type="button" aria-pressed="false" aria-label="Stop the motion of the background">
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+        <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+      </button>
       <div class="hero-inner">
         <p class="eyebrow"><a href="../">Publications</a> <span class="dot">·</span> Conference paper <span class="dot">·</span> 2025</p>
         <h1>Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces of the Pazy Wing</h1>
