@@ -12,6 +12,11 @@
    focus or current state, and must give 4.5:1. --accent-fill is the
    accent as a background, and only --accent-fill-ink goes on it.
 
+   Line roles. --line draws a divider, and a divider gives no data, so a
+   low contrast is correct. --line-strong draws a line or a shape that
+   gives data, for example the mark of a position that is complete. Such
+   a shape must give 3:1 on the page background.
+
    Themes: :root is light. The media block applies dark if the device
    asks and the visitor made no choice, and [data-theme="dark"] applies it
    on request. Each palette sets color-scheme, so the native widgets
@@ -25,6 +30,7 @@
   --ink: #0f1926;
   --muted: #43556a;
   --line: #becad5;
+  --line-strong: #748495;
   --accent: #0000cd;
   --accent-strong: #0000a0;
   --accent-fill: #0000cd;
@@ -47,6 +53,7 @@
     --ink: #edf2f6;
     --muted: #a3b4c5;
     --line: #34455a;
+    --line-strong: #77889a;
     --accent: #6a6aff;
     --accent-strong: #9191ff;
     --accent-fill: #9191ff;
@@ -62,6 +69,7 @@
   --ink: #edf2f6;
   --muted: #a3b4c5;
   --line: #34455a;
+  --line-strong: #77889a;
   --accent: #6a6aff;
   --accent-strong: #9191ff;
   --accent-fill: #9191ff;

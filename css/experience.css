@@ -50,7 +50,10 @@
   height: var(--node);
   border-radius: 50%;
   background: var(--paper);
-  border: 1px solid var(--line);
+  /* The hollow node and the full node are not the same, and that
+     difference gives data. The line of the node must be easy to see for
+     this reason, and --line is too light. */
+  border: 1px solid var(--line-strong);
 }
 
 /* A position that continues today gets a full node. The dates of such a
