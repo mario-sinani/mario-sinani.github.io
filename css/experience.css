@@ -1,24 +1,76 @@
-/* Experience: a timeline in order of date, with an organisation logo
-   chip for each entry. */
+/* Experience: a vertical timeline. A 1px spine runs down the list. Each
+   position puts a node on the spine, with the dates on the left of the
+   spine and the organisation on the right. */
 
-.timeline { display: grid; gap: 0; }
-
-.timeline-item {
+.timeline {
   display: grid;
-  grid-template-columns: 12rem 1fr;
-  gap: 2rem;
-  padding: 1.6rem 0;
-  border-top: 1px solid var(--line);
+  gap: 0;
+  /* --spine gives the distance from the left edge to the spine. --node
+     gives the diameter of a node. --node-y gives the distance from the
+     top of an entry to the middle of its node. */
+  --spine: 11rem;
+  --node: 9px;
+  --node-y: 0.92rem;
 }
 
-.timeline-item:first-child { border-top: 0; padding-top: 0; }
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--spine) 1fr;
+  gap: 1.6rem;
+  padding: 0 0 2.4rem;
+}
+
+.timeline-item:last-child { padding-bottom: 0; }
+
+/* Each entry draws its own part of the spine. The parts touch, so the
+   line looks continuous. The first part starts at the first node, and
+   the last part stops at the last node. */
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: var(--spine);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+.timeline-item:first-child::before { top: var(--node-y); }
+
+.timeline-item:last-child::before { bottom: auto; height: var(--node-y); }
+
+/* The node sits on the spine. */
+.timeline-item::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--spine) + 0.5px - var(--node) / 2);
+  top: calc(var(--node-y) - var(--node) / 2);
+  width: var(--node);
+  height: var(--node);
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+/* A position that continues today gets a full node. The dates of such a
+   position contain the word Present. */
+.timeline-item:has(.now)::after {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* The entries fade in, but they do not move. A move breaks the spine
+   while the transition runs. */
+.timeline-item.reveal { transform: none; }
 
 .timeline-when {
   font-family: var(--font-mono);
   font-size: 0.76rem;
   letter-spacing: 0.04em;
   color: var(--muted);
-  padding-top: 0.35rem;
+  padding-top: 0.28rem;
+  padding-right: 1.4rem;
 }
 
 .timeline-when .now { color: var(--accent); }
@@ -53,9 +105,21 @@
   color: var(--ink);
 }
 
+/* On a narrow screen the spine moves to the left edge. The dates then go
+   above the organisation. */
 @media (max-width: 720px) {
-  .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.3rem 0; }
-  .timeline-when { padding-top: 0; }
+  .timeline {
+    --spine: 0.3rem;
+    --node-y: 0.65rem;
+  }
+
+  .timeline-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0 0 1.9rem 1.6rem;
+  }
+
+  .timeline-when { padding-top: 0; padding-right: 0; }
   .timeline-what { gap: 0.9rem; }
   .timeline-what h3 { font-size: 1.02rem; }
 }
