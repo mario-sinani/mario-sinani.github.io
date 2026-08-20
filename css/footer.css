@@ -63,3 +63,17 @@
   letter-spacing: 0.04em;
   color: var(--muted);
 }
+
+/* The small links at the end of the colophon row: the colophon page
+   and the feed. */
+.footer-colophon a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.footer-colophon a:hover, .footer-colophon a:focus-visible {
+  color: var(--accent-strong);
+  border-bottom-color: var(--accent);
+}
