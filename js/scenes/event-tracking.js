@@ -20,7 +20,11 @@ import { stageFor, drawDatum } from './stage.js';
 const TWO_PI = 6.2832;
 const DRIFT = 46;               // px/s the world scrolls beneath the vehicle
 const HORIZON = 1.5;            // seconds a plan is valid for
-const ERROR_TRIGGER = 0.055;    // fraction of canvas height
+/* The threshold, as a fraction of the canvas height. The standoff is
+   0.05 of the height, so this value is 6% of the standoff. A larger
+   value gives only the triggers of the horizon, and the ticks are
+   then evenly spaced. */
+const ERROR_TRIGGER = 0.003;
 const MAX_TICKS = 42;
 const TRACK_SECONDS = 9;        // how much flown path is kept
 const CONTOURS = 6;             // depth lines below the shore
@@ -35,6 +39,14 @@ export function createEventTracking() {
   let craftVel = 0;
   let ticks = [];
   let track = [];
+  /* The lab can hold the horizon at one length. The value null means
+     that the constant applies. The horizon is the time a plan stays
+     valid, so it sets the longest space between two ticks. */
+  let held = null;
+
+  function horizon() {
+    return held !== null ? held : HORIZON;
+  }
 
   /** The contour, in world coordinates that move to the left with
       time. */
@@ -52,7 +64,7 @@ export function createEventTracking() {
   function replan(t) {
     plan.from = craft.y;
     // Use the position of the contour at the end of the horizon.
-    plan.to = target(t + HORIZON);
+    plan.to = target(t + horizon());
     plan.at = t;
     // Start the new plan at the velocity of the craft, because a
     // trigger must bend the path and must not stop it.
@@ -63,7 +75,7 @@ export function createEventTracking() {
     const before = craft.y;
     const age = t - plan.at;
     const error = Math.abs(craft.y - target(t));
-    if (age > HORIZON || error > ERROR_TRIGGER * view.h) {
+    if (age > horizon() || error > ERROR_TRIGGER * view.h) {
       replan(t);
       ticks.push(t);
       if (ticks.length > MAX_TICKS) ticks.shift();
@@ -71,11 +83,11 @@ export function createEventTracking() {
       /* Between two triggers the craft is in an open loop. It follows
          the Hermite arc in memory, from its start state to the
          target. */
-      const s = Math.min(age / HORIZON, 1);
+      const s = Math.min(age / horizon(), 1);
       const s2 = s * s;
       const s3 = s2 * s;
       craft.y = (2 * s3 - 3 * s2 + 1) * plan.from
-        + (s3 - 2 * s2 + s) * HORIZON * plan.v0
+        + (s3 - 2 * s2 + s) * horizon() * plan.v0
         + (-2 * s3 + 3 * s2) * plan.to;
     }
     if (dt > 0) craftVel = (craft.y - before) / dt;
@@ -151,7 +163,7 @@ export function createEventTracking() {
     ctx.beginPath();
     ctx.setLineDash([4, 4]);
     for (let i = 0; i <= 12; i++) {
-      const ahead = (i / 12) * HORIZON;
+      const ahead = (i / 12) * horizon();
       const x = craft.x + ahead * DRIFT;
       const y = target(t + ahead);
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -212,6 +224,20 @@ export function createEventTracking() {
   return {
     fade: 1,   // a drawn figure; the engine clears it each frame
 
+    /* The control of this scene on the lab page. The value is the
+       length of the horizon in seconds. A short horizon gives many
+       plans, and the dashed line ahead of the craft becomes short. */
+    lab: {
+      label: 'Plan horizon',
+      unit: ' s',
+      min: 0.4,
+      max: 3,
+      step: 0.1,
+      value: () => horizon(),
+      set(v) { held = v; },
+      release() { held = null; },
+    },
+
     layout(w, h) {
       view.w = w;
       view.h = h;
@@ -244,10 +270,15 @@ export function createEventTracking() {
 
     still(ctx, ink, t) {
       const at = t || 4;
-      craft.y = target(at);
-      ticks = [at - 2.4, at - 1.5, at - 1.1, at - 0.4];
+      /* Run the real law over the recent past. The ticks then show the
+         threshold that the visitor set, and not a fixed pattern. */
+      ticks = [];
       track = [];
-      for (let s = TRACK_SECONDS; s >= 0; s -= 0.1) track.push({ t: at - s, y: target(at - s) });
+      plan.at = -99;
+      craftVel = 0;
+      craft.y = target(at - TRACK_SECONDS);
+      const dt = 1 / 30;
+      for (let when = at - TRACK_SECONDS; when <= at; when += dt) follow(dt, when);
       drawContours(ctx, at, ink);
       drawShore(ctx, at, ink);
       drawFootprint(ctx, at, ink);

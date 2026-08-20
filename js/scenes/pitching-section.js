@@ -6,14 +6,15 @@
    The section has a bound vortex whose strength follows the effective
    incidence, so the flow turns while the wing moves. The wake gets the
    change in the bound circulation (the theorem of Kelvin), and the shed
-   vortices make the street. The amplitude changes slowly, which shows
-   the range of trim conditions in the paper.
+   vortices make the street. The amplitude of the motion changes slowly,
+   which shows how the wake and the work in one cycle grow with it.
 
    Over the streamlines: the wake vortices, the incidence arc, two faint
    outlines at earlier times, and the pitch-plunge orbit, whose loop area
    is the work the flow does in one cycle. The reduced frequency
-   k = omega * chord / (2 * freestream) keeps the motion in the flutter
-   range. */
+   k = omega * chord / (2 * U) stays at K_TARGET on a canvas of any
+   size, because layout() sets U from the chord. The motion is then in
+   the flutter range on every screen. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -22,7 +23,21 @@ import { PAZY_RATIO, traceAerofoil, isInsideAerofoil } from '../aerofoil.js';
 import { TWO_PI, addVortex, addDoublet, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
 
-const FREESTREAM = 110;         // px/s
+/* The reduced frequency k = omega * chord / (2 * U) sets the strength
+   of the unsteady wake. It must not change with the size of the canvas,
+   so the speed of the stream comes from the chord and this value. The
+   frequency stays the same, and the motion keeps its tempo on every
+   screen. */
+const K_TARGET = 0.38;          // reduced frequency, in the flutter range
+
+/* Theodorsen's function C(k) gives the circulatory lift of a section
+   that moves in its own wake. It makes the lift smaller than the
+   quasi-steady value, and it makes the lift late. At k = 0.38 the
+   value from the approximation of Jones is 0.657 at an angle of
+   -16.1 degrees, and that angle is a delay of 0.448 s at this
+   frequency. The wake is the reason for both. */
+const THEODORSEN_GAIN = 0.6568;
+const THEODORSEN_LAG = 0.4479;  // seconds
 const FLUTTER_HZ = 0.1;
 const PITCH_LEAD = 1.9;         // radians: pitch leads plunge by this phase
 const PITCH_AMPLITUDE = 0.26;   // radians
@@ -66,8 +81,15 @@ export function createPitchingSection() {
   let width = 0;
   let height = 0;
   let plunge = 0;
+  /* px/s. layout() sets it from the chord, so that k stays at
+     K_TARGET on a canvas of any size. */
+  let stream = 110;
   let lastOrbitSample = -99;
   let strongestEma = 1;
+  /* The lab can hold the amplitude at one fraction of the full pitch.
+     The value null means that the slow sweep runs. */
+  let held = null;
+  let sweepNow = 0.55;
 
   /* The function uses only the time, and the faint outlines can ask
      for an earlier state. A plunge up is positive. A plunge rate down
@@ -75,7 +97,8 @@ export function createPitchingSection() {
      nose-up. */
   function kinematics(t) {
     const omega = TWO_PI * FLUTTER_HZ;
-    const sweep = 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
+    const sweep = held !== null ? held
+      : 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
     const plungeAmp = height * PLUNGE_FRACTION * sweep;
     const h = plungeAmp * Math.sin(omega * t);
     return {
@@ -83,15 +106,32 @@ export function createPitchingSection() {
       alpha: PITCH_AMPLITUDE * sweep * Math.sin(omega * t + PITCH_LEAD),
       y: section.baseY - h,
       hRate: plungeAmp * omega * Math.cos(omega * t),
+      aRate: PITCH_AMPLITUDE * sweep * omega * Math.cos(omega * t + PITCH_LEAD),
     };
+  }
+
+  /* The incidence the flow sees at the three-quarter chord: the pitch,
+     the plunge rate, and the pitch rate over the arm from the pitch
+     axis at the middle of the chord to that point. */
+  function effectiveIncidence(k) {
+    return k.alpha - k.hRate / stream + (section.half / 2) * k.aRate / stream;
   }
 
   function move(t) {
     const k = kinematics(t);
+    /* Keep the amplitude of this instant, because the readout of the
+       lab reads it. kinematics() also runs at other times in a frame,
+       so it must not write this. */
+    sweepNow = held !== null ? held
+      : 0.55 + 0.45 * Math.sin((TWO_PI * t) / SWEEP_SECONDS);
     plunge = k.h;
     section.alpha = k.alpha;
     section.y = k.y;
-    section.gamma = section.gain * (k.alpha - k.hRate / FREESTREAM);
+    /* The bound circulation follows the wake, not the motion of this
+       instant. Take the incidence from the delay of C(k), and make it
+       smaller by the gain of C(k). */
+    const lagged = kinematics(t - THEODORSEN_LAG);
+    section.gamma = section.gain * THEODORSEN_GAIN * effectiveIncidence(lagged);
   }
 
   function quarterChord() {
@@ -110,8 +150,8 @@ export function createPitchingSection() {
   function velocity(x, y) {
     if (isInsideAerofoil(section, x, y)) return null;
 
-    const out = { u: FREESTREAM, v: 0 };
-    addDoublet(out, x, y, section.x, section.y, section.half * DOUBLET_RATIO, FREESTREAM);
+    const out = { u: stream, v: 0 };
+    addDoublet(out, x, y, section.x, section.y, section.half * DOUBLET_RATIO, stream);
     const bound = quarterChord();
     addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
     wake.addTo(out, x, y);
@@ -225,6 +265,22 @@ export function createPitchingSection() {
     // frame.
     fade: 1,
 
+    /* The control of this scene on the lab page. The value is the
+       pitch amplitude in degrees, from zero to the full sweep. */
+    lab: {
+      label: 'Pitch amplitude',
+      unit: '\u00b0',
+      min: 0,
+      max: 15,
+      step: 0.25,
+      value: () => (PITCH_AMPLITUDE * sweepNow * 180) / Math.PI,
+      set(v) {
+        const full = (PITCH_AMPLITUDE * 180) / Math.PI;
+        held = Math.min(Math.max(v / full, 0), 1);
+      },
+      release() { held = null; },
+    },
+
     layout(w, h) {
       width = w;
       height = h;
@@ -233,7 +289,9 @@ export function createPitchingSection() {
       // NACA 0018: the largest half-thickness is 0.09 of the chord.
       section.thickness = Math.max(chord * section.ratio / 2, 4);
       // Thin-aerofoil bound circulation per radian: pi * chord * U.
-      section.gain = Math.PI * chord * FREESTREAM;
+      // The stream that holds the reduced frequency at K_TARGET.
+      stream = (TWO_PI * FLUTTER_HZ) * chord / (2 * K_TARGET);
+      section.gain = Math.PI * chord * stream;
       stage = stageFor(w, h);
       // On the left of the stage, because the wake must move to the
       // right, to the orbit.
@@ -260,7 +318,7 @@ export function createPitchingSection() {
       move(t);
       wake.shed(dt, section.gamma - previousGamma, trailingEdge());
       const bound = quarterChord();
-      wake.convect(dt, FREESTREAM, (out, x, y) => {
+      wake.convect(dt, stream, (out, x, y) => {
         addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
       });
       if (t - lastOrbitSample >= ORBIT_STEP) {
@@ -288,15 +346,35 @@ export function createPitchingSection() {
       for (let k = 0; k <= steps; k++) {
         const when = at - k * ORBIT_STEP;
         const omega = TWO_PI * FLUTTER_HZ;
-        const sweep = 0.55 + 0.45 * Math.sin((TWO_PI * when) / SWEEP_SECONDS);
+        const sweep = held !== null ? held
+          : 0.55 + 0.45 * Math.sin((TWO_PI * when) / SWEEP_SECONDS);
         path.unshift({
           a: PITCH_AMPLITUDE * sweep * Math.sin(omega * when + PITCH_LEAD),
           h: height * PLUNGE_FRACTION * sweep * Math.sin(omega * when),
         });
       }
+      /* Build the wake again. The street is the subject of the scene,
+         and a visitor who asks for no motion must see it too. Shed and
+         convect over the recent past, with the same steps the loop
+         uses. */
+      wake.reset();
+      const dt = 0.05;
+      const from = at - ORBIT_SECONDS * 2;
+      move(from);
+      for (let when = from; when <= at; when += dt) {
+        const before = section.gamma;
+        move(when);
+        wake.shed(dt, section.gamma - before, trailingEdge());
+        const bound = quarterChord();
+        wake.convect(dt, stream, (out, x, y) => {
+          addVortex(out, x, y, bound.x, bound.y, section.gamma, CORE2);
+        });
+      }
+
       move(at);
       flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
+      drawWake(ctx, dt, ink);
       drawIncidence(ctx, ink);
       drawGhosts(ctx, at, ink);
       drawSection(ctx, ink);

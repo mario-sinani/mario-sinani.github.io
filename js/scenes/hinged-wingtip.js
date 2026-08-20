@@ -5,8 +5,9 @@
    Multibody Modeling of Flared Hinged Wings".
 
    Two bodies and one revolute joint make the smallest multibody system.
-   The hinge angle is its own degree of freedom, and the beat between two
-   close frequencies shows the coupling between the wing and the hinge.
+   The hinge angle is its own degree of freedom: the scene integrates it,
+   and it is not a prescribed motion. The wing sweeps through incidence,
+   the flow turns the tip, and the tip finds its own angle.
 
    Over the flow: the hinge axis at its flare angle, the arc of the hinge
    angle, and the trace of that angle, which is the joint state a solver
@@ -20,15 +21,37 @@ import { stageFor, drawDatum } from './stage.js';
 
 const FREESTREAM = 100;         // px/s
 const WING_HZ = 0.075;
-const HINGE_HZ = 0.115;         // close to WING_HZ, so the two beat
 const WING_INCIDENCE = 0.16;    // radians
-const HINGE_TRAVEL = 0.5;       // radians of fold, peak to zero
+const HINGE_TRAVEL = 0.5;       // radians; the stops of the joint
 const FLARE = 0.55;             // radians the hinge axis is swept back by
+
+/* The hinge is free. It carries no prescribed motion: the flow turns
+   the tip, and the tip finds its own angle.
+
+   A fold turns the tip about the hinge axis. Only the part of that turn
+   across the flow changes the incidence of the tip, and that part is
+   sin(FLARE) of the fold. A fold up therefore takes incidence off the
+   tip, which takes lift off it, which is the reason a flared hinge
+   relieves the load of a gust. With no flare a fold is a pure flap, the
+   incidence does not change, and nothing stops the fold: the tip goes
+   to its stop and stays there.
+
+   The angle of the joint follows
+
+     d2/dt2 + 2*Z*W*(d/dt) + (LOAD*sin(FLARE) + SPRING)*fold
+       = LOAD * (incidence of the wing)
+
+   The stiffness of the joint is the sum of a small structural spring
+   and the term from the flow. The flow term grows with the flare, so
+   more flare gives a smaller fold and a faster answer. */
+const HINGE_LOAD = 1.6;         // 1/s^2 per radian of incidence
+const HINGE_SPRING = 0.35;      // 1/s^2 from the structure alone
+const HINGE_DAMPING = 0.15;     // fraction of critical
 const CORE2 = 240;
 /* Sample the trace with a clock, and keep a little more than one beat
    of the hinge. The trace then does not change with the refresh
    rate. */
-const TRACE_SECONDS = 1.05 / HINGE_HZ;
+const TRACE_SECONDS = 14;       // seconds of joint angle kept on the trace
 const TRACE_STEP = 0.05;
 
 export function createHingedWingtip() {
@@ -40,14 +63,51 @@ export function createHingedWingtip() {
   let stage = null;
   let history = [];
   let lastSample = -99;
+  /* The lab can hold the flare at one angle. The value null means that
+     the constant applies. */
+  let held = null;
+  /* The state of the joint: the angle and its rate. */
+  let fold = 0;
+  let foldRate = 0;
+  let clock = 0;
+
+  function flare() {
+    return held !== null ? held : FLARE;
+  }
+
+  function wingIncidence(when) {
+    return WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * when);
+  }
+
+  /** Step the joint forward by dt. The flow acts on the incidence that
+      is left on the tip after the fold takes its part away. */
+  function stepHinge(dt, when) {
+    const coupling = Math.sin(flare());
+    const stiffness = HINGE_LOAD * coupling + HINGE_SPRING;
+    const damping = 2 * HINGE_DAMPING * Math.sqrt(Math.max(stiffness, 1e-6));
+    const accel = HINGE_LOAD * wingIncidence(when) - stiffness * fold - damping * foldRate;
+    foldRate += accel * dt;
+    fold += foldRate * dt;
+    // The stops of the joint. A stop takes the rate away.
+    if (fold > HINGE_TRAVEL) { fold = HINGE_TRAVEL; if (foldRate > 0) foldRate = 0; }
+    if (fold < -HINGE_TRAVEL) { fold = -HINGE_TRAVEL; if (foldRate < 0) foldRate = 0; }
+  }
+
+  /** Run the joint from rest up to a time, for a fixed frame. */
+  function settle(until) {
+    fold = 0; foldRate = 0;
+    const dt = 1 / 60;
+    for (let when = until - 40; when <= until; when += dt) stepHinge(dt, when);
+    clock = until;
+  }
 
   function move(t) {
-    inboard.alpha = WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * t);
+    inboard.alpha = wingIncidence(t);
 
-    // The hinge angle starts at the inboard piece. The incidence of
-    // the outboard piece is the sum of the two angles.
-    hinge.fold = HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * t);
-    outboard.alpha = inboard.alpha + hinge.fold;
+    /* The fold takes incidence off the tip. The part it takes is
+       sin(flare) of the fold. */
+    hinge.fold = fold;
+    outboard.alpha = inboard.alpha - hinge.fold * Math.sin(flare());
 
     const dirIn = chordDirection(inboard.alpha);
     hinge.x = inboard.x + inboard.half * dirIn.x;
@@ -84,13 +144,23 @@ export function createHingedWingtip() {
     return out;
   }
 
+  /** The fold that the joint had a time ago, from the trace in memory.
+      The strobe reads it, because the fold is a state and not a
+      formula. */
+  function foldAgo(ago) {
+    if (!history.length) return fold;
+    const back = Math.round(ago / TRACE_STEP);
+    const i = history.length - 1 - back;
+    return i >= 0 ? history[i] : history[0];
+  }
+
   /* Draw the outboard piece at two earlier times, more faint, at the
      hinge position of those times. This strobe shows the fold. */
   function drawGhosts(ctx, t, ink) {
     for (const [ago, alpha] of [[0.5, 0.09], [0.25, 0.18]]) {
       const when = t - ago;
-      const ia = WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * when);
-      const oa = ia + HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * when);
+      const ia = wingIncidence(when);
+      const oa = ia - foldAgo(ago) * Math.sin(flare());
       const dirIn = chordDirection(ia);
       const hx = inboard.x + inboard.half * dirIn.x;
       const hy = inboard.y + inboard.half * dirIn.y;
@@ -186,6 +256,20 @@ export function createHingedWingtip() {
     // frame.
     fade: 1,
 
+    /* The control of this scene on the lab page. The flare is the
+       angle the designer chooses, and it sets how much load the joint
+       takes off the tip. */
+    lab: {
+      label: 'Hinge flare',
+      unit: '\u00b0',
+      min: 0,
+      max: 45,
+      step: 1,
+      value: () => (flare() * 180) / Math.PI,
+      set(v) { held = (v * Math.PI) / 180; },
+      release() { held = null; },
+    },
+
     layout(w, h) {
       const chord = Math.min(w * 0.2, h * 0.34);
       inboard.half = chord * 0.32;
@@ -206,11 +290,24 @@ export function createHingedWingtip() {
 
       history = [];
       lastSample = -99;
+      fold = 0;
+      foldRate = 0;
+      clock = 0;
       flow.layout(w, h);
       move(0);
     },
 
     frame(ctx, dt, t, ink) {
+      /* Step the joint with a fixed step, so the answer does not
+         change with the refresh rate of the screen. */
+      const step = 1 / 120;
+      let left = Math.min(Math.max(t - clock, 0), 0.25);
+      while (left > 0) {
+        const h = Math.min(step, left);
+        stepHinge(h, clock + h);
+        clock += h;
+        left -= h;
+      }
       move(t);
       if (t - lastSample >= TRACE_STEP) {
         lastSample = t;
@@ -229,13 +326,21 @@ export function createHingedWingtip() {
     },
 
     still(ctx, ink, t) {
-      const at = t || 3.4;
-      move(at);
+      const at = t || 20;
+      /* Run the joint from rest, and keep the recent angles, so the
+         trace and the strobe have a past to read. */
+      fold = 0; foldRate = 0;
       history = [];
-      const steps = Math.round(TRACE_SECONDS / TRACE_STEP);
-      for (let k = steps - 1; k >= 0; k--) {
-        history.push(HINGE_TRAVEL * Math.sin(TWO_PI * HINGE_HZ * (at - k * TRACE_STEP)));
+      const dt = 1 / 120;
+      const from = at - 40;
+      let next = at - TRACE_SECONDS;
+      for (let when = from; when <= at; when += dt) {
+        stepHinge(dt, when);
+        if (when >= next) { history.push(fold); next += TRACE_STEP; }
       }
+      while (history.length > TRACE_SECONDS / TRACE_STEP) history.shift();
+      clock = at;
+      move(at);
       flow.still(ctx, velocity, ink);
       drawDatum(ctx, stage, ink);
       drawAxis(ctx, ink);

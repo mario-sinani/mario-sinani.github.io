@@ -19,7 +19,7 @@ const TWO_PI = 6.2832;
 
 // The roots of cos(bL)cosh(bL) = -1. The frequency of a mode is
 // proportional to the square of its root.
-const ROOTS = [1.8751, 4.6941, 7.8548];
+const ROOTS = [1.8751040687, 4.6940911330, 7.8547574382];
 const SLOSH_SECONDS = 14;       // period of the energy exchange
 const BASE_HZ = 0.09;           // first mode; the rest follow the ratios
 const SAMPLES = 96;
@@ -45,8 +45,11 @@ export function createBeamModes() {
       bL,
       sigma,
       omega: TWO_PI * BASE_HZ * ((bL * bL) / (ROOTS[0] * ROOTS[0])),
-      // A higher mode has the same energy with less displacement.
-      reach: 1 / (i + 1) ** 1.6,
+      /* A mode with energy E and frequency w moves by sqrt(2E)/w, so
+         the reach of a mode falls with 1/w. A higher mode holds the
+         same energy in a much smaller displacement: mode 2 reaches
+         0.16 of mode 1, and mode 3 reaches 0.057 of it. */
+      reach: (ROOTS[0] * ROOTS[0]) / (bL * bL),
       energy: 0,
     };
   });
@@ -57,6 +60,10 @@ export function createBeamModes() {
   const beam = { x: 0, y: 0, length: 200, amplitude: 30 };
   const bars = { x: 0, y: 0, w: 0, gap: 0 };
   let stage = null;
+  /* The lab can hold the energy near one mode. The value null means
+     that the exchange runs. The value is the mode number, and a value
+     between two whole numbers divides the energy between them. */
+  let held = null;
 
   function tabulate() {
     for (let m = 0; m < modes.length; m++) {
@@ -69,10 +76,17 @@ export function createBeamModes() {
   /* Move energy between the modes. Divide the three parts by their
      total in each frame, and the total then stays constant. */
   function slosh(t) {
-    const phase = (TWO_PI * t) / SLOSH_SECONDS;
     let sum = 0;
     for (let i = 0; i < modes.length; i++) {
-      const raw = 0.35 + 0.3 * Math.sin(phase + i * 2.1) + 0.2 / (i + 1);
+      let raw;
+      if (held !== null) {
+        // The energy of a mode falls with its distance from the held
+        // number. The small floor keeps each mode alive.
+        raw = Math.max(1 - Math.abs(held - (i + 1)), 0.04);
+      } else {
+        const phase = (TWO_PI * t) / SLOSH_SECONDS;
+        raw = 0.35 + 0.3 * Math.sin(phase + i * 2.1) + 0.2 / (i + 1);
+      }
       modes[i].energy = Math.max(raw, 0.02);
       sum += modes[i].energy;
     }
@@ -98,11 +112,22 @@ export function createBeamModes() {
     return w;
   }
 
+  /* The reach of the modes is the true one, so a state near mode 3 is
+     very small on the page. Divide the drawing by the largest envelope,
+     and the beam then fills its box for every state. This is a scale of
+     the drawing only: the bars keep the energies as they are. */
+  function drawScale() {
+    let peak = 0;
+    for (let i = 0; i <= SAMPLES; i++) peak = Math.max(peak, envelope(i));
+    return peak > 1e-6 ? 1 / peak : 1;
+  }
+
   function traceBeam(ctx, t) {
+    const k = drawScale();
     ctx.beginPath();
     for (let i = 0; i <= SAMPLES; i++) {
       const x = beam.x + (i / SAMPLES) * beam.length;
-      const y = beam.y + deflection(i, t) * beam.amplitude;
+      const y = beam.y + deflection(i, t) * k * beam.amplitude;
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
   }
@@ -117,11 +142,12 @@ export function createBeamModes() {
   }
 
   function drawEnvelope(ctx, ink) {
+    const k = drawScale();
     for (const side of [1, -1]) {
       ctx.beginPath();
       for (let i = 0; i <= SAMPLES; i++) {
         const x = beam.x + (i / SAMPLES) * beam.length;
-        const y = beam.y + side * envelope(i) * beam.amplitude;
+        const y = beam.y + side * envelope(i) * k * beam.amplitude;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.setLineDash([2, 4]);
@@ -194,6 +220,18 @@ export function createBeamModes() {
     // The strobe shows the earlier states. The engine clears the
     // canvas in each frame.
     fade: 1,
+
+    /* The control of this scene on the lab page. */
+    lab: {
+      label: 'Dominant mode',
+      unit: '',
+      min: 1,
+      max: 3,
+      step: 0.05,
+      value: () => modes.reduce((sum, m, i) => sum + (i + 1) * m.energy, 0),
+      set(v) { held = v; },
+      release() { held = null; },
+    },
 
     layout(w, h) {
       stage = stageFor(w, h);
