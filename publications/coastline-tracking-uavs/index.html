@@ -277,15 +277,22 @@
       <div class="reveal">
         <details class="cite" open>
           <summary>
-            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>BibTeX
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>Cite
           </summary>
           <div class="cite-body">
+            <div class="cite-tabs" role="group" aria-label="Citation format">
+              <button class="cite-tab" type="button" aria-pressed="true" data-format="bib-2022-thesis">BibTeX</button>
+              <button class="cite-tab" type="button" aria-pressed="false" data-format="ieee-2022-thesis">IEEE</button>
+              <button class="cite-tab" type="button" aria-pressed="false" data-format="apa-2022-thesis">APA</button>
+            </div>
             <pre id="bib-2022-thesis"><code>@mastersthesis{sinani2022coastline,
   author = {Sinani, Mario A.},
   title  = {Coastline Tracking for UAVs Using Event-Triggered Image-Based Visual Servoing Nonlinear Model Predictive Control},
   school = {National Technical University of Athens},
   year   = {2022}
 }</code></pre>
+            <pre id="ieee-2022-thesis" hidden><code>M. A. Sinani, "Coastline Tracking for UAVs Using Event-Triggered Image-Based Visual Servoing Nonlinear Model Predictive Control," Diploma thesis, National Technical University of Athens, Athens, Greece, 2022.</code></pre>
+            <pre id="apa-2022-thesis" hidden><code>Sinani, M. A. (2022). Coastline Tracking for UAVs Using Event-Triggered Image-Based Visual Servoing Nonlinear Model Predictive Control [Diploma thesis, National Technical University of Athens].</code></pre>
             <button class="copy-btn" type="button" data-copy="bib-2022-thesis"><span class="copy-label" role="status">Copy</span></button>
           </div>
         </details>

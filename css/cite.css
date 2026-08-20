@@ -79,3 +79,36 @@
   .cite-body pre { padding: 0.85rem 0.9rem; }
   .copy-btn { position: static; margin: 0.55rem 0.9rem 0.85rem; }
 }
+
+/* The format tabs above the record. Only the choice of a format needs
+   a script, so CSS shows the tabs when the js class is on the page.
+   The space on the right keeps the tabs clear of the copy button. */
+.cite-tabs {
+  display: none;
+  gap: 0.3rem;
+  padding: 0.6rem 5.2rem 0 0.65rem;
+  flex-wrap: wrap;
+}
+
+.js .cite-tabs { display: flex; }
+
+.cite-tab {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.26rem 0.7rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.cite-tab:hover, .cite-tab:focus-visible { color: var(--accent-strong); }
+
+.cite-tab[aria-pressed="true"] {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}

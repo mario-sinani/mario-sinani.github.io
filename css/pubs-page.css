@@ -172,3 +172,22 @@
   .pubs-page .pub-title { font-size: 1.06rem; }
   .pub-abstract p { font-size: 0.94rem; }
 }
+
+/* The export row: one click for every record, and the plain .bib file.
+   The file link works without a script. */
+.pub-export {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 2.6rem;
+}
+
+.pub-export .chip {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* With a script the filter row is above this row. Pull the two rows
+   together. */
+.js .pub-export { margin-top: -1.2rem; }

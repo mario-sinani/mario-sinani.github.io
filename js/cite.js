@@ -7,7 +7,7 @@
 
 const RESET_DELAY = 1800;
 
-async function copy(text) {
+export async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
     return;
@@ -27,16 +27,17 @@ async function copy(text) {
 
 export function initCite() {
   document.querySelectorAll('[data-copy]').forEach((button) => {
-    const source = document.getElementById(button.dataset.copy);
-    if (!source) return;
-
     const label = button.querySelector('.copy-label');
     const idle = label ? label.textContent : '';
     let timer = 0;
 
     button.addEventListener('click', async () => {
+      /* Read the target at the click, because the format tabs can
+         point the button at an other record. */
+      const source = document.getElementById(button.dataset.copy);
+      if (!source) return;
       try {
-        await copy(source.textContent.trim());
+        await copyText(source.textContent.trim());
       } catch (e) {
         if (label) label.textContent = 'Press Ctrl+C';
         return;
@@ -49,6 +50,28 @@ export function initCite() {
         label.textContent = idle;
         button.classList.remove('is-copied');
       }, RESET_DELAY);
+    });
+  });
+}
+
+/* Format tabs: one citation in more than one style. A tab shows its
+   record and points the copy button at it. Only BibTeX is visible
+   without a script. */
+export function initCiteFormats() {
+  document.querySelectorAll('.cite-tabs').forEach((tabs) => {
+    const body = tabs.closest('.cite-body');
+    const button = body ? body.querySelector('.copy-btn') : null;
+
+    tabs.addEventListener('click', (event) => {
+      const tab = event.target.closest('[data-format]');
+      if (!tab) return;
+      tabs.querySelectorAll('[data-format]').forEach((other) => {
+        const active = other === tab;
+        other.setAttribute('aria-pressed', String(active));
+        const record = document.getElementById(other.dataset.format);
+        if (record) record.hidden = !active;
+      });
+      if (button) button.dataset.copy = tab.dataset.format;
     });
   });
 }
