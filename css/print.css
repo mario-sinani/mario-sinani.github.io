@@ -97,6 +97,9 @@ p a[href^="http"]::after { content: none; }
   margin: 0 1.4rem 0 0;
 }
 
+/* The mark that shows a link does nothing on paper. */
+.related-go { display: none; }
+
 /* Keep a block on one sheet if the sheet has the room. */
 .pub, .timeline-item, .edu-card, .topic, .fact {
   break-inside: avoid;
