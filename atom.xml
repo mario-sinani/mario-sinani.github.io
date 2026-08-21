@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The feed mirrors the Updates section of the home page. Add the new
-     entry at the top, and move the feed date with it. -->
+<!-- The feed lists what is new on the site. Add the new entry at the
+     top, and move the feed date with it. -->
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Mario A. Sinani</title>
   <subtitle>Updates from mariosinani.com: papers, talks and positions.</subtitle>
