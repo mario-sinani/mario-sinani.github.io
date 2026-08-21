@@ -1,5 +1,178 @@
-/* Lab: one instrument for each scene. An instrument is the moving
-   figure of a paper page with one control below it. */
+/* Lab: the catalogue of the models, and the page of one model. An
+   instrument is the moving figure of a paper page with one control
+   below it. The catalogue uses the topic rows of subpage.css, so a
+   model entry and a research theme have the same shape. */
+
+/* A card in the catalogue: a fixed frame of the model on the left, and
+   the name, a short text and the button on the right. */
+.model-card {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) 1fr;
+  gap: 2rem;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding: 2.2rem 0;
+}
+
+.model-card:first-of-type { border-top: 0; padding-top: 0; }
+
+/* The preview holds a canvas, and a script runs the model in it, in
+   the same manner as a field. With no script it would be an empty
+   box, so CSS hides it. */
+.model-preview { display: none; }
+
+.js .model-preview {
+  display: block;
+  position: relative;
+  height: 11.5rem;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: border-color 140ms ease;
+}
+
+.model-preview:hover { border-color: var(--accent); }
+
+/* The scene draws its subject near the top of its own box, at a
+   fraction of the height. The box inside the preview is therefore
+   taller than the window, so that the subject falls near the middle of
+   the window and the flow lines are not crowded. */
+.model-preview-crop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30rem;
+}
+
+.model-preview canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.model-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.1rem;
+}
+
+.model-card-head .index {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.model-card-head h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: -0.015em;
+}
+
+.model-card-body p {
+  max-width: var(--w-prose);
+  margin-top: 0.7rem;
+  font-size: 0.98rem;
+  color: var(--muted);
+}
+
+.model-card-body .model-meta {
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The papers a model comes from. Each one carries the round mark of
+   its type, the same mark the rail of the publications uses, so the
+   two pages name a paper in the same manner. */
+.model-source {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Two sources stand side by side while the card is wide enough, and
+   they keep one column each. A narrow card puts them one below the
+   other. */
+.source-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
+  gap: 0.9rem 1.6rem;
+  margin-top: 0.75rem;
+}
+
+.source-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.model-source .source {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.model-source .node-icon {
+  margin-top: 0;
+  width: 2rem;
+  height: 2rem;
+  transition: border-color 140ms ease;
+}
+
+.model-source .node-icon svg { width: 0.95rem; height: 0.95rem; }
+
+.source-text { display: block; }
+
+.source-where {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.source-where .dot { color: var(--line-strong); }
+
+.source-name {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+  transition: color 140ms ease, text-decoration-color 140ms ease;
+}
+
+.source:hover .node-icon, .source:focus-visible .node-icon { border-color: var(--accent); }
+
+.source:hover .source-name, .source:focus-visible .source-name {
+  color: var(--accent-strong);
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.model-card-body .pill {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 1.35rem;
+}
+
+@media (max-width: 860px) {
+  .model-card { grid-template-columns: 1fr; gap: 1.2rem; }
+  .js .model-preview { height: 10rem; }
+}
 
 .instrument {
   border-top: 1px solid var(--line);
@@ -36,7 +209,13 @@
 }
 
 /* The stage holds the canvas. The engine sizes the canvas to this
-   box. */
+   box. A script draws the model, so with no script the stage would be
+   an empty box. CSS then hides it, and the notes below tell the whole
+   subject. */
+.instrument-stage { display: none; }
+
+.js .instrument-stage { display: block; }
+
 .instrument-stage {
   position: relative;
   margin-top: 1.4rem;
@@ -84,9 +263,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The sweep button gives the parameter back to the clock. The pressed
-   state means that the sweep runs. */
-.lab-sweep {
+/* The two modes of the parameter, Auto and Hold. The pressed one is
+   the mode in use. */
+.lab-modes { display: inline-flex; gap: 0.3rem; }
+
+.lab-mode {
   font-family: var(--font-mono);
   font-size: 0.66rem;
   letter-spacing: 0.08em;
@@ -100,17 +281,124 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-.lab-sweep:hover, .lab-sweep:focus-visible {
+.lab-mode:hover, .lab-mode:focus-visible {
   color: var(--accent-strong);
   border-color: var(--accent);
 }
 
-.lab-sweep[aria-pressed="true"] {
+.lab-mode[aria-pressed="true"] {
+  color: var(--accent-fill-ink);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+/* What the model does at this moment: a line of its own below the
+   control, in the mono face of a label. */
+.lab-status {
+  margin-top: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 44rem;
+}
+
+/* The page of one model. The subject sits near the middle of this
+   stage, because the page shows the scene alone (see MODEL_BAND in
+   lab.js). The stage is taller than the one a paper page uses: the
+   height sets the size of the subject in every scene, so a taller
+   stage gives the wing, the beam or the craft the room it deserves. */
+.lab-model .instrument-stage { height: clamp(320px, 44vw, 560px); }
+
+/* The notes below the model: what the drawing shows, the model behind
+   it, the control, and the papers. Each note is one subject, and a line
+   divides two of them. */
+.model-note {
+  border-top: 1px solid var(--line);
+  padding: 2rem 0 0.4rem;
+}
+
+.model-note:first-child { border-top: 0; padding-top: 0; }
+
+.model-note h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.model-note p {
+  max-width: var(--w-prose);
+  margin-top: 0.85rem;
+  font-size: 0.99rem;
+}
+
+.model-note p a {
   color: var(--accent-strong);
-  border-color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.model-note p a:hover, .model-note p a:focus-visible { border-bottom-color: var(--accent-strong); }
+
+.model-note code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--muted);
+}
+
+/* The equations, in the same box as a citation record. Each line is
+   one equation in MathML, which the browser sets with its own
+   mathematical font, and its meaning stands beside it. A long
+   equation scrolls in its line, and it does not make the page wider. */
+.model-formula {
+  max-width: 48rem;
+  margin: 1rem 0 0;
+  padding: 0.3rem 1.1rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.eq {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding: 0.65rem 0;
+}
+
+.eq + .eq { border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent); }
+
+/* The equation keeps the width it needs. The label takes the rest,
+   and wraps. */
+.eq math {
+  flex: 0 0 auto;
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin: 0;
+  text-align: left;
+}
+
+.eq-label {
+  flex: 1 1 auto;
+  min-width: 8rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: right;
 }
 
 @media (max-width: 720px) {
   .instrument { padding: 2rem 0 2.2rem; }
   .instrument-stage { height: clamp(220px, 52vw, 320px); }
+  .lab-model .instrument-stage { height: clamp(280px, 68vw, 420px); }
+  .model-note { padding: 1.6rem 0 0.4rem; }
+  .model-formula { padding: 0.2rem 0.9rem; }
+  .eq { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+  .eq-label { min-width: 0; text-align: left; }
 }

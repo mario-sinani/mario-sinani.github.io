@@ -45,23 +45,6 @@
 
 .pub:last-child .pub-node::before { bottom: auto; height: 1.25rem; }
 
-.node-icon {
-  position: relative;
-  z-index: 1;
-  margin-top: 0.15rem;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.node-icon svg { width: 1.05rem; height: 1.05rem; }
-
 .pub-body {
   grid-column: 3;
   grid-row: 1;

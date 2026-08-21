@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lab - Live Models of Wings, Beams and Control</title>
-  <meta name="description" content="Five interactive models from the papers of Mario A. Sinani: lift and incidence, flutter, a flared hinge, beam modes and event-triggered control.">
+  <meta name="description" content="Six live models from the papers of Mario A. Sinani: a wing under a step, a flutter band, a flared hinge, beam modes, event control, and a coast in view.">
   <meta name="author" content="Mario A. Sinani">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="https://mariosinani.com/lab/">
@@ -21,19 +21,19 @@
   <meta property="og:site_name" content="Mario A. Sinani">
   <meta property="og:locale" content="en_US">
   <meta property="og:title" content="Lab - Live Models of Wings, Beams and Control">
-  <meta property="og:description" content="Five live models from the papers: lift and incidence, flutter, a flared hinge, beam modes and event-triggered control. They run in the browser.">
+  <meta property="og:description" content="Six live models from the papers: a wing under a step, a flutter band, a flared hinge, beam modes, event-triggered control, and the coast in the camera. They run in the browser.">
   <meta property="og:image" content="https://mariosinani.com/assets/og/lab.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Lab - five live models of wings, beams and control laws, shown over streamlines around a lifting body.">
+  <meta property="og:image:alt" content="Lab - six live models of wings, beams and control laws, shown over streamlines around a lifting body.">
 
   <!-- Twitter / X card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Lab - Live Models of Wings, Beams and Control">
-  <meta name="twitter:description" content="Five live models from the papers: lift and incidence, flutter, a flared hinge, beam modes and event-triggered control. They run in the browser.">
+  <meta name="twitter:description" content="Six live models from the papers: a wing under a step, a flutter band, a flared hinge, beam modes, event-triggered control, and the coast in the camera. They run in the browser.">
   <meta name="twitter:image" content="https://mariosinani.com/assets/og/lab.png">
-  <meta name="twitter:image:alt" content="Lab - five live models of wings, beams and control laws, shown over streamlines around a lifting body.">
+  <meta name="twitter:image:alt" content="Lab - six live models of wings, beams and control laws, shown over streamlines around a lifting body.">
 
   <!-- The icons and the manifest -->
   <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml">
@@ -53,13 +53,14 @@
   <link rel="modulepreload" href="../js/nav.js">
   <link rel="modulepreload" href="../js/ink.js">
   <link rel="modulepreload" href="../js/field-canvas.js">
+  <link rel="modulepreload" href="../js/pazy-wing.js">
+  <link rel="modulepreload" href="../js/lab.js">
 
   <link rel="stylesheet" href="../assets/fonts/fontfaces.css">
   <link rel="stylesheet" href="../css/tokens.css">
   <link rel="stylesheet" href="../css/base.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/nav.css">
-  <link rel="stylesheet" href="../css/about.css">
   <link rel="stylesheet" href="../css/subpage.css">
   <link rel="stylesheet" href="../css/lab.css">
   <link rel="stylesheet" href="../css/footer.css">
@@ -94,47 +95,98 @@
   },
   "inLanguage": "en-US",
   "about": {
-    "@type": "Person",
-    "@id": "https://mariosinani.com/#person",
-    "name": "Mario A. Sinani",
-    "url": "https://mariosinani.com/"
+    "@type": "Thing",
+    "name": "Aeroelasticity, flexible structures and control"
   },
   "mainEntity": {
     "@type": "ItemList",
     "itemListOrder": "https://schema.org/ItemListOrderAscending",
-    "numberOfItems": 5,
+    "numberOfItems": 6,
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
-        "url": "https://mariosinani.com/lab/#incidence",
-        "name": "Lift against incidence"
+        "url": "https://mariosinani.com/lab/pazy-step-response/",
+        "name": "A step in the angle of attack",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/pazy-step-response/#page",
+          "url": "https://mariosinani.com/lab/pazy-step-response/",
+          "name": "A step in the angle of attack"
+        }
       },
       {
         "@type": "ListItem",
         "position": 2,
-        "url": "https://mariosinani.com/lab/#flutter",
-        "name": "Pitch, plunge and the wake"
+        "url": "https://mariosinani.com/lab/pazy-flutter-boundary/",
+        "name": "Flutter across the angle of attack",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/pazy-flutter-boundary/#page",
+          "url": "https://mariosinani.com/lab/pazy-flutter-boundary/",
+          "name": "Flutter across the angle of attack"
+        }
       },
       {
         "@type": "ListItem",
         "position": 3,
-        "url": "https://mariosinani.com/lab/#hinge",
-        "name": "A wing tip on a flared hinge"
+        "url": "https://mariosinani.com/lab/flared-hinge-wingtip/",
+        "name": "A wing tip on a flared hinge",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/flared-hinge-wingtip/#page",
+          "url": "https://mariosinani.com/lab/flared-hinge-wingtip/",
+          "name": "A wing tip on a flared hinge"
+        }
       },
       {
         "@type": "ListItem",
         "position": 4,
-        "url": "https://mariosinani.com/lab/#modes",
-        "name": "Energy between the modes of a beam"
+        "url": "https://mariosinani.com/lab/beam-mode-energy/",
+        "name": "Energy between the modes of a beam",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/beam-mode-energy/#page",
+          "url": "https://mariosinani.com/lab/beam-mode-energy/",
+          "name": "Energy between the modes of a beam"
+        }
       },
       {
         "@type": "ListItem",
         "position": 5,
-        "url": "https://mariosinani.com/lab/#events",
-        "name": "A plan only at an event"
+        "url": "https://mariosinani.com/lab/event-triggered-plan/",
+        "name": "A plan only at an event",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/event-triggered-plan/#page",
+          "url": "https://mariosinani.com/lab/event-triggered-plan/",
+          "name": "A plan only at an event"
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 6,
+        "url": "https://mariosinani.com/lab/coast-in-the-camera/",
+        "name": "The coast in the camera",
+        "item": {
+          "@type": "WebPage",
+          "@id": "https://mariosinani.com/lab/coast-in-the-camera/#page",
+          "url": "https://mariosinani.com/lab/coast-in-the-camera/",
+          "name": "The coast in the camera"
+        }
       }
     ]
+  },
+  "description": "Six live models from the papers of Mario A. Sinani: a wing under a step, a flutter band, a flared hinge, beam modes, event control, and a coast in view.",
+  "dateModified": "2026-08-21",
+  "author": {
+    "@id": "https://mariosinani.com/#person"
+  },
+  "publisher": {
+    "@id": "https://mariosinani.com/#person"
+  },
+  "breadcrumb": {
+    "@id": "https://mariosinani.com/lab/#breadcrumb"
   }
 }
   </script>
@@ -142,6 +194,7 @@
 {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
+  "@id": "https://mariosinani.com/lab/#breadcrumb",
   "itemListElement": [
     {
       "@type": "ListItem",
@@ -194,63 +247,178 @@
     <div class="page-head">
       <p class="eyebrow"><a href="../">Mario A. Sinani</a> <span class="dot">&middot;</span> Dept. of Aeronautics <span class="dot">&middot;</span> Imperial College London</p>
       <h1>Lab<span class="accent-mark">.</span></h1>
-      <p class="lede">Five live models from the papers. Each model runs in the browser, with the code that draws the paper backgrounds. Hold a parameter with the slider, or let the sweep run. With reduced motion the models show a fixed frame, and the slider still works.</p>
+      <p class="lede">Six figures from the papers, made live. The equations run in the browser with one parameter in your hand: a wing that bends under a step, a wing that flutters in a band of angles, a hinge that sheds its load, a beam that moves energy between its modes, a plan that is made only at an event, and the coast as the camera sees it.</p>
     </div>
 
-    <section class="section" aria-label="Instruments">
-      <article class="instrument reveal" id="incidence">
-        <div class="instrument-head">
-          <span class="index">01</span>
-          <h2>Lift against incidence</h2>
+    <section class="section" aria-label="The models">
+      <!-- The marks of a publication: a paper and a thesis. A source
+           below a card uses one of these, in the same manner as the
+           list of the publications. -->
+      <svg style="display:none" aria-hidden="true">
+        <symbol id="icon-paper" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 15.5h6"/></symbol>
+        <symbol id="icon-thesis" viewBox="0 0 24 24"><path d="M2 9.5 12 5l10 4.5L12 14z"/><path d="M6.5 11.8V16c0 1.4 2.5 2.8 5.5 2.8s5.5-1.4 5.5-2.8v-4.2"/><path d="M22 9.5V14"/></symbol>
+      </svg>
+
+      <article class="model-card reveal" id="pazy-step-response">
+        <a class="model-preview" href="pazy-step-response/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="pazy-step" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">01</span>
+            <h2>A step in the angle of attack</h2>
+          </div>
+          <p>The Pazy wing gets a step in the angle of attack and answers with a transient. Its tip rises to almost half the span, so the force on it is a nonlinear function of the shape.</p>
+          <p class="model-meta">Angle of attack, 0&deg; to 8&deg;</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/physics-informed-pazy-wing/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-paper"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2025 <span class="dot">&middot;</span> AIAA SciTech</span>
+                  <span class="source-name">Physics-informed Pazy wing models</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="pazy-step-response/">Open the model &rarr;</a>
         </div>
-        <p class="instrument-brief">A wing section moves through a range of incidence. The comb is the load along the chord, and the arrow is the resultant. The lift comes from the Kirchhoff model, so the flow leaves the section after about 14 degrees. In the inset, the curve bends away from the straight line, and that bend is the nonlinearity the Pazy wing papers model.</p>
-        <div class="instrument-stage"><canvas data-scene="incidence-sweep" aria-hidden="true"></canvas></div>
-        <div class="lab-controls"></div>
-        <p class="page-note">From the papers <a href="../publications/physics-informed-pazy-wing/">Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces of the Pazy Wing</a> and <a href="../publications/parametric-aeroelastic-modeling-pazy-wing/">Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing</a>.</p>
       </article>
 
-      <article class="instrument reveal" id="flutter">
-        <div class="instrument-head">
-          <span class="index">02</span>
-          <h2>Pitch, plunge and the wake</h2>
+      <article class="model-card reveal" id="pazy-flutter-boundary">
+        <a class="model-preview" href="pazy-flutter-boundary/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="pazy-flutter" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">02</span>
+            <h2>Flutter across the angle of attack</h2>
+          </div>
+          <p>The Pazy wing at its trim, with the perturbation of one degree the paper applies. Between 3 and 4.6 degrees the perturbation grows; below and above the band it decays.</p>
+          <p class="model-meta">Angle of attack, 0.5&deg; to 8&deg;</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/parametric-aeroelastic-modeling-pazy-wing/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-paper"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2026 <span class="dot">&middot;</span> AIAA SciTech</span>
+                  <span class="source-name">Parametric models of the Pazy wing</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="pazy-flutter-boundary/">Open the model &rarr;</a>
         </div>
-        <p class="instrument-brief">The section pitches and plunges near flutter, and it sheds a street of vortices. The circulation follows Theodorsen, so the wake makes the lift smaller and late. The loop on the right is the pitch-plunge orbit, and its area is the work the flow does in one cycle. Set the amplitude and see the wake and the loop change.</p>
-        <div class="instrument-stage"><canvas data-scene="pitching-section" aria-hidden="true"></canvas></div>
-        <div class="lab-controls"></div>
-        <p class="page-note">From the paper <a href="../publications/parametric-aeroelastic-modeling-pazy-wing/">Data-Driven Parametric Aeroelastic Modeling of the Pazy Wing</a>.</p>
       </article>
 
-      <article class="instrument reveal" id="hinge">
-        <div class="instrument-head">
-          <span class="index">03</span>
-          <h2>A wing tip on a flared hinge</h2>
+      <article class="model-card reveal" id="flared-hinge-wingtip">
+        <a class="model-preview" href="flared-hinge-wingtip/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="hinged-wingtip" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">03</span>
+            <h2>A wing tip on a flared hinge</h2>
+          </div>
+          <p>The flow starts, the wing bends up, and the tip on its flared hinge folds to the angle where its own lift carries it: 45 degrees at 10 degrees of incidence, as in the paper.</p>
+          <p class="model-meta">Hinge flare, 0&deg; to 45&deg;</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/ancf-flared-hinged-wings/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-paper"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2025 <span class="dot">&middot;</span> Computer Physics Communications</span>
+                  <span class="source-name">Multibody model of flared hinged wings</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="flared-hinge-wingtip/">Open the model &rarr;</a>
         </div>
-        <p class="instrument-brief">The hinge is free: the flow turns the tip, and the tip finds its own angle. Because the axis is swept back, a fold takes incidence off the tip, which takes lift off it. Set the flare and see the fold get smaller. Below about 10 degrees nothing holds the tip, and it goes to its stop.</p>
-        <div class="instrument-stage"><canvas data-scene="hinged-wingtip" aria-hidden="true"></canvas></div>
-        <div class="lab-controls"></div>
-        <p class="page-note">From the paper <a href="../publications/ancf-flared-hinged-wings/">Absolute Nodal Coordinate Formulation for Nonlinear Multibody Modeling of Flared Hinged Wings</a>.</p>
       </article>
 
-      <article class="instrument reveal" id="modes">
-        <div class="instrument-head">
-          <span class="index">04</span>
-          <h2>Energy between the modes of a beam</h2>
+      <article class="model-card reveal" id="beam-mode-energy">
+        <a class="model-preview" href="beam-mode-energy/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="beam-modes" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">04</span>
+            <h2>Energy between the modes of a beam</h2>
+          </div>
+          <p>A beam whose first bending mode and first axial mode exchange energy through a quadratic coupling. The bars are the energy in each mode, and the dashed line is the bound on the average.</p>
+          <p class="model-meta">Amplitude, 5 % to 40 % of the length</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/modal-energy-transfer-beams/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-paper"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2024 <span class="dot">&middot;</span> IEEE CDC</span>
+                  <span class="source-name">A bound on modal energy transfer</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="beam-mode-energy/">Open the model &rarr;</a>
         </div>
-        <p class="instrument-brief">A clamped beam moves in its first three modes, and energy moves between them. A higher mode holds the same energy in a much smaller motion, so the drawing scales to fit while the bars keep the true energies. The dashed envelope is the largest deflection the energies permit. Move the energy toward one mode.</p>
-        <div class="instrument-stage"><canvas data-scene="beam-modes" aria-hidden="true"></canvas></div>
-        <div class="lab-controls"></div>
-        <p class="page-note">From the paper <a href="../publications/modal-energy-transfer-beams/">Capturing &amp; Bounding Nonlinear Modal Energy Transfer for Geometrically Exact Beams using Semidefinite Programming</a>.</p>
       </article>
 
-      <article class="instrument reveal" id="events">
-        <div class="instrument-head">
-          <span class="index">05</span>
-          <h2>A plan only at an event</h2>
+      <article class="model-card reveal" id="event-triggered-plan">
+        <a class="model-preview" href="event-triggered-plan/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="event-tracking" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">05</span>
+            <h2>A plan only at an event</h2>
+          </div>
+          <p>An octorotor follows a coastline, seen from above, on a plan it follows in an open loop. It plans again only when the measured state departs from the predicted one, or when the horizon ends.</p>
+          <p class="model-meta">Plan horizon, 0.4 s to 3 s</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/event-triggered-visual-servoing/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-paper"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2022 <span class="dot">&middot;</span> IEEE/RSJ IROS</span>
+                  <span class="source-name">Event-triggered visual servoing</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="event-triggered-plan/">Open the model &rarr;</a>
         </div>
-        <p class="instrument-brief">The craft follows a coastline. It calculates a new plan only when the tracking error goes past a threshold, or when the horizon ends. Each tick on the rail is one plan, and the dashed line is the plan ahead. Make the horizon longer, and the craft plans less often.</p>
-        <div class="instrument-stage"><canvas data-scene="event-tracking" aria-hidden="true"></canvas></div>
-        <div class="lab-controls"></div>
-        <p class="page-note">From the paper <a href="../publications/event-triggered-visual-servoing/">An Event-Triggered Visual Servoing Predictive Control Strategy for the Surveillance of Contour-Based Areas using Multirotor Aerial Vehicles</a> and the thesis <a href="../publications/coastline-tracking-uavs/">Coastline Tracking for UAVs</a>.</p>
+      </article>
+
+      <article class="model-card reveal" id="coast-in-the-camera">
+        <a class="model-preview" href="coast-in-the-camera/" tabindex="-1" aria-hidden="true">
+          <span class="model-preview-crop"><canvas data-scene="image-servo" data-preview></canvas></span>
+        </a>
+        <div class="model-card-body">
+          <div class="model-card-head">
+            <span class="index">06</span>
+            <h2>The coast in the camera</h2>
+          </div>
+          <p>The coast as the downward camera sees it. The four corners of the detected box are the features, and the controller solves again only when the tracking departs from its prediction.</p>
+          <p class="model-meta">Tracking noise, 0 to 4 px</p>
+          <div class="model-source">
+            <span class="source-label">From</span>
+            <div class="source-list">
+              <a class="source" href="../publications/coastline-tracking-uavs/">
+                <span class="node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#icon-thesis"/></svg></span>
+                <span class="source-text">
+                  <span class="source-where">2022 <span class="dot">&middot;</span> Diploma thesis, NTUA</span>
+                  <span class="source-name">Coastline tracking for UAVs</span>
+                </span>
+              </a>
+            </div>
+          </div>
+          <a class="pill primary" href="coast-in-the-camera/">Open the model &rarr;</a>
+        </div>
       </article>
     </section>
 

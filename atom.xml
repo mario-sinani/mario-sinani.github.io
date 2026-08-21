@@ -13,11 +13,11 @@
     <uri>https://mariosinani.com/</uri>
   </author>
   <entry>
-    <title>The site gets a lab, a talks page, a colophon and this feed</title>
+    <title>The site gets a lab of live models, and this feed</title>
     <link href="https://mariosinani.com/lab/"/>
     <id>https://mariosinani.com/lab/</id>
     <updated>2026-08-20T00:00:00Z</updated>
-    <summary>Five live models from the papers now run in the browser, with a control for each. New pages for talks and for how the site is made.</summary>
+    <summary>Six live models from the papers now run in the browser, with a control for each.</summary>
   </entry>
   <entry>
     <title>I start as a researcher with the NSF AI Institute in Dynamic Systems</title>
