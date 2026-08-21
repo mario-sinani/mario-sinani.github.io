@@ -4,20 +4,34 @@
    page shows the detail. */
 
 
-/* Filter -------------------------------------------------------------- */
+/* Toolbar ------------------------------------------------------------- */
 
+/* One bar above the list, with two ends. The left end tells which
+   entries the list gives. The right end takes the full list away in one
+   click. The two ends do different work, so they do not stand together.
+   When the bar is too narrow for both, the right end goes to its own
+   line and starts at the left, which the space-between value does for a
+   line that holds one item. */
 .pub-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 0.9rem 1.5rem;
   margin-bottom: 2.6rem;
 }
 
-/* If no script runs, the buttons do nothing. CSS then hides them, and
-   the page shows the full list. */
-.pub-toolbar { display: none; }
-.js .pub-toolbar { display: flex; }
+/* If no script runs, the filter does nothing. CSS then hides it, and
+   the page shows the full list. The export end stays, because the file
+   link needs no script. */
+.filter-group { display: none; }
+
+.js .filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 1.1rem;
+}
 
 .filter-chips {
   display: flex;
@@ -52,7 +66,6 @@
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin-left: auto;
 }
 
 /* Entries ------------------------------------------------------------- */
@@ -166,28 +179,59 @@
 
 @media (max-width: 720px) {
   .pub-toolbar { margin-bottom: 2rem; gap: 0.7rem; }
-  .pub-count { margin-left: 0; width: 100%; }
+  .pub-count { width: 100%; }
 
   .pubs-page .pub-body { padding-bottom: 2.6rem; }
   .pubs-page .pub-title { font-size: 1.06rem; }
   .pub-abstract p { font-size: 0.94rem; }
 }
 
-/* The export row: one click for every record, and the plain .bib file.
-   The file link works without a script. */
+/* The export end of the bar: one click for every record, and the plain
+   .bib file. The file link works without a script.
+
+   A chip on the other end holds a state: it shows which entries the
+   list gives. A button here starts an action. The two are not the same,
+   so they do not look the same. Each button gets the accent color that
+   this site gives to an action, and a mark of what it does. */
 .pub-export {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.45rem;
-  margin-bottom: 2.6rem;
 }
 
-.pub-export .chip {
-  text-decoration: none;
+.export-btn {
   display: inline-flex;
   align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line-strong));
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
 }
 
-/* With a script the filter row is above this row. Pull the two rows
-   together. */
-.js .pub-export { margin-top: -1.2rem; }
+.export-btn:hover, .export-btn:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.export-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* The copy button does nothing without a script. These two rules must
+   be more specific than the rule that shows a button, or the button
+   stays on the page when no script runs. */
+.export-btn.needs-js { display: none; }
+.js .export-btn.needs-js { display: inline-flex; }
+
