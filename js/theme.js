@@ -1,12 +1,10 @@
-/* Theme: the page follows the colour scheme of the device until the
-   visitor selects a theme. The button goes through system, light and
-   dark, so the visitor can always give the control back to the device.
+/* Theme: the page follows the device until a theme is chosen. The button
+   goes through system, light and dark.
 
-   The system mode sets no data-theme attribute, and the
-   prefers-color-scheme rules in tokens.css select the palette. A
-   selected mode sets data-theme, which overrides the media query. The
-   script in the head applies the stored mode before the browser shows
-   the page, so the wrong theme is never visible. */
+   The system mode sets no data-theme, and the prefers-color-scheme rules of
+   tokens.css select the palette. A chosen mode sets data-theme, which
+   overrides the media query. The script in the head applies the stored mode
+   before the first paint. */
 
 const STORAGE_KEY = 'theme';
 const MODES = ['system', 'light', 'dark'];
@@ -33,17 +31,15 @@ function nextMode() {
   return MODES[(MODES.indexOf(mode) + 1) % MODES.length];
 }
 
-/** Give the theme that is on the screen. For "system", give the theme
-    of the device. */
+/** Give the theme on the screen. For system, give the theme of the device. */
 export function effectiveTheme() {
   if (mode !== 'system') return mode;
   return darkScheme.matches ? 'dark' : 'light';
 }
 
-/* Set the colour of the browser interface. In the system mode each
-   meta element keeps the colour for its own scheme. A mode that the
-   visitor selects overrides each meta element. The interface of the
-   browser then matches the page. */
+/* Set the colour of the browser interface. In the system mode each meta
+   element keeps the colour of its own scheme, and a chosen mode overrides
+   both. */
 function syncThemeColor() {
   if (!themeColorMetas.length) return;
   if (mode === 'system') {
@@ -78,8 +74,8 @@ export function initTheme(onChange) {
       try {
         localStorage.setItem(STORAGE_KEY, mode);
       } catch (e) {
-        // The module does not keep this mode in storage, but the
-        // mode applies for this visit.
+        // The module stores no mode here, but the mode holds for this
+        // visit.
       }
       apply();
       onChange();
@@ -93,7 +89,7 @@ export function initTheme(onChange) {
     onChange();
   });
 
-  // Apply the same mode in the other tabs of the site.
+  // Apply the same mode in the other tabs.
   window.addEventListener('storage', (event) => {
     if (event.key !== STORAGE_KEY) return;
     mode = readStoredMode();

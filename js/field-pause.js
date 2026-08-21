@@ -1,9 +1,6 @@
-/* Pause: the control that stops the motion of a background field.
-
-   The button keeps the wish of the visitor in aria-pressed. The page
-   applies the wish to the field when the field is ready, because the
-   scene loads after the page. CSS shows the button only if JavaScript
-   runs, because only a script can stop the loop. */
+/* Pause: the control that stops a background field. The button keeps the
+   state in aria-pressed, and the page applies it when the scene is ready,
+   because the scene loads later. CSS shows the button only with a script. */
 
 export function initFieldPause(getField) {
   const button = document.getElementById('field-pause');

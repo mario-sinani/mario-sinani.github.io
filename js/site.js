@@ -1,5 +1,5 @@
-/* Site composition: the features that all pages use. A page calls
-   initSite and then adds its own features. */
+/* Site composition: the features that all pages use. A page calls initSite,
+   then adds its own. */
 
 import { initTheme } from './theme.js';
 import { initReveal } from './reveal.js';

@@ -1,27 +1,20 @@
 /* Scene: the Pazy wing at its trim, and the growth or the decay of a
-   perturbation with the angle of attack.
+   perturbation with the angle of attack. Background for "Data-Driven
+   Parametric Aeroelastic Modeling of the Pazy Wing".
 
-   Background for "Data-Driven Parametric Aeroelastic Modeling of the
-   Pazy Wing".
+   The paper trims the wing from 0.5 to 8 degrees, perturbs each trim by one
+   degree, and records the response. The wing flutters in a band only: from
+   3 to 4.6 degrees the second bending mode couples with the first torsion
+   mode and the perturbation grows. The largest real part of the eigenvalues
+   against the angle, Fig. 6, is the curve its parametric model learns.
 
-   The paper trims the wing at angles of attack from 0.5 to 8 degrees,
-   perturbs each trim by one degree, and records the response. The wing
-   flutters in a band of angles only: from 3 to 4.6 degrees the second
-   out-of-plane bending mode couples with the first torsion mode and
-   the perturbation grows; below and above the band it decays. The
-   largest real part of the eigenvalues against the angle, the paper's
-   Fig. 6, is the curve its parametric model learns.
-
-   The scene holds the trim shape of the angle, integrates the first
-   two bending modes with the growth rate the paper gives at that
-   angle, and twists the wing with the second mode, as the coupled
-   flutter mode does. A soft limit holds the unstable motion at a small
-   amplitude, where the paper also sees the peaks saturate. The faint
-   fan is the trims of the whole range, as in the paper's Fig. 2. The
-   trace is the velocity of the tip against time, as in the paper's
-   Fig. 7 and Fig. 10: it grows inside the band and dies outside it.
-   Below it, the chart is the growth rate against the angle, with the
-   flutter band and a marker at the angle of the moment. */
+   The scene holds the trim of the angle, integrates the first two bending
+   modes with the growth rate of that angle, and twists the wing with the
+   second mode, as the coupled mode does. A soft limit holds the unstable
+   motion at a small amplitude, where the paper also sees the peaks
+   saturate. The fan is the trims of the range (Fig. 2), the trace is the
+   velocity of the tip (Fig. 7 and Fig. 10), and the chart below is the
+   growth rate against the angle. */
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
@@ -33,9 +26,8 @@ const ROOTS = [1.8751040687, 4.6940911330];
 const SIGMA = [0.734096, 1.018467];
 const TIP_RAW = [2.0, -2.0];
 
-/* The largest real part of the eigenvalues against the angle of attack,
-   in 1/s, read from Fig. 6 of the paper. The sign changes at 3.0 and
-   at 4.6 degrees. */
+/* The largest real part of the eigenvalues against the angle, in 1/s, from
+   Fig. 6. The sign changes at 3.0 and at 4.6 degrees. */
 const GROWTH = [
   [0.5, -0.5], [0.75, -0.9], [1, -1.5], [1.25, -3.0], [1.5, -5.3], [1.75, -5.6],
   [2, -5.5], [2.25, -4.0], [2.5, -1.8], [2.75, -0.6], [3, 0.0], [3.25, 1.2],
@@ -48,8 +40,8 @@ const ALPHA_MIN = 0.5;
 const ALPHA_MAX = 8;
 
 /* The second bending mode is at 29 Hz in the paper and at 2.4 Hz on the
-   screen. The growth rates scale with the same ratio, so the growth in
-   one cycle is the one the paper gives. */
+   screen. The rates scale with the same ratio, so the growth in one cycle
+   is the one of the paper. */
 const PAPER_HZ = 29;
 const SCREEN_HZ = 2.4;
 const TIME_SCALE = SCREEN_HZ / PAPER_HZ;
@@ -65,8 +57,8 @@ const STROBES = 8;
 const LOG_SECONDS = 6;            // seconds of tip velocity the trace shows
 const LOG_STEP = 1 / 30;
 const FAN = [1, 2, 3, 4, 5, 6, 7, 8];
-/* The subject rises above its datum, so the datum sits lower than the
-   band a page gives by this fraction of the height. */
+/* The subject rises above the datum, so the datum sits lower by this
+   fraction of the height. */
 const RISE = 0.10;
 const STEP = 1 / 240;
 
@@ -81,13 +73,13 @@ function rawSlope(m, xi) {
   return b * (Math.sinh(t) + Math.sin(t) - SIGMA[m] * (Math.cosh(t) - Math.cos(t)));
 }
 
-/** The rise of the tip at the trim, as a fraction of the span, from
-    the flutter chart the paper reproduces. */
+/** The rise of the tip at the trim, as a fraction of the span, from the
+    flutter chart the paper reproduces. */
 function trimTip(alphaDeg) {
   return 0.062 * alphaDeg - 0.0008 * alphaDeg * alphaDeg;
 }
 
-/** Whether an angle is in the flutter band. */
+/** True if the angle is in the flutter band. */
 function inBand(alphaDeg) {
   return alphaDeg >= FLUTTER_BAND[0] && alphaDeg <= FLUTTER_BAND[1];
 }
@@ -129,8 +121,8 @@ export function createPazyFlutter() {
   let clock = 0;
   let strobe = [];
   let lastStrobe = -99;
-  /* The lab can hold the angle. The value null means that the four
-     cases of the paper run in turn. */
+  /* The lab can hold the angle. null runs the four cases of the paper in
+     turn. */
   let held = null;
   let caseIndex = -1;
 
@@ -139,8 +131,8 @@ export function createPazyFlutter() {
     return CASES[Math.floor(t / HOLD) % CASES.length];
   }
 
-  /** Put the wing at the trim of the angle plus one degree, at rest,
-      as the paper does before each record. */
+  /** Put the wing at the trim plus one degree, at rest, as the paper does
+      before each record. */
   function perturb(a) {
     alpha = a;
     const shift = trimTip(a + KICK) - trimTip(a);
@@ -196,9 +188,8 @@ export function createPazyFlutter() {
     }
   }
 
-  /* The trace: the velocity of the tip against time. The scale is the
-     velocity of the limit cycle, so the growth fills the box and the
-     decay empties it. */
+  /* The trace: the velocity of the tip. The scale is the velocity of the
+     limit cycle, so the growth fills the box and the decay empties it. */
   function drawTrace(ctx, ink) {
     if (trace.h <= 0 || history.length < 2) return;
     const midY = trace.y + trace.h / 2;
@@ -236,9 +227,9 @@ export function createPazyFlutter() {
     for (let i = 0; i <= n; i++) psi[i] = a * slope[0][i] + b * slope[1][i];
   }
 
-  /* The twist follows the rate of the second mode: in the coupled
-     flutter mode the torsion is a quarter cycle behind the bending.
-     The shape is the first torsion mode. */
+  /* The twist follows the rate of the second mode: in the coupled mode the
+     torsion is a quarter cycle behind the bending. The shape is the first
+     torsion mode. */
   function twistFrom() {
     const tip = (TWIST_GAIN * q2d) / omega2;
     for (let i = 0; i <= n; i++) theta[i] = tip * Math.sin((Math.PI / 2) * (i / n));
@@ -258,8 +249,8 @@ export function createPazyFlutter() {
     });
   }
 
-  /* The inset: the growth rate against the angle, the zero line, the
-     flutter band and the marker. */
+  /* The inset: the growth rate against the angle, the zero line, the band
+     and the marker. */
   function drawInset(ctx, ink) {
     if (inset.w <= 0) return;
     const lo = -8;
@@ -322,8 +313,8 @@ export function createPazyFlutter() {
   return {
     fade: 1,
 
-    /* The control of this scene on the lab page. A new angle is a new
-       trim with the perturbation of the paper. */
+    /* The control on the lab page. A new angle is a new trim with the
+       perturbation of the paper. */
     lab: {
       label: 'Angle of attack',
       unit: '°',
@@ -356,13 +347,13 @@ export function createPazyFlutter() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box in a small window. The wing
-         then sits lower and in the middle, and it takes the width. */
+      /* A preview shows the top of the box, so the wing sits lower and in
+         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
       stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
       const scale = fit.scale || 1;
-      // The tip rises to half the span, so the room above the datum
-      // limits the span.
+      // The tip rises to half the span, so the room above the datum limits
+      // the span.
       const above = stage.y - 18;
       span = preview
         ? Math.min(stage.width * 0.8, above / 0.52)
@@ -376,7 +367,7 @@ export function createPazyFlutter() {
       inset.h = inset.w * 0.6;
       inset.x = stage.right - inset.w;
       inset.y = stage.y - inset.h * 0.72;
-      // The trace stands above the chart. It goes if there is no room.
+      // The trace stands above the chart, and goes if there is no room.
       trace.w = inset.w;
       trace.h = inset.h * 0.85;
       trace.x = inset.x;
@@ -396,8 +387,8 @@ export function createPazyFlutter() {
 
     still(ctx, ink, t) {
       const at = t || 19;   // 8 s into the case at 4 degrees, inside the band
-      /* Run from the last perturbation to this time, so the strobe
-         shows the growth or the decay. */
+      /* Run from the last perturbation to this time, so the strobe shows
+         the growth or the decay. */
       const a = scheduled(at);
       const since = held !== null ? Math.min(at, 6) : at % HOLD;
       perturb(a);

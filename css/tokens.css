@@ -1,27 +1,17 @@
-/* ---------------------------------------------------------------------------
-   Design tokens: the one source for the colours, the fonts and the
-   layout. Fonts: Archivo displays, Source Serif 4 for the body text,
-   IBM Plex Mono for the labels.
+/* Design tokens: the colours, the fonts and the layout. Archivo displays,
+   Source Serif 4 sets the body text, IBM Plex Mono the labels.
 
-   Palette: navy text on cool paper, with an Imperial Blue accent. The
-   dark theme keeps the hue but makes the accent lighter, because #0000cd
-   gives only 1.7:1 on the dark background.
+   Accent roles. --accent marks rules, glyphs and borders, and gives 3:1 on
+   the background. --accent-strong is for hover, focus and the current
+   state, and gives 4.5:1. --accent-fill is the accent as a background, and
+   only --accent-fill-ink goes on it. The dark theme lightens the accent,
+   because #0000cd gives 1.7:1 there.
 
-   Accent roles. --accent marks rules, glyphs and borders, and must give
-   3:1 on the page background. --accent-strong is for a link in a hover,
-   focus or current state, and must give 4.5:1. --accent-fill is the
-   accent as a background, and only --accent-fill-ink goes on it.
+   Line roles. --line draws a divider, which gives no data. --line-strong
+   draws a shape that gives data, and gives 3:1.
 
-   Line roles. --line draws a divider, and a divider gives no data, so a
-   low contrast is correct. --line-strong draws a line or a shape that
-   gives data, for example the mark of a position that is complete. Such
-   a shape must give 3:1 on the page background.
-
-   Themes: :root is light. The media block applies dark if the device
-   asks and the visitor made no choice, and [data-theme="dark"] applies it
-   on request. Each palette sets color-scheme, so the native widgets
-   match.
---------------------------------------------------------------------------- */
+   Themes: :root is light. The media block applies dark if the device asks
+   and nobody made a choice, and [data-theme="dark"] applies it on request. */
 
 :root {
   color-scheme: light;

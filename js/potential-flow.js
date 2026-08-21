@@ -1,15 +1,12 @@
-/* Potential flow: the singularities that the flow scenes add to a
-   uniform stream. The module also has the test of the geometry that
-   keeps the samples outside a body.
+/* Potential flow: the singularities that the flow scenes add to a uniform
+   stream, and the test that keeps the samples outside a body.
 
-   All the functions use the axes of the screen: x to the right and y
-   down. A nose-up section has a negative rotation and a positive
-   circulation. */
+   The axes are those of the screen: x to the right, y down. A nose-up
+   section has a negative rotation and a positive circulation. */
 
 export const TWO_PI = 6.2832;
 
-/** A point vortex with a finite core. The induced velocity then stays
-    finite. */
+/** A point vortex with a finite core, so the velocity stays finite. */
 export function addVortex(out, x, y, vx, vy, gamma, core2) {
   const dx = x - vx;
   const dy = y - vy;
@@ -18,8 +15,8 @@ export function addVortex(out, x, y, vx, vy, gamma, core2) {
   out.v += k * dx;
 }
 
-/** A doublet of the given radius in a stream at the speed u0. It gives
-    the thickness of a body. */
+/** A doublet of the given radius in a stream at u0. It gives the thickness
+    of a body. */
 export function addDoublet(out, x, y, cx, cy, radius, u0) {
   const dx = x - cx;
   const dy = y - cy;
@@ -31,9 +28,8 @@ export function addDoublet(out, x, y, cx, cy, radius, u0) {
   out.v += -u0 * R2 * (2 * dx * dy) / r4;
 }
 
-/** The square of the distance from a point to a segment. The centre of
-    the segment is at (cx, cy). The segment has the given half-length,
-    and it goes along the unit direction (dirX, dirY). */
+/** The square of the distance from a point to a segment at (cx, cy), of the
+    given half-length, along the unit direction (dirX, dirY). */
 export function segmentDistance2(x, y, cx, cy, dirX, dirY, half) {
   const dx = x - cx;
   const dy = y - cy;

@@ -1,9 +1,6 @@
-/* Entry point for a paper page: the features of all pages, the moving
-   field of the paper, and the button that copies the citation.
-
-   Each paper page gives the name of its scene in the data-field
-   attribute of the canvas. The map has one dynamic import for each
-   scene, and a page gets only the scene that it uses. */
+/* Entry point for a paper page: the shared features, the field of the
+   paper, and the copy button. Each canvas names its scene in data-field,
+   and the import is dynamic. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';

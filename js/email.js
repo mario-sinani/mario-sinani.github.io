@@ -1,8 +1,6 @@
-/* Email: makes the mailto links at run time. The HTML never has the
-   full user@domain string, and a program that collects addresses cannot
-   read it. Each link keeps the address in the data-u and data-d
-   attributes. If no script runs, the [at] and [dot] text stays on the
-   page. */
+/* Email: makes each mailto link at run time, so the HTML never holds the
+   full address. Each link keeps the parts in data-u and data-d. Without a
+   script the [at] and [dot] text stays. */
 
 export function initEmail() {
   document.querySelectorAll('a[data-u][data-d]').forEach((link) => {

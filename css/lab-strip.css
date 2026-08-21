@@ -1,6 +1,5 @@
-/* The lab on the home page: one row for each live model. The row gives
-   the number of the model, its name, one line on what it shows, and a
-   mark that leads to the page of the model. */
+/* The lab on the home page: one row for each model, with its number, its
+   name and one line on what it shows. */
 
 .lab-strip {
   display: grid;
@@ -45,7 +44,7 @@
   color: var(--muted);
 }
 
-/* The mark stands on the first row, beside the name of the model. */
+/* The mark stands beside the name. */
 .lab-go {
   grid-row: 1;
   grid-column: 3;
@@ -61,7 +60,7 @@
   transform: translateX(3px);
 }
 
-/* A visitor who asks for less motion gets no movement of the mark. */
+/* Reduced motion keeps the mark still. */
 @media (prefers-reduced-motion: reduce) {
   .lab-go { transition: none; }
   .lab-strip a:hover .lab-go, .lab-strip a:focus-visible .lab-go { transform: none; }

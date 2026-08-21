@@ -1,27 +1,23 @@
 /* Scene: a cantilever beam whose bending mode and axial mode exchange
-   energy, and a bound on the share that the bending keeps on average.
+   energy, with a bound on the share the bending keeps. Background for
+   "Capturing & Bounding Nonlinear Modal Energy Transfer for Geometrically
+   Exact Beams using Semidefinite Programming".
 
-   Background for "Capturing & Bounding Nonlinear Modal Energy Transfer
-   for Geometrically Exact Beams using Semidefinite Programming".
+   The modes of a linear beam never exchange energy. In a geometrically
+   exact beam they do, through quadratic terms, and the paper finds that the
+   axial modes make it possible. Its smallest model is the first bending
+   mode with the first axial mode, and it bounds the average share of the
+   bending: 0.83 in one case, 0.98 in a stiffer one, with the running
+   averages of a hundred starts 5 per cent under the bound.
 
-   In a linear beam the modes never exchange energy. In a geometrically
-   exact beam they do, through quadratic terms, and the paper finds
-   that the axial modes are the ones that let the out-of-plane bending
-   modes exchange it. Its smallest model is the first bending mode with
-   the first axial mode, and it bounds the energy that the bending mode
-   keeps on average: 0.83 of the total in one case, 0.98 in a stiffer
-   one, with the running averages of a hundred random starts 5 per cent
-   under the bound.
-
-   The scene integrates the simplest model of that kind: the bending
-   stretches the axis by the square of its slope, and the axial force
-   changes the stiffness of the bending. The sum of the energies is
-   constant. The bars are the energy in each mode, the marks on them
-   are the running averages, and the dashed line is the numerical
-   envelope of those averages over many starts, plus the gap the paper
-   reports. The scene does not solve the semidefinite program. The
-   axial motion is drawn larger than it is, and the two frequencies are
-   closer than in the paper, so that the eye can follow both. */
+   The scene integrates that model: the bending stretches the axis by the
+   square of its slope, and the axial force changes the stiffness of the
+   bending. The sum of the energies is constant. The bars are the energy in
+   each mode, the marks are the running averages, and the dashed line is the
+   numerical envelope plus the gap the paper reports. The scene solves no
+   semidefinite program. The axial motion is drawn larger than it is, and
+   the two frequencies are closer than in the paper, so the eye can follow
+   both. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -31,12 +27,10 @@ const FIRST_ROOT = 1.8751040687;
 const FIRST_SIGMA = 0.734096;
 const BEND_HZ = 0.28;             // the first bending mode, on the screen
 const RATIO = 6;                  // the axial frequency over the bending frequency; 58 and 14 in the paper
-/* The quadratic coupling: the axial force times the bending, and the
-   square of the bending. It is small enough that the axial force never
-   cancels the stiffness of the bending at the largest amplitude. With
-   the amplitudes below it moves between 1 and 18 per cent of the
-   energy out of the bending mode on average, which is the range of the
-   two cases of the paper. */
+/* The quadratic coupling. It is small enough that the axial force never
+   cancels the stiffness of the bending. With the amplitudes below it moves
+   1 to 18 per cent of the energy out of the bending mode, which is the
+   range of the two cases of the paper. */
 const COUPLING = 35;
 const AMPLITUDES = [0.08, 0.2, 0.32, 0.4];   // the tip amplitude, as a fraction of the length
 const HOLD = 14;                  // seconds for each amplitude
@@ -60,8 +54,8 @@ function firstSlope(xi) {
   return (FIRST_ROOT * (Math.sinh(t) + Math.sin(t) - FIRST_SIGMA * (Math.cosh(t) - Math.cos(t)))) / 2;
 }
 
-/** The first axial mode of a clamped-free rod. Its largest value is
-    one, at the tip. */
+/** The first axial mode of a clamped-free rod. Its largest value is one, at
+    the tip. */
 function axialMode(xi) {
   return Math.sin((Math.PI / 2) * xi);
 }
@@ -105,8 +99,7 @@ export function createBeamModes() {
   let bound = 1;
   let strobe = [];
   let lastStrobe = -99;
-  /* The lab can hold the amplitude. The value null means that the four
-     amplitudes run in turn. */
+  /* The lab can hold the amplitude. null runs the four amplitudes in turn. */
   let held = null;
 
   function scheduled(t) {
@@ -126,15 +119,15 @@ export function createBeamModes() {
     bound = estimateBound(a);
   }
 
-  /** The envelope of the running average of the bending share over
-      many starts with the same total energy, plus the gap the paper
-      reports between its envelope and its bound. */
+  /** The envelope of the running average of the bending share over many
+      starts, plus the gap the paper reports between its envelope and its
+      bound. */
   function estimateBound(a) {
     const total = 0.5 * w1 * w1 * a * a;
     let top = 0;
     for (let r = 0; r < BOUND_RUNS; r++) {
-      // A deterministic spread of starts: the share of the bending,
-      // and the phase of each mode.
+      // A deterministic spread of starts: the share of the bending, and the
+      // phase of each mode.
       const share = r / (BOUND_RUNS - 1);
       const ph1 = (r * 2.399) % TWO_PI;
       const ph2 = (r * 1.618) % TWO_PI;
@@ -177,8 +170,7 @@ export function createBeamModes() {
     }
   }
 
-  /** The axis of the beam for a bending x1. The beam keeps its length
-      when it bends. */
+  /** The axis of the beam for a bending x1. The beam keeps its length. */
   function traceBeam(x1) {
     X[0] = 0;
     Z[0] = 0;
@@ -218,9 +210,8 @@ export function createBeamModes() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    /* The ticks along the beam move with the axial mode. Each one sits
-       at its station plus the axial displacement there, drawn larger
-       than it is. */
+    /* The ticks move with the axial mode, each at its station plus the
+       axial displacement, drawn larger than it is. */
     traceBeam(state.x1);
     ctx.beginPath();
     for (let k = 1; k <= TICKS; k++) {
@@ -261,9 +252,8 @@ export function createBeamModes() {
     ctx.stroke();
   }
 
-  /* The bars: the share of each mode at this moment, the running
-     average as a mark, and the bound on the bending as a dashed
-     line. */
+  /* The bars: the share of each mode now, the running average as a mark,
+     and the bound on the bending as a dashed line. */
   function drawEnergy(ctx, ink) {
     if (bars.w <= 0) return;
     const e = energies(state, w1, w2);
@@ -320,8 +310,8 @@ export function createBeamModes() {
   return {
     fade: 1,
 
-    /* The control of this scene on the lab page: the amplitude of the
-       motion, which sets how nonlinear the beam is. */
+    /* The control on the lab page: the amplitude, which sets how nonlinear
+       the beam is. */
     lab: {
       label: 'Amplitude',
       unit: '%',
@@ -362,8 +352,8 @@ export function createBeamModes() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box in a small window. The beam
-         then sits lower and in the middle, and it takes the width. */
+      /* A preview shows the top of the box, so the beam sits lower and in
+         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
       stage = stageFor(w, h, fit.band ?? (preview ? 0.19 : undefined));
       beam.length = preview

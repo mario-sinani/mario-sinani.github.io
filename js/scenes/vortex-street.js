@@ -1,19 +1,15 @@
-/* Scene: the Karman vortex street behind a circular cylinder, one of
-   the two fields behind the hero.
+/* Scene: the Karman vortex street behind a cylinder, one of the two fields
+   of the hero.
 
-   A cylinder in a steady stream sheds one vortex from each side in
-   turn. The module sheds them, convects them with the stream and with
-   each other, and integrates the streamlines through the total field in
-   each frame. The wave in the lines is the effect of the vortices, and
-   not a fixed oscillation.
+   The module sheds one vortex from each side in turn, convects them with
+   the stream and with each other, and integrates the streamlines through
+   the total field in each frame. The wave in the lines comes from the
+   vortices, and is not a fixed oscillation.
 
    Two numbers come from the literature: St = f D / U sets the shedding
-   frequency, and Karman puts the row spacing h over the vortex spacing a
-   at 0.281. The street is shorter than a real one, because more of it
-   must fit the canvas, but the stagger keeps the ratio.
-
-   The cylinder also moves: at lock-in the shedding drives it at its own
-   frequency, which is vortex-induced vibration. */
+   frequency, and Karman puts h over a at 0.281. The street is shorter than
+   a real one, to fit the canvas, but it keeps the ratio. The cylinder also
+   moves at the shedding frequency, which is vortex-induced vibration. */
 
 import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
@@ -23,10 +19,10 @@ const FREESTREAM = 42;          // px/s
 const CONVECTION = 0.86;        // vortices travel slower than the stream
 const SPACING = 0.21;           // vortex spacing a, as a fraction of width
 const STAGGER = 0.281;          // Karman's stable ratio h / a
-const STRENGTH = 1.9;           // circulation, as a multiple of U * D
-const CORE = 0.22;              // vortex core radius, as a multiple of D
+const STRENGTH = 1.9;           // circulation, in units of U * D
+const CORE = 0.22;              // vortex core radius, in units of D
 const MAX_VORTICES = 26;
-const VIV_AMPLITUDE = 0.16;     // body travel, as a multiple of D
+const VIV_AMPLITUDE = 0.16;     // body travel, in units of D
 
 export function createVortexStreet() {
   const flow = createFlowlines({ lines: 30, accentEvery: 6, step: 4, tracers: 0 });
@@ -56,9 +52,9 @@ export function createVortexStreet() {
     return out;
   }
 
-  /* One vortex leaves each side, one after the other. The upper row
-     turns clockwise on the screen, and the lower row turns in the other
-     direction. These directions give the wake its velocity deficit. */
+  /* One vortex leaves each side in turn. The upper row turns clockwise on
+     the screen, the lower row the other way, which gives the wake its
+     velocity deficit. */
   function shed(dt) {
     sinceShed += dt;
     if (sinceShed < street.period / 2) return;
@@ -73,9 +69,8 @@ export function createVortexStreet() {
     if (vortices.length > MAX_VORTICES) vortices.shift();
   }
 
-  /* Each vortex moves with the stream and with the field of the other
-     vortices. Their mutual induction keeps the stagger between the two
-     rows. */
+  /* Each vortex moves with the stream and with the field of the others.
+     Their mutual induction keeps the stagger. */
   function convect(dt) {
     const moved = vortices.map((v) => {
       const out = { u: FREESTREAM * CONVECTION, v: 0 };
@@ -94,8 +89,8 @@ export function createVortexStreet() {
     vortices = vortices.filter((v) => v.x < width + street.spacing);
   }
 
-  /* Vortex-induced vibration: the shedding moves the cylinder across
-     the stream, at the shedding frequency. */
+  /* Vortex-induced vibration: the shedding moves the cylinder across the
+     stream, at the shedding frequency. */
   function move(t) {
     body.y = body.baseY
       + Math.sin((TWO_PI * t) / street.period) * VIV_AMPLITUDE * body.r * 2;
@@ -109,8 +104,8 @@ export function createVortexStreet() {
     ctx.stroke();
   }
 
-  /* The cores of the vortices, as light rings. They show the centres
-     that the streamlines turn around. */
+  /* The cores, as light rings. They show the centres that the lines turn
+     around. */
   function drawCores(ctx, ink) {
     for (let i = 0; i < vortices.length; i++) {
       const v = vortices[i];
@@ -125,8 +120,7 @@ export function createVortexStreet() {
   }
 
   return {
-    // A figure with lines. The engine clears it completely in each
-    // frame.
+    // A figure with lines. The engine clears it in each frame.
     fade: 1,
 
     layout(w, h) {
@@ -160,8 +154,7 @@ export function createVortexStreet() {
     },
 
     still(ctx, ink, t) {
-      /* Make one street, because the fixed frame must show the pattern
-         and not an empty wake. */
+      /* Make one street first, or the fixed frame shows an empty wake. */
       const at = t || 0;
       vortices = [];
       for (let k = MAX_VORTICES - 1; k >= 0; k--) {

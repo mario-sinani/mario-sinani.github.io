@@ -1,5 +1,5 @@
-/* Site navigation: a sticky bar with the name, the section links and
-   the theme button. */
+/* Site navigation: a sticky bar with the name, the links and the theme
+   button. */
 
 .site-nav {
   position: sticky;
@@ -80,10 +80,8 @@
 
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 
-/* A finger needs an area of about 44px, and the circle is only 32px. A
-   transparent box around each button gives the area that is missing.
-   The gap goes to 0.75rem, and the two boxes then touch but do not
-   cover each other. */
+/* A finger needs 44px, and the circle is 32px. A transparent box adds the
+   rest, and the gap of 0.75rem keeps two boxes apart. */
 @media (pointer: coarse) {
   .nav-actions { gap: 0.75rem; }
 
@@ -98,8 +96,8 @@
   }
 }
 
-/* The two buttons need JavaScript. CSS hides them if no script runs.
-   The menu button also shows only on a small screen. */
+/* The two buttons need a script. The menu button also shows only on a small
+   screen. */
 .theme-toggle, .nav-toggle { display: none; }
 
 .js .theme-toggle { display: inline-flex; }
@@ -108,21 +106,16 @@
 .nav-toggle[aria-expanded="true"] .icon-menu { display: none; }
 .nav-toggle[aria-expanded="true"] .icon-close { display: block; }
 
-/* The theme button shows the mode: system, light or dark. Every icon is
-   hidden, and one rule shows one icon. Two marks can never show
-   together. "Not light and not dark" is the system mode, so a value that
-   neither mode uses still shows one mark. */
+/* The theme button shows one icon: system, light or dark. Not light and not
+   dark is the system mode. */
 .theme-toggle svg { display: none; }
 
 :root:not([data-theme="light"]):not([data-theme="dark"]) .theme-toggle .icon-system { display: block; }
 :root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
-/* At a width less than 840px, the name, the seven links and the
-   buttons do not fit on one line. The links then move to their own row.
-   If JavaScript runs, the menu button hides that row. If no script
-   runs, the links stay visible and wrap. The visitor can then reach
-   each page. */
+/* Below 840px the bar does not hold one line. The links move to their own
+   row, which the menu button hides if a script runs. */
 @media (max-width: 840px) {
   .site-nav .nav-inner {
     flex-wrap: wrap;
@@ -145,8 +138,7 @@
   .js .nav-links {
     display: none;
     flex-direction: column;
-    /* Make each row as wide as the bar. A touch then hits the full row
-       and not only the label. */
+    /* A full-width row, so a touch hits more than the label. */
     align-items: stretch;
     gap: 0;
     margin-top: 0.1rem;

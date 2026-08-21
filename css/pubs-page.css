@@ -1,17 +1,11 @@
-/* Publications page: the full record. This page adds a page head, a
-   filter for the type, an abstract for each entry and BibTeX to the
-   rail from publications.css. The home page shows the summary, and this
-   page shows the detail. */
+/* Publications page: the full record. It adds a page head, a filter, an
+   abstract and BibTeX to the rail of publications.css. */
 
 
 /* Toolbar ------------------------------------------------------------- */
 
-/* One bar above the list, with two ends. The left end tells which
-   entries the list gives. The right end takes the full list away in one
-   click. The two ends do different work, so they do not stand together.
-   When the bar is too narrow for both, the right end goes to its own
-   line and starts at the left, which the space-between value does for a
-   line that holds one item. */
+/* One bar with two ends: the count on the left, the export on the right. A
+   bar too narrow for both puts the export on its own line. */
 .pub-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -21,9 +15,8 @@
   margin-bottom: 2.6rem;
 }
 
-/* If no script runs, the filter does nothing. CSS then hides it, and
-   the page shows the full list. The export end stays, because the file
-   link needs no script. */
+/* Without a script the filter does nothing, so CSS hides it. The export
+   stays, because the file link needs no script. */
 .filter-group { display: none; }
 
 .js .filter-group {
@@ -70,16 +63,12 @@
 
 /* Entries ------------------------------------------------------------- */
 
-/* The .pub rule sets display:grid, and that value cancels the hidden
-   attribute. This rule makes the attribute effective again for the
-   filter. */
+/* display:grid cancels the hidden attribute. This rule makes the attribute
+   effective again. */
 .pub[hidden] { display: none; }
 
-/* The caps of the rail belong to the first visible entry and the last
-   visible entry, and the filter moves them. Cancel the caps from
-   publications.css, because those caps use the position of the child.
-   Then control the caps with classes. The classes are in the HTML, and
-   the caps are correct before a script runs. */
+/* The filter changes which entry is first and last, so classes give the
+   caps of the rail, and not the position of the child. */
 .pub:first-child .pub-node::before { top: 0; }
 .pub:last-child .pub-node::before { bottom: 0; height: auto; }
 .pub:last-child .pub-body { padding-bottom: 3.2rem; }
@@ -88,9 +77,7 @@
 .pub.rail-end .pub-node::before { bottom: auto; height: 1.25rem; }
 .pub.rail-end .pub-body { padding-bottom: 0; }
 
-/* The width of the 1fr track comes from its content, and the wide
-   BibTeX block makes the track too wide. The min-width property keeps
-   the track at the width of the column. */
+/* The wide BibTeX block makes the 1fr track too wide without min-width. */
 .pubs-page .pub-body {
   min-width: 0;
   padding-bottom: 3.2rem;
@@ -109,8 +96,7 @@
   color: var(--muted);
 }
 
-/* Limit the height of the abstract only if the page has the toggle
-   button. If no script runs, the page shows the full abstract. */
+/* Limit the abstract only if the page has the toggle button. */
 .js .pub-abstract.is-clamped p {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -167,10 +153,8 @@
 
 .pub-doi { color: var(--muted); overflow-wrap: anywhere; }
 
-/* The style of the record is in cite.css. On this page the record has
-   its own row in .pub-actions. An open record then does not move the
-   links near it. The min-width property lets the row become as narrow
-   as the <pre> element that scrolls. */
+/* The record has its own row here, so an open record does not move the
+   links near it. */
 .pub-actions .cite {
   flex: 1 1 100%;
   min-width: 0;
@@ -186,13 +170,10 @@
   .pub-abstract p { font-size: 0.94rem; }
 }
 
-/* The export end of the bar: one click for every record, and the plain
-   .bib file. The file link works without a script.
+/* The export end: one click for every record, and the .bib file.
 
-   A chip on the other end holds a state: it shows which entries the
-   list gives. A button here starts an action. The two are not the same,
-   so they do not look the same. Each button gets the accent color that
-   this site gives to an action, and a mark of what it does. */
+   A chip on the other end holds a state. A button here starts an action, so
+   it takes the accent colour and a mark of what it does. */
 .pub-export {
   display: flex;
   flex-wrap: wrap;
@@ -229,9 +210,8 @@
   flex-shrink: 0;
 }
 
-/* The copy button does nothing without a script. These two rules must
-   be more specific than the rule that shows a button, or the button
-   stays on the page when no script runs. */
+/* The copy button needs a script. These rules must be more specific than
+   the rule that shows a button. */
 .export-btn.needs-js { display: none; }
 .js .export-btn.needs-js { display: inline-flex; }
 

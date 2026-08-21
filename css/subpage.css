@@ -1,15 +1,13 @@
-/* The pages below the home page: About, Research, Experience and
-   Education. The home page gives the summary of each subject, and one
-   of these pages gives the detail. */
+/* The pages below the home page: About, Research, Experience and Education.
+   The home page gives the summary, and these pages the detail. */
 
-/* Research topics. A topic is one row: the mark on the left, and the
-   title, the text and the papers on the right. */
+/* A topic is one row: the mark on the left, and the title, the text and the
+   papers on the right. */
 .topic {
   display: grid;
   grid-template-columns: 12rem 1fr;
-  /* The mark keeps the height of its own line. Without this rule the
-     grid makes the mark as tall as the row. The mark then moves to the
-     middle of the row, away from the title. */
+  /* The mark keeps the height of its line. Without this rule the grid makes
+     it as tall as the row. */
   align-items: start;
   gap: 2rem;
   border-top: 1px solid var(--line);
@@ -39,9 +37,7 @@
   display: block;
 }
 
-/* The body of a topic. A column of 1fr does not go below the width of
-   its longest word without this rule. A long title then makes the row
-   too wide. */
+/* Without min-width a long title makes the row too wide. */
 .topic-body { min-width: 0; }
 
 .topic h2 {
@@ -57,10 +53,8 @@
   font-size: 0.99rem;
 }
 
-/* The papers that belong to a topic. Each paper is one row: the year,
-   the title, and a mark that shows that the row is a link. The rows
-   make a short index, in the same manner as the list on the
-   Publications page. */
+/* The papers of a topic. Each paper is one row: the year, the title, and a
+   mark that shows a link. */
 .related { margin-top: 1.4rem; }
 
 .related-label {
@@ -71,20 +65,18 @@
   color: var(--muted);
 }
 
-/* The rows keep the measure of the text above them. The title gets the
-   full measure, and the year and the mark hang on the two sides. */
+/* The title gets the full measure, and the year and the mark hang on the
+   two sides. */
 .related ul {
   list-style: none;
   margin-top: 0.35rem;
   max-width: calc(var(--w-prose) + 5.6rem);
 }
 
-/* A line divides two rows. The first row gets no line, because the
-   label is above it. */
+/* A line divides two rows. The first row has the label above it. */
 .related li + li { border-top: 1px solid var(--line); }
 
-/* The year, the title and the mark keep their own columns. A title
-   that goes to a second line stays in its column. */
+/* A title on a second line stays in its column. */
 .related a {
   display: grid;
   grid-template-columns: 2.4rem minmax(0, 1fr) 1rem;
@@ -103,8 +95,8 @@
   transition: color 140ms ease;
 }
 
-/* The line below the title stays clear until the row gets a pointer or
-   the focus. The line is on the text only, and not on the column. */
+/* The line below the title shows on a pointer or the focus, on the text
+   only. */
 .related-title {
   font-size: 0.95rem;
   line-height: 1.45;
@@ -134,8 +126,7 @@
   transform: translateX(3px);
 }
 
-/* The mark moves on a pointer. A visitor who asks for less motion gets
-   the change of color only. */
+/* Reduced motion keeps the colour change, and drops the move. */
 @media (prefers-reduced-motion: reduce) {
   .related a:hover .related-go, .related a:focus-visible .related-go { transform: none; }
 }

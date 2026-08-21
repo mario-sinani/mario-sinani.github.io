@@ -1,21 +1,19 @@
-/* The Pazy wing, drawn as the papers draw it: a long strip with ribs,
-   seen from the front and a little from above. The span is 5.5 chords,
-   and the elastic axis is at 44.75 per cent of the chord.
+/* The Pazy wing, as the papers draw it: a strip of 5.5 chords with ribs,
+   seen from the front and a little from above. The elastic axis is at 44.75
+   per cent of the chord.
 
-   A scene gives the slope angle and the twist of each station along
-   the span. The renderer integrates the slope, so the strip keeps its
-   length when it bends and the tip curls inward, as the strip of a
-   geometrically exact beam does. It then projects each station with a
-   parallel projection: the span goes to the right, the height goes up,
-   and the chord goes down and to the right. */
+   A scene gives the slope and the twist of each station. The renderer
+   integrates the slope, so the strip keeps its length and the tip curls
+   inward, as a geometrically exact beam does. The projection sends the span
+   to the right, the height up, and the chord down and to the right. */
 
 import { withAlpha } from './ink.js';
 
 export const PAZY_ASPECT = 5.5;   // span over chord
 const AXIS_AT = 0.4475;           // the elastic axis, as a fraction of the chord
 const RIBS = 12;
-/* The run and the drop on the screen of one unit of chord. A scene
-   reads the run to centre the wing. */
+/* The run and the drop of one unit of chord on the screen. A scene reads
+   the run to centre the wing. */
 export const OBLIQUE = { x: 0.34, y: 0.22 };
 const OBLIQUE_X = OBLIQUE.x;
 const OBLIQUE_Y = OBLIQUE.y;
@@ -51,10 +49,9 @@ export function createPazyWing(stations = 48) {
     }
   }
 
-  /** The screen point of station i at a fraction c of the chord, from
-      the leading edge. A twist theta turns the chord about the local
-      tangent of the axis, which has the slope psi. A positive twist is
-      nose up. */
+  /** The screen point of station i at a fraction c of the chord. A twist
+      turns the chord about the local tangent, and a positive twist is nose
+      up. */
   function point(i, c, theta, psi) {
     const along = (c - AXIS_AT) * chord;
     const cx = Math.cos(theta);
@@ -135,9 +132,8 @@ export function createPazyWing(stations = 48) {
     ctx.stroke();
   }
 
-  /** Arrows of the load along the axis, normal to the deformed
-      surface. load(i) gives the length of the arrow at station i in
-      pixels, and a negative value points down. */
+  /** Arrows of the load along the axis, normal to the surface. load(i)
+      gives the length in pixels, and a negative value points down. */
   function arrows(ctx, ink, psi, load, count = 8) {
     trace(psi);
     ctx.beginPath();

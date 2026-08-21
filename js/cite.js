@@ -1,9 +1,6 @@
-/* Cite: copies a BibTeX record to the clipboard.
-
-   The record is in a <details> element. The element opens without
-   JavaScript, and the visitor can then select the text by hand. This
-   module adds the copy button. CSS hides that button until the js class
-   is on the page. */
+/* Cite: copies a BibTeX record to the clipboard. The record is in a
+   <details> element, which opens without a script. CSS hides the copy
+   button until the js class is on the page. */
 
 const RESET_DELAY = 1800;
 
@@ -12,8 +9,8 @@ export async function copyText(text) {
     await navigator.clipboard.writeText(text);
     return;
   }
-  // A hidden textarea is the alternative for an http:// origin and
-  // for an old browser.
+  // A hidden textarea is the fallback for an http:// origin and an old
+  // browser.
   const scratch = document.createElement('textarea');
   scratch.value = text;
   scratch.setAttribute('readonly', '');
@@ -32,8 +29,8 @@ export function initCite() {
     let timer = 0;
 
     button.addEventListener('click', async () => {
-      /* Read the target at the click, because the format tabs can
-         point the button at an other record. */
+      /* Read the target at the click: the format tabs can point the button
+         at an other record. */
       const source = document.getElementById(button.dataset.copy);
       if (!source) return;
       try {
@@ -54,9 +51,8 @@ export function initCite() {
   });
 }
 
-/* Format tabs: one citation in more than one style. A tab shows its
-   record and points the copy button at it. Only BibTeX is visible
-   without a script. */
+/* Format tabs: one citation in more than one style. A tab shows its record
+   and points the copy button at it. Without a script only BibTeX shows. */
 export function initCiteFormats() {
   document.querySelectorAll('.cite-tabs').forEach((tabs) => {
     const body = tabs.closest('.cite-body');

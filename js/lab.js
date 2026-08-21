@@ -1,15 +1,11 @@
 /* Entry point for the lab: the catalogue and the page of one model.
 
-   An instrument is a scene from a paper page with one control. The
-   parameter has two modes. In Auto the model sets it: it runs the
-   cases of the paper, or it keeps the value of the paper. In Hold the
-   slider sets it. A line of text below the control says what the
-   model does at this moment, from the words the scene gives. A canvas
-   with data-preview is a preview on the catalogue: it runs like a
-   field, in the frame of the scene and with no control. A canvas with
-   a time in data-still draws one fixed frame at that time and never
-   runs. The map has one dynamic import for each scene, and the page
-   loads only the scenes on it. */
+   An instrument is a scene of a paper page with one control. In Auto the
+   model sets the parameter and runs the cases of the paper; in Hold the
+   slider sets it. A line below the control says what the model does, in the
+   words of the scene. A canvas with data-preview runs in the frame of the
+   scene with no control, and one with data-still draws a fixed frame at
+   that time. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
@@ -24,13 +20,12 @@ const SCENES = {
   'image-servo': () => import('./scenes/image-servo.js').then((m) => m.createImageServo()),
 };
 
-/* In Auto the slider and the status follow the scene at this rate. */
+/* How often the slider and the status follow the scene in Auto. */
 const FOLLOW_MS = 150;
 
-/* The page of a model shows the scene alone. The subject then sits
-   near the middle of the stage and not near its top, and it is larger
-   than on a page that uses the scene as a background. A preview keeps
-   the values of the scene, because the card cuts the box. */
+/* The page of a model shows the scene alone, so the subject sits near the
+   middle of the stage and is larger. A preview keeps the values of the
+   scene, because the card cuts the box. */
 const MODEL_FIT = { band: 0.42, scale: 1.3 };
 
 const fields = [];
@@ -39,9 +34,8 @@ initSite(() => {
   fields.forEach((field) => field.repaint());
 });
 
-/* With reduced motion or reduced data the engine draws fixed frames.
-   The page must then draw a new fixed frame after each change of the
-   slider. */
+/* With reduced motion or reduced data the engine draws fixed frames, so a
+   change of the slider needs a new one. */
 const stillPage = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   || window.matchMedia('(prefers-reduced-data: reduce)').matches;
 
@@ -70,12 +64,11 @@ function buildControls(container, scene, field, name) {
   const readout = document.createElement('output');
   readout.setAttribute('for', id);
   readout.textContent = show(lab.value(), lab.unit);
-  /* A screen reader reads a range as a plain number. Give it the text
-     of the readout, so it says the unit too. */
+  /* A screen reader reads a range as a plain number. Give it the readout,
+     so it says the unit. */
   input.setAttribute('aria-valuetext', readout.textContent);
 
-  /* The two modes. Auto: the model sets the parameter. Hold: the
-     slider sets it. */
+  /* Auto: the model sets the parameter. Hold: the slider sets it. */
   const modes = document.createElement('div');
   modes.className = 'lab-modes';
   modes.setAttribute('role', 'group');
@@ -110,8 +103,7 @@ function buildControls(container, scene, field, name) {
   input.addEventListener('input', () => {
     setMode(false);
     lab.set(Number(input.value));
-    /* Show the value of the slider itself. The scene applies it in
-       its next frame. */
+    /* Show the value of the slider. The scene applies it in its next frame. */
     showValue(Number(input.value));
     refresh();
     if (stillPage) field.repaint();
@@ -133,9 +125,8 @@ function buildControls(container, scene, field, name) {
     if (stillPage) field.repaint();
   });
 
-  /* In Auto the slider and the status follow the scene. A fixed page
-     does not move, and it does not need the timer. The timer also
-     stops when the instrument leaves the screen. */
+  /* In Auto the slider and the status follow the scene. A fixed page needs
+     no timer, and the timer stops when the instrument leaves the screen. */
   if (!stillPage) {
     let onScreen = true;
     setInterval(() => {

@@ -1,6 +1,6 @@
-/* Paper page: a hero above the flow field of the paper, then the
-   snapshot, the overview and the citation. The hero uses hero.css with
-   a smaller title font, because the title of a paper is long. */
+/* Paper page: a hero above the field of the paper, then the snapshot, the
+   overview and the citation. The title of a paper is long, so the font is
+   smaller than in hero.css. */
 
 #paper-field {
   position: absolute;
@@ -8,10 +8,8 @@
   width: 100%;
   height: 100%;
   display: block;
-  /* A keyframe with only a from step moves to the computed opacity of
-     the element. One rule is then correct for a desktop, where the
-     opacity is 1, and for the mobile canvas, where it is less. The
-     reduced-motion setting stops all animation in base.css. */
+  /* A keyframe with a from step only moves to the computed opacity, which
+     is less on the mobile canvas. */
   animation: field-in 900ms ease-out;
 }
 
@@ -50,8 +48,7 @@
   color: var(--muted);
 }
 
-/* One line of text that gives the name of the scene. The line is in
-   the bottom padding of the panel. */
+/* One line that names the scene, in the bottom padding of the panel. */
 .field-note {
   position: absolute;
   left: 1.5rem;
@@ -67,9 +64,8 @@
 
 /* Snapshot ------------------------------------------------------------ */
 
-/* The 1px lines are gaps that show the colour of the container. An
-   empty cell is a grey block. For this reason each count of columns
-   divides six exactly. */
+/* The 1px lines are gaps, so an empty cell is a grey block. Each count of
+   columns must divide six. */
 .snapshot {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -215,9 +211,8 @@
 @media (max-width: 720px) {
   .paper-hero { min-height: 0; }
 
-  /* On a phone the panel fills the hero, and the scene is behind the
-     title. Make the canvas more transparent, because the text must stay
-     easy to read. */
+  /* On a phone the scene is behind the title, so the canvas gets more
+     transparent. */
   #paper-field { opacity: 0.45; }
 
   .paper-hero h1 {
@@ -228,8 +223,7 @@
   .paper-authors { font-size: 0.96rem; }
   .paper-venue { font-size: 0.71rem; gap: 0.5rem 0.8rem; }
 
-  /* The padding does not have enough space, and the note comes after
-     the links. */
+  /* Not enough space in the padding, so the note comes after the links. */
   .field-note {
     position: static;
     margin-top: 1.7rem;

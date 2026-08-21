@@ -1,23 +1,17 @@
-/* Scene: the Pazy wing after a step in the angle of attack.
+/* Scene: the Pazy wing after a step in the angle of attack. Background for
+   "Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces
+   of the Pazy Wing".
 
-   Background for "Physics-Informed Data-Driven Modelling of Nonlinear
-   Aerodynamic Forces of the Pazy Wing".
+   The paper trains its model on steps of 1, 2, 7 and 8 degrees and tests it
+   at 4. The tip rises to almost half the span, so the force is a nonlinear
+   function of the shape. The scene integrates the first two bending modes
+   under a load that follows the deformed surface: the incidence falls with
+   the slope, and so does the vertical part of the force, which bends away
+   from the straight line of the linear model.
 
-   The paper trains its model on the response of the wing to step
-   inputs in the angle of attack, at 1, 2, 7 and 8 degrees, and tests
-   it at 4 degrees. The wing is very flexible: its tip rises to almost
-   half the span, and the aerodynamic force is then a nonlinear function
-   of the shape. The scene integrates the first two bending modes under
-   a load that follows the deformed surface: the incidence that the
-   surface sees falls with its slope, and so does the vertical part of
-   the force. The force therefore bends away from the straight line of
-   the linear model as the wing curls.
-
-   The two constraints of the paper are visible. The transient decays,
-   which is the stability constraint. It settles at the deformed shape
-   of the trim, which is the steady-state constraint. The inset is the
-   vertical force at the tip against time, with the steady level of the
-   nonlinear model and the level that the linear model gives. */
+   The two constraints of the paper are visible: the transient decays, and
+   it settles at the deformed trim. The inset is the vertical force at the
+   tip, with the steady level of each model. */
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
@@ -28,17 +22,17 @@ const STATIONS = 48;
 const ROOTS = [1.8751040687, 4.6940911330];
 const SIGMA = [0.734096, 1.018467];
 const TIP_RAW = [2.0, -2.0];
-/* The tip-normalised modes have the integral 0.25 of their square along
-   the span, and the first has the integral 0.3915. */
+/* The tip-normalised modes: the integral of the square along the span is
+   0.25, and 0.3915 for the first. */
 const MODAL_MASS = 0.25;
 const FIRST_INTEGRAL = 0.3915;
 
 const FIRST_HZ = 0.42;            // the first bending mode, on the screen
 const AERO_DAMPING = 0.09;        // of the first mode, from the plunge rate
 const STRUCTURAL_DAMPING = 0.01;
-/* The rise of the tip that the linear model gives at 8 degrees, as a
-   fraction of the span. The true rise is smaller, because the surface
-   turns away from the flow as it curls. */
+/* The rise of the tip of the linear model at 8 degrees, as a fraction of
+   the span. The true rise is smaller, because the surface turns away from
+   the flow. */
 const LINEAR_RISE_AT_8 = 0.50;
 const STEP_LAG = 0.04;            // seconds; the step is sharp, but not a jump
 const SCHEDULE = [1, 2, 4, 7, 8, 4];   // degrees: the training set of the paper, and its test angle
@@ -46,8 +40,8 @@ const HOLD = 7;                   // seconds at each angle
 const LOG_SECONDS = 6;
 const LOG_STEP = 1 / 30;
 const GHOSTS = [0.6, 0.4, 0.2];   // seconds ago
-/* The subject rises above its datum, so the datum sits lower than the
-   band a page gives by this fraction of the height. */
+/* The subject rises above the datum, so the datum sits lower by this
+   fraction of the height. */
 const RISE = 0.10;
 const STEP = 1 / 240;
 
@@ -69,9 +63,9 @@ export function createPazyStep() {
   const wing = createPazyWing(n);
   const omega = [TWO_PI * FIRST_HZ, 0];
   omega[1] = omega[0] * (ROOTS[1] * ROOTS[1]) / (ROOTS[0] * ROOTS[0]);
-  /* The lift per unit span per radian, in the units of the modes, and
-     the speed of the stream in spans per second. The first sets the
-     rise of the tip, the second the damping of the first mode. */
+  /* The lift per unit span per radian, in the units of the modes, and the
+     speed in spans per second. The first sets the rise of the tip, the
+     second the damping of the first mode. */
   const LOAD = (LINEAR_RISE_AT_8 * MODAL_MASS * omega[0] * omega[0]) / (ALPHA_8 * FIRST_INTEGRAL);
   const STREAM = LOAD / (2 * AERO_DAMPING * omega[0]);
 
@@ -98,8 +92,7 @@ export function createPazyStep() {
   let lastLog = -99;
   let steady = { tip: 0, q: [0, 0] };
   let steadyFor = -1;
-  /* The lab can hold the angle. The value null means that the schedule
-     of the paper runs. */
+  /* The lab can hold the angle. null runs the schedule of the paper. */
   let held = null;
 
   function targetAlpha(t) {
@@ -111,8 +104,8 @@ export function createPazyStep() {
     for (let i = 0; i <= n; i++) psi[i] = qs[0] * slope[0][i] + qs[1] * slope[1][i];
   }
 
-  /** The normal load per unit span at station i, for an incidence and
-      the slope and the normal velocity of the station. */
+  /** The normal load per unit span at station i, for an incidence and the
+      slope and the normal velocity there. */
   function load(alpha, slopeAt, velocity) {
     return LOAD * (alpha * Math.cos(slopeAt) - velocity / STREAM);
   }
@@ -142,7 +135,7 @@ export function createPazyStep() {
   }
 
   /** The deformed trim of an angle: the balance of the load and the
-      stiffness, found by iteration. */
+      stiffness, by iteration. */
   function settle(alpha) {
     if (steadyFor === alpha) return steady;
     const qs = [0, 0];
@@ -212,9 +205,8 @@ export function createPazyStep() {
     wing.arrows(ctx, ink, psi, (i) => (load(alphaNow, psi[i], vel[i]) / unit) * span * 0.16);
   }
 
-  /* The inset: the vertical force at the tip against time. The dashed
-     lines are the level of the linear model and the level the
-     nonlinear model settles at. */
+  /* The inset: the vertical force at the tip. The dashed lines are the
+     level of the linear model and the level the nonlinear model settles at. */
   function drawInset(ctx, ink) {
     if (inset.w <= 0 || history.length < 2) return;
     const unit = LOAD * ALPHA_8;
@@ -274,12 +266,11 @@ export function createPazyStep() {
   }
 
   return {
-    // A figure with lines. The engine clears it completely in each
-    // frame.
+    // A figure with lines. The engine clears it in each frame.
     fade: 1,
 
-    /* The control of this scene on the lab page. Each new value is a
-       step input, as in the paper. */
+    /* The control on the lab page. Each new value is a step input, as in
+       the paper. */
     lab: {
       label: 'Angle of attack',
       unit: '°',
@@ -321,13 +312,13 @@ export function createPazyStep() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box in a small window. The wing
-         then sits lower and in the middle, and it takes the width. */
+      /* A preview shows the top of the box, so the wing sits lower and in
+         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
       stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
       const scale = fit.scale || 1;
-      // The tip rises to half the span, so the room above the datum
-      // limits the span.
+      // The tip rises to half the span, so the room above the datum limits
+      // the span.
       const above = stage.y - 18;
       span = preview
         ? Math.min(stage.width * 0.8, above / 0.52)
@@ -357,8 +348,8 @@ export function createPazyStep() {
 
     still(ctx, ink, t) {
       const at = t || 30;   // 1.5 s into the step to 8 degrees
-      /* Start from the trim of the angle before the log, and run the
-         schedule from there, so the log and the ghosts have a past. */
+      /* Start from the trim before the log, so the log and the ghosts have
+         a past. */
       const from = Math.max(0, at - LOG_SECONDS - 1.5);
       const trim = settle(targetAlpha(from));
       q[0] = trim.q[0]; q[1] = trim.q[1]; qd[0] = 0; qd[1] = 0;

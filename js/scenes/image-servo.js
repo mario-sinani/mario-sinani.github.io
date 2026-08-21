@@ -1,25 +1,20 @@
-/* Scene: the coast as the camera sees it, and a new plan only at an
-   event.
-
-   Background for "Coastline Tracking for UAVs Using Event-Triggered
+/* Scene: the coast as the camera sees it, and a new solution only at an
+   event. Background for "Coastline Tracking for UAVs Using Event-Triggered
    Image-Based Visual Servoing Nonlinear Model Predictive Control".
 
-   The camera looks down from the craft. A network detects the
-   coastline in the image and gives its bounding box, and the four
-   corners of the box are the features. Their desired positions are
-   the corners of a narrow box across the middle of the frame, and
-   those positions slide along the frame at a set rate, so the craft
-   moves along the coast. In the image of the thesis the coast runs
-   along the vertical axis; the scene turns the picture so that the
-   coast runs across the frame, as in the view from above. Between two solutions the camera keeps the velocity
-   of the last solution in an open loop. It solves again only when the
-   features, as the tracking reports them with its noise, depart from
-   the features the last solution predicted by more than a bound that
-   scales with the error, or when the horizon of six steps ends. The
-   thesis names the noise of the visual tracking as the disturbance,
-   and the control of the scene is that noise. The scene solves no
-   optimal control problem: a proportional law stands in for it at each
-   solution. */
+   A network detects the coastline in the image and gives its bounding box,
+   and the four corners are the features. Their desired positions are the
+   corners of a narrow box across the middle, and they slide along the
+   frame, so the craft moves along the coast. The thesis has the coast along
+   the vertical axis; the scene turns the picture, so the coast runs across
+   the frame as in the view from above.
+
+   Between two solutions the camera keeps the last velocity in an open loop.
+   It solves again when the measured features depart from the predicted ones
+   by more than a bound that scales with the error, or when the horizon of
+   six steps ends. The control is the noise of the tracking, which the
+   thesis names as the disturbance. The scene solves no optimal control
+   problem: a proportional law stands in for it. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -31,9 +26,9 @@ const HORIZON = 0.6;            // seconds a solution stays valid for: 6 steps o
 const ALONG = 40;               // px/s the desired features slide along the frame
 const GAIN_U = 1.6;             // 1/s on the lateral error
 const GAIN_ROLL = 1.4;          // 1/s on the tilt
-/* The triggering condition: the departure of the measured features
-   from the predicted ones must stay under a floor plus a fraction of
-   the image error. The floor is in pixels. */
+/* The triggering condition: the departure of the measured features from the
+   predicted ones stays under a floor in pixels plus a fraction of the image
+   error. */
 const SIGMA = 0.25;
 const FLOOR = 2.5;
 const NOISE = 1.5;              // pixels of noise in the visual tracking, unless the lab holds it
@@ -49,9 +44,8 @@ export function createImageServo() {
   const frame = { x: 0, y: 0, w: 0, h: 0 };
   const plot = { x: 0, y: 0, w: 0, h: 0 };
   const coast = { a1: 0, a2: 0, k1: 0, k2: 0 };
-  /* The pose of the camera: the lateral offset from the coast, the
-     roll, and the position along the coast, all in the pixels of the
-     image. */
+  /* The pose of the camera: the lateral offset from the coast, the roll,
+     and the position along the coast, in pixels. */
   const pose = { u: 0, roll: 0, s: 0 };
   const held = { u: 0, roll: 0 };
   const atSolve = { u: 0, roll: 0, s: 0, corners: [] };
@@ -67,8 +61,7 @@ export function createImageServo() {
   let kicks = 0;
   let kickAt = -99;
   let lastTime = 0;
-  /* The lab can hold the noise. The value null means that the constant
-     applies. */
+  /* The lab can hold the noise. null uses the constant. */
   let heldNoise = null;
 
   function noiseLevel() {
@@ -84,9 +77,9 @@ export function createImageServo() {
     return { x: frame.x + frame.w / 2, y: frame.y + frame.h / 2 };
   }
 
-  /** A point of the coast in the image, through the pose of the
-      camera. The coast runs across the frame; the lateral offset is
-      down the frame. The roll turns the image about its centre. */
+  /** A point of the coast in the image, through the pose. The coast runs
+      across the frame, the lateral offset is down it, and the roll turns
+      the image about its centre. */
   function project(s, at) {
     const c = centre();
     const along = s - at.s;
@@ -96,8 +89,8 @@ export function createImageServo() {
     return { x: c.x + along * cr - lateral * sr, y: c.y + along * sr + lateral * cr };
   }
 
-  /** The coast in the frame: its points, and the box the detection
-      gives, with the lateral position and the tilt of the coast. */
+  /** The coast in the frame: its points, and the box of the detection, with
+      the lateral position and the tilt. */
   function detect(at) {
     const pts = [];
     let vMin = Infinity;
@@ -115,7 +108,7 @@ export function createImageServo() {
         vMax = Math.max(vMax, p.y);
       }
     }
-    // The lateral position at the left edge and at the right edge.
+    // The lateral position at each edge of the frame.
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1];
       const b = pts[i];
@@ -133,8 +126,7 @@ export function createImageServo() {
     };
   }
 
-  /** The desired features: the corners of the band across the
-      middle. */
+  /** The desired features: the corners of the band across the middle. */
   function desired() {
     const c = centre();
     const half = (frame.h * DESIRED_BAND) / 2;
@@ -158,8 +150,7 @@ export function createImageServo() {
     });
   }
 
-  /** The mean distance between the features and their desired
-      positions. */
+  /** The mean distance between the features and their desired positions. */
   function errorNorm(t) {
     const want = desired();
     const have = measured(t);
@@ -169,11 +160,10 @@ export function createImageServo() {
   }
 
   /** The features as the last solution predicts them: the features it
-      measured at that moment, moved by its own command since then. The
-      lateral velocity moves all four down or up the frame; the roll
-      moves the left corners one way and the right corners the other.
-      The model knows nothing of the coast ahead, so the bends of the
-      coast make the real features leave this prediction. */
+      measured, moved by its own command since then. The lateral velocity
+      moves all four down or up, and the roll moves the left corners against
+      the right. The model knows nothing of the coast ahead, so a bend takes
+      the real features off this prediction. */
   function predicted(t) {
     const dt = t - lastSolve;
     const cx = centre().x;
@@ -192,15 +182,15 @@ export function createImageServo() {
     return sum / 4;
   }
 
-  /* One solution gives one velocity command: a proportional law on
-     the lateral position of the box and on the tilt of the coast,
-     where the thesis solves its optimal control problem. */
+  /* One solution gives one velocity command: a proportional law on the
+     lateral position of the box and on the tilt, where the thesis solves
+     its optimal control problem. */
   function solve(t) {
     const d = detect(pose);
     const c = centre();
     held.u = GAIN_U * (d.boxV - c.y);
-    // A positive roll turns the right of the image down, and so adds
-    // to a positive tilt. The command turns the other way.
+    // A positive roll turns the right of the image down, and adds to a
+    // positive tilt. The command turns the other way.
     held.roll = -GAIN_ROLL * d.tilt;
     atSolve.u = pose.u;
     atSolve.roll = pose.roll;
@@ -214,9 +204,8 @@ export function createImageServo() {
 
   function step(dt, t) {
     if (t > nextKick) {
-      /* The disturbance is a gust, and the pose does not move
-         suddenly. A smooth ramp moves it. The values are
-         deterministic, and the rhythm stays constant. */
+      /* The gust moves the pose on a smooth ramp, and not suddenly. The
+         values are deterministic, and the rhythm is constant. */
       kicks += 1;
       kickFrom.u = 0;
       kickFrom.roll = 0;
@@ -226,14 +215,14 @@ export function createImageServo() {
       nextKick = t + KICK_SECONDS;
     }
 
-    /* The event: the measured features against the predicted ones,
-       with a bound that scales with the image error. The horizon is
-       the other event. */
+    /* The event: the measured features against the predicted ones, with a
+       bound that scales with the image error. The horizon is the other
+       event. */
     if (t - lastSolve > HORIZON || departure(t) > FLOOR + SIGMA * errorNorm(t)) solve(t);
 
-    // Between two solutions the loop is open, and the command does
-    // not change. The craft moves along the coast at the set rate,
-    // and the gust moves it as well.
+    // Between two solutions the loop is open and the command holds. The
+    // craft moves along the coast at the set rate, and the gust moves it as
+    // well.
     pose.u += held.u * dt;
     pose.roll += held.roll * dt;
     pose.s += ALONG * dt;
@@ -301,8 +290,8 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The coast, with the sea below it, and the faint coast beyond the
-     frame: the viewfinder is a window on a longer coast. */
+  /* The coast, the sea below it, and the faint coast beyond the frame: the
+     viewfinder is a window on a longer coast. */
   function drawCoast(ctx, d, ink) {
     ctx.beginPath();
     d.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
@@ -355,10 +344,9 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The box of the detection and its four corners, as the tracking
-     reports them; the line from each corner to its desired position;
-     and where the last solution predicts each corner at the end of
-     the horizon. */
+  /* The box of the detection and its corners as the tracking reports them,
+     the line from each corner to its desired position, and where the last
+     solution predicts it at the end of the horizon. */
   function drawFeatures(ctx, t, ink) {
     const have = measured(t);
     const want = desired();
@@ -396,7 +384,7 @@ export function createImageServo() {
     for (const p of have) ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
   }
 
-  /* The error with time, and the times when the controller solved. */
+  /* The error with time, and a mark at each solution. */
   function drawPlot(ctx, t, ink) {
     if (plot.w <= 0 || errorLog.length < 2) return;
     const baseY = plot.y + plot.h;
@@ -474,8 +462,8 @@ export function createImageServo() {
   return {
     fade: 1,   // a drawn figure; the engine clears it each frame
 
-    /* The control of this scene on the lab page: the noise of the
-       visual tracking, the disturbance the thesis names. */
+    /* The control on the lab page: the noise of the visual tracking, the
+       disturbance the thesis names. */
     lab: {
       label: 'Tracking noise',
       unit: ' px',
@@ -504,16 +492,14 @@ export function createImageServo() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box in a small window. The frame
-         then sits in the middle of it. */
+      /* A preview shows the top of the box, so the frame sits in the middle
+         of it. */
       const preview = Boolean(fit.preview);
       stage = stageFor(w, h, preview ? 0.5 * (184 / 480) : fit.band);
       const room = w > 760;
-      // The frame keeps the ratio of the camera. The room above the
-      // datum and the width of the stage limit it.
-      // The frame keeps the ratio of the camera. Most of it stands
-      // above the datum, so that on a hero it stays clear of the text
-      // below the band.
+      // The frame keeps the ratio of the camera. The room above the datum
+      // and the width of the stage limit it, and most of it stands above
+      // the datum, so on a hero it stays clear of the text.
       const widthLimit = room ? stage.width * 0.5 : stage.width * 0.56;
       frame.h = Math.min(h * 0.42, (stage.y - 12) / 0.62, widthLimit / FRAME_RATIO);
       frame.w = frame.h * FRAME_RATIO;
@@ -525,8 +511,7 @@ export function createImageServo() {
       plot.x = stage.right - plot.w;
       plot.y = frame.y + (frame.h - plot.h) / 2;
 
-      // The coast bends on two scales, gently, in the pixels of the
-      // image.
+      // The coast bends on two scales, gently, in the pixels of the image.
       coast.a1 = frame.h * 0.1;
       coast.a2 = frame.h * 0.03;
       coast.k1 = TWO_PI / (frame.w * 2.5);
@@ -542,8 +527,8 @@ export function createImageServo() {
     },
 
     still(ctx, ink, t) {
-      /* Run one sequence again, because the fixed frame must show the
-         features and the plot with a past. */
+      /* Run one sequence again, so the fixed frame shows the features and
+         the plot with a past. */
       const at = t || 5;
       reset();
       pose.u = frame.h * 0.1;

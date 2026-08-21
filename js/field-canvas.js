@@ -1,37 +1,23 @@
-/* Field canvas: the engine for one moving background.
+/* Field canvas: the engine for one moving background. It sizes the canvas
+   to its parent, fades the last frame toward the page background, runs
+   the loop, and draws one fixed frame with reduced motion or reduced
+   data.
 
-   The engine sizes the canvas to its parent at the device pixel ratio,
-   fades the last frame toward the page background, runs the animation
-   loop, and draws one fixed frame if the visitor asks for reduced
-   motion or for reduced data.
+   A scene gives the drawing:
 
-   A scene object gives the drawing, with these members:
-
-     fade                    the fade to the background in each frame,
-                             from 0 to 1
-     layout(w, h, fit)       set the positions and the sizes. The fit
-                             gives band, how far down the box the
-                             subject sits; scale, the size of the
-                             subject against its normal size; and
-                             preview, true in a small window that shows
-                             the top of the box only.
+     fade                    the fade to the background in each frame
+     layout(w, h, fit)       set the positions. fit.band is how far down
+                             the box the subject sits, fit.scale its
+                             size, fit.preview true in a small window
      frame(ctx, dt, t, ink)  draw one frame
-     still(ctx, ink, t)      draw one fixed frame. A scene that draws a
-                             later time than t, because t is zero and
-                             its subject needs a past, gives that time
-                             back, and the loop continues from it.
+     still(ctx, ink, t)      draw one fixed frame. A scene that needs a
+                             past draws a later time and gives it back,
+                             and the loop continues from it.
 
-   The engine passes a palette and the theme to each call (see ink.js),
-   so a scene does not read the CSS. The loop runs only while the canvas
-   is on the screen and the tab is in front, because a hero field is off
-   the screen for most of a visit. The visitor can also stop the loop
-   with setPaused.
-
-   A preview asks for one fixed frame at a chosen time with
-   options.still. The loop then never runs, and every visitor gets
-   the same picture. A page that shows a scene alone gives a larger
-   options.band and options.scale, and the subject then sits near the
-   middle of the box and takes more of it. */
+   The engine passes the palette (see ink.js), so a scene does not read
+   the CSS. The loop runs only while the canvas is on the screen and the
+   tab is in front. options.still asks for one fixed frame at a time, and
+   the loop then never runs. */
 
 import { resolveInk } from './ink.js';
 
@@ -40,10 +26,9 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
 
   const ctx = canvas.getContext('2d');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* A visitor on a metered connection asks for reduced data. The scene
-     then draws one fixed frame and does not run. */
+  /* Reduced data: draw one fixed frame and do not run. */
   const reducedData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
-  /* The time of a preview. The value null means that the field runs. */
+  /* The time of a fixed frame. null means that the field runs. */
   const stillAt = typeof options.still === 'number' ? options.still : null;
   const fit = { band: options.band, scale: options.scale, preview: Boolean(options.preview) };
   const fixed = reducedMotion || reducedData || stillAt !== null;
@@ -80,10 +65,9 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
     readInk();
     scene.layout(width, height, fit);
     wash(1);
-    /* One fixed frame at once. The field then never shows an empty
-       box before the first animation frame, and it shows this frame
-       while the loop is off. The loop continues from the time of that
-       frame, so the past the scene built for it stays in the past. */
+    /* One fixed frame at once, so the box is never empty. The loop
+       continues from the time of that frame, and the past the scene built
+       stays in the past. */
     const shown = scene.still(ctx, ink, clock);
     if (typeof shown === 'number' && shown > clock) clock = shown;
   }
@@ -98,10 +82,9 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
     handle = requestAnimationFrame(frame);
   }
 
-  /* A second call to start or to stop in the same state has no bad
-     effect. A start sets the frame time to zero. The first step after a
-     pause then gets the limit of 0.05 s in frame(). The scene does not
-     move forward by the length of the pause. */
+  /* A second call in the same state does nothing. A start sets the frame
+     time to zero, so the first step after a pause gets the limit of 0.05 s
+     and the scene does not jump. */
   function start() {
     if (handle || fixed || userPaused) return;
     lastFrameTime = 0;
@@ -120,15 +103,15 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
   }
 
   /* Draw the state again with no motion. The theme button and the lab
-     controls use this call while the loop is off. */
+     controls use it while the loop is off. */
   function repaint() {
     readInk();
     wash(1);
     if (!handle) scene.still(ctx, ink, clock);
   }
 
-  /* The pause control of the visitor. A pause draws one fixed frame,
-     so the picture does not depend on the moment of the click. */
+  /* The pause control. A pause draws one fixed frame, so the picture does
+     not depend on the moment of the click. */
   function setPaused(paused) {
     userPaused = paused;
     if (paused) {
@@ -140,10 +123,8 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
     }
   }
 
-  /* A resize event can come many times in one second while the visitor
-     moves the edge of the window. Each call to resize() makes the canvas
-     bitmap again. One call in each frame is enough, because the screen
-     cannot show more. */
+  /* A resize can come many times in one second, and each call makes the
+     bitmap again. One call in each frame is enough. */
   let resizePending = 0;
   function onResize() {
     if (resizePending) return;
@@ -157,8 +138,7 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
   window.addEventListener('resize', onResize);
   document.addEventListener('visibilitychange', sync);
 
-  /* If the browser has no IntersectionObserver, the field is always on
-     the screen. This is the behaviour before this control. */
+  /* Without IntersectionObserver the field is always on the screen. */
   if ('IntersectionObserver' in window) {
     new IntersectionObserver((entries) => {
       onScreen = entries[entries.length - 1].isIntersecting;

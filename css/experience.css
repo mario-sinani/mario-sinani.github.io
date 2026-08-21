@@ -1,13 +1,11 @@
-/* Experience: a vertical timeline. A 1px spine runs down the list. Each
-   position puts a node on the spine, with the dates on the left of the
-   spine and the organisation on the right. */
+/* Experience: a vertical timeline. A 1px spine runs down the list, with the
+   dates on its left and the organisation on its right. */
 
 .timeline {
   display: grid;
   gap: 0;
-  /* --spine gives the distance from the left edge to the spine. --node
-     gives the diameter of a node. --node-y gives the distance from the
-     top of an entry to the middle of its node. */
+  /* --spine: the distance to the spine. --node: the diameter of a node.
+     --node-y: the top of an entry to the middle of its node. */
   --spine: 11rem;
   --node: 9px;
   --node-y: 0.92rem;
@@ -23,9 +21,8 @@
 
 .timeline-item:last-child { padding-bottom: 0; }
 
-/* Each entry draws its own part of the spine. The parts touch, so the
-   line looks continuous. The first part starts at the first node, and
-   the last part stops at the last node. */
+/* Each entry draws its part of the spine. The parts touch, so the line
+   looks continuous. */
 .timeline-item::before {
   content: "";
   position: absolute;
@@ -50,21 +47,19 @@
   height: var(--node);
   border-radius: 50%;
   background: var(--paper);
-  /* The hollow node and the full node are not the same, and that
-     difference gives data. The line of the node must be easy to see for
-     this reason, and --line is too light. */
+  /* A hollow node and a full node give data, so the line needs more
+     contrast than --line. */
   border: 1px solid var(--line-strong);
 }
 
-/* A position that continues today gets a full node. The dates of such a
-   position contain the word Present. */
+/* A position that continues today gets a full node. Its dates hold the word
+   Present. */
 .timeline-item:has(.now)::after {
   background: var(--accent);
   border-color: var(--accent);
 }
 
-/* The entries fade in, but they do not move. A move breaks the spine
-   while the transition runs. */
+/* The entries fade in but do not move. A move breaks the spine. */
 .timeline-item.reveal { transform: none; }
 
 .timeline-when {
@@ -108,8 +103,8 @@
   color: var(--ink);
 }
 
-/* On a narrow screen the spine moves to the left edge. The dates then go
-   above the organisation. */
+/* On a narrow screen the spine goes to the left edge, and the dates above
+   the organisation. */
 @media (max-width: 720px) {
   .timeline {
     --spine: 0.3rem;
@@ -127,8 +122,8 @@
   .timeline-what h3 { font-size: 1.02rem; }
 }
 
-/* A link in an entry uses the text colour and a 1px underline. On
-   hover it changes to the accent colour. */
+/* A link in an entry: the text colour with a 1px underline, and the accent
+   on hover. */
 .timeline-text p a {
   color: inherit;
   text-decoration: none;
@@ -141,8 +136,7 @@
   border-bottom-color: var(--accent);
 }
 
-/* A title in an entry can be a link, for example a talk that links to
-   its paper. The link uses the text colour and a 1px underline. */
+/* A title can be a link, for example a talk that goes to its paper. */
 .timeline-text h3 a {
   color: inherit;
   text-decoration: none;

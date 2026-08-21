@@ -1,18 +1,14 @@
-/* Print: makes a clean sheet of paper from a page. The browser loads
-   this file only for print, because the link has media="print".
+/* Print: a clean sheet of paper from a page, loaded only for print.
 
-   The rules remove the parts that a sheet of paper cannot use: the bar
-   at the top, the buttons, the animation and the flow field. They also
-   put the address after each link that goes to another site, because a
-   sheet of paper cannot show a link. */
+   The rules remove the bar, the buttons, the animation and the field, and
+   put the address after each link to another site. */
 
 @page {
   margin: 18mm 16mm;
 }
 
-/* Black on white. A printer must not put ink on the full page. The
-   selector holds each theme, because the theme of the screen must not
-   change what the printer makes. */
+/* Black on white, in each theme. A printer must not put ink on the full
+   page. */
 :root,
 :root:not([data-theme="light"]),
 :root[data-theme="light"],
@@ -57,9 +53,8 @@ body {
   display: none !important;
 }
 
-/* A script cuts each abstract to three lines on the screen, and gives a
-   button for the full text. Paper has no button, so the full text must
-   print. */
+/* A script cuts each abstract on the screen. Paper has no button, so it
+   prints the full text. */
 .js .pub-abstract.is-clamped p {
   display: block;
   -webkit-line-clamp: none;
@@ -74,8 +69,8 @@ body {
   transition: none !important;
 }
 
-/* A link to another site gets its address, because paper has no link.
-   A link inside the site and a mail link do not need one. */
+/* A link to another site gets its address. A link inside the site and a
+   mail link do not. */
 a[href^="http"]::after {
   content: " (" attr(href) ")";
   font-family: var(--font-mono);
@@ -83,12 +78,12 @@ a[href^="http"]::after {
   word-break: break-all;
 }
 
-/* A link in a sentence keeps no address. An address in the middle of a
-   sentence makes the sentence hard to read. */
+/* A link in a sentence keeps no address, because it makes the sentence hard
+   to read. */
 p a[href^="http"]::after { content: none; }
 
-/* A pill is a button on the screen. On paper it is only a name and an
-   address, so it does not need the shape of a button. */
+/* A pill is a button on the screen, and only a name and an address on
+   paper. */
 .pill, .pill.primary {
   border: 0;
   background: none;
@@ -107,10 +102,8 @@ p a[href^="http"]::after { content: none; }
 
 h1, h2, h3 { break-after: avoid; }
 
-/* The hero has no flow field on paper, so it does not need the height
-   of a screen. */
+/* No field on paper, so the hero does not need the height of a screen. */
 .hero { min-height: 0; }
 
-/* Two columns of facts, not three, because a printer gives a narrower
-   line than a screen. */
+/* Two columns of facts, because a printed line is narrower than a screen. */
 .snapshot { grid-template-columns: repeat(2, minmax(0, 1fr)); }

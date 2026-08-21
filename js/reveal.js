@@ -1,7 +1,6 @@
-/* Reveal: fades in each .reveal element when it comes into view for
-   the first time. If the browser has no IntersectionObserver, or if the
-   visitor asks for reduced motion, the module shows all the elements
-   together. */
+/* Reveal: fades in each .reveal element when it first comes into view.
+   Without IntersectionObserver, or with reduced motion, every element shows
+   at once. */
 
 export function initReveal() {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

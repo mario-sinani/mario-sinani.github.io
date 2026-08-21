@@ -1,6 +1,5 @@
-/* Publications: a rail in order of date. The rail is one vertical
-   line, and it has one node for each entry. The icon in the node shows
-   the type of the publication: conference, journal or thesis. */
+/* Publications: a rail in order of date, with one node for each entry. The
+   icon in the node gives the type. */
 
 .pub-list { display: grid; }
 
@@ -122,9 +121,8 @@
 
 .pubs-footer a:hover, .pubs-footer a:focus-visible { text-decoration: underline; }
 
-/* On a small screen the year moves above the entry, and the rail moves
-   to the first column. The rail goes across the two rows. The line is
-   then continuous. */
+/* On a small screen the year goes above the entry, and the rail spans the
+   two rows. */
 @media (max-width: 720px) {
   .pub { grid-template-columns: 2.2rem 1fr; column-gap: 1rem; }
 

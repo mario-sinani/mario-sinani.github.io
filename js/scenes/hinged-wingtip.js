@@ -1,29 +1,22 @@
-/* Scene: a wing with a folding tip on a flared hinge, seen from the
-   front. The flow starts, the wing bends up, and the tip finds its own
-   angle.
-
+/* Scene: a wing with a folding tip on a flared hinge, from the front. The
+   flow starts, the wing bends up, and the tip finds its own angle.
    Background for "Absolute Nodal Coordinate Formulation for Nonlinear
    Multibody Modeling of Flared Hinged Wings".
 
-   The paper simulates a semispan of 16 m: 12 m of inner wing, a hinge,
-   and 4 m of tip. The hinge line is flared by 10 degrees from the
-   flow, and the joint is free. The flow and the gravity start at
-   t = 0. The tip first lags behind the rising wing, then folds up past
-   its final angle and settles: at 45 degrees for 10 degrees of
-   incidence, at 25 degrees for 5 degrees (the paper's Fig. 18). The
-   fold takes incidence off the tip because the hinge is flared: a fold
-   of theta about a hinge flared by beta turns the chord by
-   atan(tan(theta) sin(beta)). The tip therefore coasts at the fold
-   where its own lift just carries it.
+   The paper simulates a semispan of 16 m: 12 m of inner wing, a free hinge
+   flared by 10 degrees, and 4 m of tip. The flow and the gravity start at t
+   = 0. The tip lags behind the rising wing, folds past its final angle and
+   settles: 45 degrees at 10 degrees of incidence, 25 degrees at 5 (Fig.
+   18). A fold of theta about a hinge flared by beta turns the chord by
+   atan(tan(theta) sin(beta)), so the tip coasts where its own lift carries
+   it.
 
-   The scene has the inner wing as a beam in its first bending mode and
-   the tip as a rigid body on the hinge. The equation of the tip has
-   the lift on its incidence, its weight, the inertial load from the
-   rising hinge, and the damping of the joint. The constants are
-   calibrated to the two cases of the paper. The inset is the plan view
-   with the flare of the hinge line. The trace is the fold angle
-   against time, with marks at the spacing of the second code in the
-   paper's figure. */
+   The inner wing is a beam in its first bending mode, and the tip is a
+   rigid body on the hinge. The equation of the tip holds the lift on its
+   incidence, its weight, the inertial load of the rising hinge, and the
+   damping of the joint. The constants are calibrated to the two cases of
+   the paper. The inset is the plan view with the flare, and the trace is
+   the fold angle against time. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
@@ -39,15 +32,15 @@ const FIRST_SIGMA = 0.734096;
 const TIP_SLOPE = 1.3765;         // the slope of the first mode at its tip, per unit of tip deflection and length
 const STATIONS = 40;
 
-/* The inner wing: the rise of the hinge in the steady state, per radian
-   of incidence, and the first bending mode of the wing. */
+/* The inner wing: the steady rise of the hinge per radian of incidence, and
+   the first bending mode. */
 const HINGE_RISE = 14.0;          // metres per radian
 const WING_OMEGA = 5.0;           // 1/s
 const WING_DAMPING = 0.5;
 const LIFT_LAG = 0.15;            // seconds for the lift to build up
 
-/* The tip: the lift per radian of its incidence, its weight, and the
-   damping of the joint, all per unit of its inertia about the hinge. */
+/* The tip: the lift per radian of incidence, the weight, and the damping of
+   the joint, each per unit of inertia about the hinge. */
 const TIP_LIFT = 12.0;            // 1/s^2 per radian
 const TIP_WEIGHT = 0.0752;        // 1/s^2
 const TIP_DAMPING = 0.45;
@@ -60,8 +53,8 @@ const TRACE_SECONDS = 14;
 const TRACE_STEP = 0.1;
 const MARK_EVERY = 0.5;           // seconds between the marks on the trace
 const GHOSTS = [0.5, 0.25];       // seconds ago
-/* The subject rises above its datum, so the datum sits lower than the
-   band a page gives by this fraction of the height. */
+/* The subject rises above the datum, so the datum sits lower by this
+   fraction of the height. */
 const RISE = 0.10;
 const STEP = 1 / 240;
 
@@ -88,8 +81,7 @@ export function createHingedWingtip() {
   let scale = 20;                 // pixels per metre
   let history = [];
   let lastSample = -99;
-  /* The lab can hold the flare. The value null means that the flare of
-     the paper applies. */
+  /* The lab can hold the flare. null uses the flare of the paper. */
   let held = null;
   /* The state: the incidence the lift sees, the hinge, and the tip. */
   let alphaNow = 0;
@@ -161,7 +153,7 @@ export function createHingedWingtip() {
   }
 
   /** The inner wing, integrated along its length. The beam keeps its
-      length when it bends. */
+      length. */
   function traceInner(deflection) {
     axisX[0] = 0;
     axisZ[0] = 0;
@@ -250,8 +242,8 @@ export function createHingedWingtip() {
     ctx.stroke();
   }
 
-  /* The lift along the wing and the tip, normal to each surface, and
-     the weight of the tip. */
+  /* The lift along the wing and the tip, normal to each surface, and the
+     weight of the tip. */
   function drawLoads(ctx, ink) {
     const unit = scale * OUTER * 0.35;
     const alpha10 = (10 * Math.PI) / 180;
@@ -299,8 +291,8 @@ export function createHingedWingtip() {
     ctx.lineTo(tx - 5 * dx + 3 * dy, ty - 5 * dy - 3 * dx);
   }
 
-  /* The plan view: the inner wing, the tip and the hinge line at its
-     flare, with the flow from above, as in the paper's Fig. 17. */
+  /* The plan view: the wing, the tip and the hinge line at its flare, with
+     the flow from above, as in Fig. 17. */
   function drawPlan(ctx, ink) {
     if (plan.w <= 0) return;
     const px = plan.w / SEMISPAN;
@@ -322,7 +314,7 @@ export function createHingedWingtip() {
     ctx.strokeStyle = ink.accent;
     ctx.stroke();
 
-    // The hinge line, flared from the direction of the flow.
+    // The hinge line, flared from the flow.
     const reach = strip * 1.7;
     const b = flare();
     ctx.beginPath();
@@ -408,9 +400,8 @@ export function createHingedWingtip() {
   return {
     fade: 1,
 
-    /* The control of this scene on the lab page: the flare of the
-       hinge line, which sets how much incidence a fold takes off the
-       tip. */
+    /* The control on the lab page: the flare, which sets how much incidence
+       a fold takes off the tip. */
     lab: {
       label: 'Hinge flare',
       unit: '°',
@@ -448,13 +439,13 @@ export function createHingedWingtip() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box in a small window. The wing
-         then sits lower and in the middle, and it takes the width. */
+      /* A preview shows the top of the box, so the wing sits lower and in
+         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
       stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
       const sc = fit.scale || 1;
-      // The tip rises to 0.45 of the semispan, so the room above the
-      // datum limits the scale.
+      // The tip rises to 0.45 of the semispan, so the room above the datum
+      // limits the scale.
       const above = stage.y - 18;
       const spanPx = preview
         ? Math.min(stage.width * 0.82, above / 0.48)
@@ -483,8 +474,7 @@ export function createHingedWingtip() {
 
     still(ctx, ink, t) {
       const at = t || 6;
-      // Run from the start, because the first transient is the one
-      // the paper shows.
+      // Run from the start: the first transient is the one the paper shows.
       reset();
       const end = Math.min(at, 90);
       while (clock < end) advance(Math.min(clock + 0.25, end));

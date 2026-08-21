@@ -1,10 +1,9 @@
 /* Lab: the catalogue of the models, and the page of one model. An
-   instrument is the moving figure of a paper page with one control
-   below it. The catalogue uses the topic rows of subpage.css, so a
-   model entry and a research theme have the same shape. */
+   instrument is the figure of a paper page with one control below it. The
+   catalogue uses the topic rows of subpage.css. */
 
-/* A card in the catalogue: a fixed frame of the model on the left, and
-   the name, a short text and the button on the right. */
+/* A card: a fixed frame of the model on the left, and the name, the text
+   and the button on the right. */
 .model-card {
   display: grid;
   grid-template-columns: minmax(0, 21rem) 1fr;
@@ -16,9 +15,7 @@
 
 .model-card:first-of-type { border-top: 0; padding-top: 0; }
 
-/* The preview holds a canvas, and a script runs the model in it, in
-   the same manner as a field. With no script it would be an empty
-   box, so CSS hides it. */
+/* The preview needs a script, so CSS hides it without one. */
 .model-preview { display: none; }
 
 .js .model-preview {
@@ -32,10 +29,8 @@
 
 .model-preview:hover { border-color: var(--accent); }
 
-/* The scene draws its subject near the top of its own box, at a
-   fraction of the height. The box inside the preview is therefore
-   taller than the window, so that the subject falls near the middle of
-   the window and the flow lines are not crowded. */
+/* The box inside the preview is taller than the window, so the subject
+   falls near the middle of the window. */
 .model-preview-crop {
   position: absolute;
   left: 0;
@@ -87,17 +82,15 @@
   text-transform: uppercase;
 }
 
-/* The papers a model comes from. Each one carries the round mark of
-   its type, the same mark the rail of the publications uses, so the
-   two pages name a paper in the same manner. */
+/* The papers a model comes from, with the round mark of the publications
+   rail. */
 .model-source {
   margin-top: 1.15rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line);
 }
 
-/* Two sources stand side by side while the card is wide enough, and
-   they keep one column each. A narrow card puts them one below the
+/* Two sources stand side by side. A narrow card puts them one below the
    other. */
 .source-list {
   display: grid;
@@ -208,9 +201,8 @@
   color: var(--muted);
 }
 
-/* The stage holds the canvas. The engine sizes the canvas to this
-   box. A script draws the model, so with no script the stage would be
-   an empty box. CSS then hides it, and the notes below tell the whole
+/* The stage holds the canvas, and the engine sizes it to this box. It needs
+   a script, so CSS hides it without one, and the notes below tell the
    subject. */
 .instrument-stage { display: none; }
 
@@ -232,8 +224,7 @@
   display: block;
 }
 
-/* The control row. The script fills it, so without a script the row is
-   empty and takes no space. */
+/* The script fills the control row. Without a script it takes no space. */
 .lab-controls {
   margin-top: 1.05rem;
   display: flex;
@@ -263,8 +254,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The two modes of the parameter, Auto and Hold. The pressed one is
-   the mode in use. */
+/* Auto and Hold. The pressed button is the mode in use. */
 .lab-modes { display: inline-flex; gap: 0.3rem; }
 
 .lab-mode {
@@ -292,8 +282,7 @@
   border-color: var(--accent-fill);
 }
 
-/* What the model does at this moment: a line of its own below the
-   control, in the mono face of a label. */
+/* What the model does at this moment, in the mono face of a label. */
 .lab-status {
   margin-top: 0.7rem;
   font-family: var(--font-mono);
@@ -304,16 +293,12 @@
   max-width: 44rem;
 }
 
-/* The page of one model. The subject sits near the middle of this
-   stage, because the page shows the scene alone (see MODEL_BAND in
-   lab.js). The stage is taller than the one a paper page uses: the
-   height sets the size of the subject in every scene, so a taller
-   stage gives the wing, the beam or the craft the room it deserves. */
+/* The page of one model. The stage is taller than the one of a paper page,
+   because the height sets the size of the subject in each scene. */
 .lab-model .instrument-stage { height: clamp(320px, 44vw, 560px); }
 
-/* The notes below the model: what the drawing shows, the model behind
-   it, the control, and the papers. Each note is one subject, and a line
-   divides two of them. */
+/* The notes below the model. Each note is one subject, and a line divides
+   two of them. */
 .model-note {
   border-top: 1px solid var(--line);
   padding: 2rem 0 0.4rem;
@@ -348,10 +333,8 @@
   color: var(--muted);
 }
 
-/* The equations, in the same box as a citation record. Each line is
-   one equation in MathML, which the browser sets with its own
-   mathematical font, and its meaning stands beside it. A long
-   equation scrolls in its line, and it does not make the page wider. */
+/* The equations, in the box of a citation record. Each line is one equation
+   in MathML, and a long line scrolls. */
 .model-formula {
   max-width: 48rem;
   margin: 1rem 0 0;
@@ -372,8 +355,8 @@
 
 .eq + .eq { border-top: 1px solid color-mix(in srgb, var(--line) 55%, transparent); }
 
-/* The equation keeps the width it needs. The label takes the rest,
-   and wraps. */
+/* The equation keeps the width it needs. The label takes the rest, and
+   wraps. */
 .eq math {
   flex: 0 0 auto;
   font-size: 1.05rem;

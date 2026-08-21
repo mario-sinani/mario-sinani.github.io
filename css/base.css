@@ -2,10 +2,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* The bar at the top of the page stays in place while the page moves.
-   Without this rule the bar covers the target of a link that goes to
-   a part of the same page. The value is the height of the bar plus a
-   small space. */
+/* Offset for the sticky bar. Without it the bar covers the target of a link
+   to a part of the same page. */
 html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
 
 body {
@@ -17,10 +15,8 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* The site ships every style it asks for: the serif has a real italic
-     and a real 600. Without this rule a browser can draw a style that
-     has no file, and a slanted or thickened shape is worse than the
-     shape that exists. */
+  /* Every style of the serif has a file. Do not let the browser make a
+     slanted or a thickened shape. */
   font-synthesis: none;
 }
 
@@ -28,23 +24,19 @@ body {
 
 a { color: inherit; }
 
-/* A form control does not inherit the fonts of the page. The browser
-   gives the control its own font, at weight 400. Each button on this
-   site has a mono label, and the other mono labels near it use weight
-   500. The two weights must be the same. Each button sets its own size
-   and colour. */
+/* A control does not inherit the page font. Give it the mono face at weight
+   500, as the labels near it. */
 button { font: inherit; color: inherit; }
 
-/* The browser also applies its own monospace family to pre and code.
-   That rule has more weight than inheritance. These elements must name
-   the font of the site. */
+/* pre and code need the font of the site by name. The browser rule is
+   stronger than inheritance. */
 pre, code { font-family: var(--font-mono); }
 
 h1, h2, h3 { text-wrap: balance; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* A skip link for keyboard users. The link shows only if it has focus. */
+/* A skip link for the keyboard. It shows only with focus. */
 .skip-link {
   position: fixed;
   top: -4rem;
@@ -62,12 +54,9 @@ h1, h2, h3 { text-wrap: balance; }
 
 .skip-link:focus { top: 1rem; }
 
-/* Touch areas. Some controls are small, which is correct for a
-   pointer. But these controls are smaller than the minimum of 24px for
-   a finger. On a touch screen, a pseudo-element gives each control an
-   invisible pad. The area that accepts a touch becomes larger, and the
-   control does not move. The rows that can wrap get more space, because
-   two pads in a column must not overlap. */
+/* Touch areas. A pseudo-element pads each small control to 24px, and the
+   control does not move. Rows that wrap get more space, so two pads do not
+   overlap. */
 @media (pointer: coarse) {
   .head-links a,
   .pubs-footer a,
@@ -93,7 +82,7 @@ h1, h2, h3 { text-wrap: balance; }
     inset: -0.35rem 0;
   }
 
-  /* The icon buttons keep their circle of 2rem. Their touch area is 44px. */
+  /* The icon buttons keep a circle of 2rem and a touch area of 44px. */
   .theme-toggle::after,
   .nav-toggle::after {
     content: "";

@@ -1,8 +1,7 @@
 /* Education: one card for each degree, with a university logo chip. */
 
-/* The min() function keeps the minimum width of a track less than the
-   width of the viewport. A larger minimum causes a horizontal scroll on
-   a narrow phone. */
+/* min() keeps a track narrower than the viewport. A larger minimum makes a
+   phone scroll sideways. */
 .edu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));

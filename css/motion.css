@@ -1,5 +1,5 @@
-/* Motion: the transitions that show an element during a scroll. The
-   reduced-motion setting stops them. */
+/* Motion: the transitions that show an element during a scroll. Reduced
+   motion stops them. */
 
 .reveal {
   opacity: 0;

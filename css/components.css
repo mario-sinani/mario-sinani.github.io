@@ -32,8 +32,7 @@
   letter-spacing: -0.015em;
 }
 
-/* Small links below a section title, in the mono link style of the
-   site. */
+/* Small links below a section title, in the mono style. */
 .section-head { flex-wrap: wrap; }
 
 .section-head .head-links {
@@ -97,9 +96,8 @@
   color: var(--accent-fill-ink);
 }
 
-/* The round mark of a publication: a circle with the icon of a paper
-   or of a thesis inside it. The rail of the publications uses it for a
-   node, and a card in the lab uses it for a source. */
+/* The round mark of a paper or a thesis. The publications rail and the
+   cards of the lab use it. */
 .node-icon {
   position: relative;
   z-index: 1;
@@ -117,9 +115,8 @@
 
 .node-icon svg { width: 1.05rem; height: 1.05rem; }
 
-/* Logo chips: square marks on a white background in the two themes.
-   The white background keeps the colours of each organisation easy to
-   read on the dark background of the page. */
+/* Logo chips. The white background keeps each logo easy to read in the dark
+   theme. */
 .org-icon {
   flex-shrink: 0;
   width: 2.7rem;
@@ -136,9 +133,8 @@
   display: block;
 }
 
-/* Inner page head: the eyebrow, the large title, the lede and the row
-   of counts. Every page below the home page uses this block, so it
-   lives here and not in the stylesheet of one page. */
+/* Inner page head: the eyebrow, the title, the lede and the counts. Every
+   page below the home page uses it. */
 
 .page-head {
   max-width: var(--w-content);
@@ -176,8 +172,7 @@
   margin: 0.7rem 0 0;
 }
 
-/* The mark after a name or a heading. The hero, the head of an inner
-   page and the footer all use it. */
+/* The mark after a name or a heading. */
 .accent-mark { color: var(--accent); }
 
 .page-head .lede {
@@ -187,8 +182,7 @@
   font-size: 1.06rem;
 }
 
-/* The counts give the size of the record. They are plain text between
-   two 1px lines, with no box. */
+/* The counts: plain text between two 1px lines. */
 .page-stats {
   display: flex;
   flex-wrap: wrap;
@@ -236,13 +230,11 @@
     padding: 0.9rem 0.9rem 0.95rem 0;
   }
 
-  /* Each row has two statistics. The third statistic starts a new row,
-     and it must not keep the line on its left. */
+  /* A third statistic starts a new row, with no line on its left. */
   .page-stat:nth-child(odd) + .page-stat { border-left: 1px solid var(--hairline); padding-left: 1rem; }
   .page-stat:nth-child(odd) { border-left: 0; padding-left: 0; }
 }
 
-/* A control that does nothing without a script. CSS shows it when the
-   js class is on the page. */
+/* Shown only when a script runs. */
 .needs-js { display: none; }
 .js .needs-js { display: inline-flex; }

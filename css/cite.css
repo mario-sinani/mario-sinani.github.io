@@ -1,7 +1,5 @@
-/* Citation record: a BibTeX entry in a native disclosure element. The
-   publication list and each paper page use this record. The disclosure
-   element opens without a script. Only the copy button needs a script,
-   and CSS hides only that button if no script runs. */
+/* Citation record: BibTeX in a native disclosure element. It opens without
+   a script. Only the copy button needs one. */
 
 .cite {
   min-width: 0;
@@ -43,8 +41,7 @@
   font-size: 0.72rem;
   line-height: 1.65;
   color: var(--muted);
-  /* A long line scrolls in the box. It must not make the page wider,
-     and it must not change the layout of the record. */
+  /* A long line scrolls in the box. It does not widen the page. */
   white-space: pre;
   -webkit-overflow-scrolling: touch;
 }
@@ -80,9 +77,8 @@
   .copy-btn { position: static; margin: 0.55rem 0.9rem 0.85rem; }
 }
 
-/* The format tabs above the record. Only the choice of a format needs
-   a script, so CSS shows the tabs when the js class is on the page.
-   The space on the right keeps the tabs clear of the copy button. */
+/* The format tabs. They need a script, so CSS shows them with the js class.
+   The space on the right keeps them clear of the copy button. */
 .cite-tabs {
   display: none;
   gap: 0.3rem;

@@ -1,14 +1,10 @@
 /* Flowlines: a fixed set of streamlines through a velocity field, with
    tracer strokes that move with the flow.
 
-   The module integrates each streamline from the same start point in
-   each frame, so the set bends while the body moves. The lines are solid
-   and not dashed, because a dash position follows the path length, and
-   in an unsteady field that length changes in each frame.
-
-   The field velocity advects each tracer, so its movement is continuous.
-   Each tail integrates backward, so the tracer stays on its own
-   streamline. */
+   The module integrates each line again in each frame, so the set bends
+   while the body moves. The lines are solid: a dash follows the path
+   length, and that length changes in an unsteady field. Each tail
+   integrates backward, so a tracer stays on its own line. */
 
 import { withAlpha } from './ink.js';
 
@@ -16,8 +12,7 @@ export function createFlowlines(options = {}) {
   const lines = options.lines || 21;
   const accentEvery = options.accentEvery || 5;
   const step = options.step || 4;          // px advanced per integration step
-  // The test is for null and undefined only, because a scene can ask
-  // for zero tracers.
+  // Test for null and undefined only: a scene can ask for zero tracers.
   const tracerCount = options.tracers ?? 30;
   const tracerGain = options.tracerGain || 0.55;  // fraction of field speed
   const TAIL = 16;                         // px of comet tail
@@ -35,8 +30,7 @@ export function createFlowlines(options = {}) {
     return tracer;
   }
 
-  /* Add one streamline to the current path. Stop at the edge of the
-     canvas or at the body. */
+  /* Add one streamline. Stop at the edge of the canvas or at the body. */
   function integrate(ctx, velocity, y0) {
     let x = -6;
     let y = y0;
@@ -53,9 +47,8 @@ export function createFlowlines(options = {}) {
     }
   }
 
-  /* Draw the lines thin and near to each other. They are the texture
-     of the drawing. The bodies and the instruments give the drawing its
-     weight. */
+  /* The lines are thin and near to each other: they are the texture. The
+     bodies and the instruments give the weight. */
   function drawSkeleton(ctx, velocity, ink) {
     for (let i = 0; i < lines; i++) {
       const accent = i % accentEvery === accentEvery >> 1;
@@ -76,9 +69,8 @@ export function createFlowlines(options = {}) {
       tr.y += v.v * dt * tracerGain;
       tr.age += dt;
 
-      // The tracer becomes visible after it starts. It becomes
-      // invisible before it ends, and also near the right edge. A new
-      // tracer fades in, and it does not appear suddenly.
+      // A tracer fades in after it starts, and out before it ends and near
+      // the right edge.
       const presence = Math.min(
         1,
         tr.age / EASE,
@@ -87,9 +79,8 @@ export function createFlowlines(options = {}) {
       );
       if (presence <= 0 || tr.y < -10 || tr.y > height + 10) { spawn(tr, false); continue; }
 
-      /* Integrate the tail backward, and it is then on the streamline.
-         Draw the tail one segment at a time. The tail becomes thinner
-         from the head to the end. */
+      /* Integrate the tail backward, so it lies on the streamline. It
+         becomes thinner from the head to the end. */
       const points = [[tr.x, tr.y]];
       let bx = tr.x;
       let by = tr.y;
@@ -123,8 +114,8 @@ export function createFlowlines(options = {}) {
       width = w;
       height = h;
       tracers = Array.from({ length: tracerCount }, () => spawn({}, true));
-      // Give each tracer a different first life, because the tracers
-      // must not fade in at the same time.
+      // A different first life for each tracer, so they do not fade in
+      // together.
       tracers.forEach((tr) => { tr.age = Math.random() * tr.life * 0.6; });
     },
 
@@ -133,7 +124,7 @@ export function createFlowlines(options = {}) {
       drawTracers(ctx, dt, velocity, ink);
     },
 
-    /* Fixed frame: the lines alone show the shape of the flow. */
+    /* Fixed frame: the lines alone give the shape of the flow. */
     still(ctx, velocity, ink) {
       drawSkeleton(ctx, velocity, ink);
     },

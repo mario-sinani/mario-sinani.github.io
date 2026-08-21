@@ -14,8 +14,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f5f6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d141d">
 
-  <!-- Open Graph: the preview of the link on LinkedIn, Slack, iMessage
-       and WhatsApp -->
+  <!-- Open Graph: the preview of a shared link -->
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://mariosinani.com/publications/modal-energy-transfer-beams/">
   <meta property="og:site_name" content="Mario A. Sinani">
@@ -56,7 +55,7 @@
   <link rel="apple-touch-icon" href="../../assets/icons/apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="../../site.webmanifest">
 
-  <!-- Performance: preload the most important fonts and modules -->
+  <!-- Preload the fonts and the modules that the page needs first -->
   <link rel="preload" href="../../assets/fonts/Archivo-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../../assets/fonts/SourceSerif4-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../../assets/fonts/IBMPlexMono-500.woff2" as="font" type="font/woff2" crossorigin>
@@ -86,12 +85,8 @@
   <!-- Print only. The browser loads this file when it prints. -->
   <link rel="stylesheet" href="../../css/print.css" media="print">
   <script>
-    // Apply the theme from storage before the browser shows the page,
-    // because the visitor must not see the wrong theme.
-    // Add the js class, and CSS can then show the controls that need a
-    // script.
-    // If storage has no choice, data-theme stays unset, and the page
-    // follows the device through prefers-color-scheme.
+    // Apply the stored theme before the first paint, and add the js
+    // class. With no stored choice the page follows the device.
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}

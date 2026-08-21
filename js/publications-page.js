@@ -1,5 +1,5 @@
-/* Entry point for the publications page: the features of all pages,
-   and the features that only this page has. */
+/* Entry point for the publications page: the shared features, and the ones
+   only this page has. */
 
 import { initSite } from './site.js';
 import { initPubFilter } from './pub-filter.js';
@@ -13,8 +13,7 @@ initCite();
 initCiteFormats();
 
 /* Copy all: one click puts every BibTeX record on the clipboard. The
-   download link next to the button is a plain file and needs no
-   script. */
+   download link beside it is a plain file and needs no script. */
 const RESET_DELAY = 1800;
 const copyAll = document.getElementById('copy-all-bib');
 if (copyAll) {
