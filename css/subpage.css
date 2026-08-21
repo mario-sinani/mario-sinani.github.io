@@ -165,6 +165,14 @@
   color: var(--muted);
 }
 
+.edu-card p a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.edu-card p a:hover, .edu-card p a:focus-visible { border-bottom-color: var(--accent-strong); }
+
 /* The links to the other pages, at the end of each page. */
 .cross-nav {
   max-width: var(--w-content);
