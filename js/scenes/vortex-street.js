@@ -177,6 +177,7 @@ export function createVortexStreet() {
       flow.still(ctx, velocity, ink);
       drawCores(ctx, ink);
       drawBody(ctx, ink);
+      return at;
     },
   };
 }

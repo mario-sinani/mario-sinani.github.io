@@ -8,12 +8,16 @@
 
 const CONTENT_WIDTH = 1060;   // matches --w-content
 const COLUMN_PADDING = 24;    // matches the column's 1.5rem side padding
-const BAND = 0.14;            // the band's height down the hero
+/* How far down the box the subject sits. A hero puts the subject high,
+   because the panel of the hero fills the rest. A page that shows the
+   scene alone gives a larger band, and the subject then sits near the
+   middle of its box. */
+const BAND = 0.14;
 
-export function stageFor(w, h) {
+export function stageFor(w, h, band = BAND) {
   const width = Math.min(w - COLUMN_PADDING * 2, CONTENT_WIDTH);
   const left = (w - width) / 2;
-  return { left, right: left + width, width, y: h * BAND };
+  return { left, right: left + width, width, y: h * band };
 }
 
 /* Draw the datum: one dashed thin line across the stage. Each scene

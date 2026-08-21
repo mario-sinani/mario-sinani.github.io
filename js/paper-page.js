@@ -12,8 +12,8 @@ import { initCite, initCiteFormats } from './cite.js';
 import { initFieldPause } from './field-pause.js';
 
 const SCENES = {
-  'pitching-section': () => import('./scenes/pitching-section.js').then((m) => m.createPitchingSection()),
-  'incidence-sweep': () => import('./scenes/incidence-sweep.js').then((m) => m.createIncidenceSweep()),
+  'pazy-flutter': () => import('./scenes/pazy-flutter.js').then((m) => m.createPazyFlutter()),
+  'pazy-step': () => import('./scenes/pazy-step.js').then((m) => m.createPazyStep()),
   'hinged-wingtip': () => import('./scenes/hinged-wingtip.js').then((m) => m.createHingedWingtip()),
   'beam-modes': () => import('./scenes/beam-modes.js').then((m) => m.createBeamModes()),
   'event-tracking': () => import('./scenes/event-tracking.js').then((m) => m.createEventTracking()),

@@ -1,354 +1,495 @@
-/* Scene: a wing section with a hinged outboard piece. The hinge is
-   free, and the inboard part keeps its incidence.
+/* Scene: a wing with a folding tip on a flared hinge, seen from the
+   front. The flow starts, the wing bends up, and the tip finds its own
+   angle.
 
    Background for "Absolute Nodal Coordinate Formulation for Nonlinear
    Multibody Modeling of Flared Hinged Wings".
 
-   Two bodies and one revolute joint make the smallest multibody system.
-   The hinge angle is its own degree of freedom: the scene integrates it,
-   and it is not a prescribed motion. The wing sweeps through incidence,
-   the flow turns the tip, and the tip finds its own angle.
+   The paper simulates a semispan of 16 m: 12 m of inner wing, a hinge,
+   and 4 m of tip. The hinge line is flared by 10 degrees from the
+   flow, and the joint is free. The flow and the gravity start at
+   t = 0. The tip first lags behind the rising wing, then folds up past
+   its final angle and settles: at 45 degrees for 10 degrees of
+   incidence, at 25 degrees for 5 degrees (the paper's Fig. 18). The
+   fold takes incidence off the tip because the hinge is flared: a fold
+   of theta about a hinge flared by beta turns the chord by
+   atan(tan(theta) sin(beta)). The tip therefore coasts at the fold
+   where its own lift just carries it.
 
-   Over the flow: the hinge axis at its flare angle, the arc of the hinge
-   angle, and the trace of that angle, which is the joint state a solver
-   integrates. The flare is the reason a fold changes the outboard
-   incidence. */
+   The scene has the inner wing as a beam in its first bending mode and
+   the tip as a rigid body on the hinge. The equation of the tip has
+   the lift on its incidence, its weight, the inertial load from the
+   rising hinge, and the damping of the joint. The constants are
+   calibrated to the two cases of the paper. The inset is the plan view
+   with the flare of the hinge line. The trace is the fold angle
+   against time, with marks at the spacing of the second code in the
+   paper's figure. */
 
-import { createFlowlines } from '../flowlines.js';
 import { withAlpha } from '../ink.js';
-import { TWO_PI, addVortex, addDoublet, segmentDistance2, chordDirection } from '../potential-flow.js';
 import { stageFor, drawDatum } from './stage.js';
 
-const FREESTREAM = 100;         // px/s
-const WING_HZ = 0.075;
-const WING_INCIDENCE = 0.16;    // radians
-const HINGE_TRAVEL = 0.5;       // radians; the stops of the joint
-const FLARE = 0.55;             // radians the hinge axis is swept back by
+const TWO_PI = Math.PI * 2;
+const INNER = 12;                 // metres
+const OUTER = 4;
+const SEMISPAN = INNER + OUTER;
+const CHORD = 1;
+const FLARE = (10 * Math.PI) / 180;
+const FIRST_ROOT = 1.8751040687;
+const FIRST_SIGMA = 0.734096;
+const TIP_SLOPE = 1.3765;         // the slope of the first mode at its tip, per unit of tip deflection and length
+const STATIONS = 40;
 
-/* The hinge is free. It carries no prescribed motion: the flow turns
-   the tip, and the tip finds its own angle.
+/* The inner wing: the rise of the hinge in the steady state, per radian
+   of incidence, and the first bending mode of the wing. */
+const HINGE_RISE = 14.0;          // metres per radian
+const WING_OMEGA = 5.0;           // 1/s
+const WING_DAMPING = 0.5;
+const LIFT_LAG = 0.15;            // seconds for the lift to build up
 
-   A fold turns the tip about the hinge axis. Only the part of that turn
-   across the flow changes the incidence of the tip, and that part is
-   sin(FLARE) of the fold. A fold up therefore takes incidence off the
-   tip, which takes lift off it, which is the reason a flared hinge
-   relieves the load of a gust. With no flare a fold is a pure flap, the
-   incidence does not change, and nothing stops the fold: the tip goes
-   to its stop and stays there.
+/* The tip: the lift per radian of its incidence, its weight, and the
+   damping of the joint, all per unit of its inertia about the hinge. */
+const TIP_LIFT = 12.0;            // 1/s^2 per radian
+const TIP_WEIGHT = 0.0752;        // 1/s^2
+const TIP_DAMPING = 0.45;
+const GRAVITY = 9.8;
+const STOP = (85 * Math.PI) / 180;
 
-   The angle of the joint follows
+const CASES = [10, 5];            // degrees; the two cases of the paper
+const HOLD = 7;                   // seconds for each case; the transient settles in about 6
+const TRACE_SECONDS = 14;
+const TRACE_STEP = 0.1;
+const MARK_EVERY = 0.5;           // seconds between the marks on the trace
+const GHOSTS = [0.5, 0.25];       // seconds ago
+/* The subject rises above its datum, so the datum sits lower than the
+   band a page gives by this fraction of the height. */
+const RISE = 0.10;
+const STEP = 1 / 240;
 
-     d2/dt2 + 2*Z*W*(d/dt) + (LOAD*sin(FLARE) + SPRING)*fold
-       = LOAD * (incidence of the wing)
+function firstMode(xi) {
+  const t = FIRST_ROOT * xi;
+  return (Math.cosh(t) - Math.cos(t) - FIRST_SIGMA * (Math.sinh(t) - Math.sin(t))) / 2;
+}
 
-   The stiffness of the joint is the sum of a small structural spring
-   and the term from the flow. The flow term grows with the flare, so
-   more flare gives a smaller fold and a faster answer. */
-const HINGE_LOAD = 1.6;         // 1/s^2 per radian of incidence
-const HINGE_SPRING = 0.35;      // 1/s^2 from the structure alone
-const HINGE_DAMPING = 0.15;     // fraction of critical
-const CORE2 = 240;
-/* Sample the trace with a clock, and keep a little more than one beat
-   of the hinge. The trace then does not change with the refresh
-   rate. */
-const TRACE_SECONDS = 14;       // seconds of joint angle kept on the trace
-const TRACE_STEP = 0.05;
+function firstSlope(xi) {
+  const t = FIRST_ROOT * xi;
+  return (FIRST_ROOT * (Math.sinh(t) + Math.sin(t) - FIRST_SIGMA * (Math.cosh(t) - Math.cos(t)))) / 2;
+}
 
 export function createHingedWingtip() {
-  const flow = createFlowlines({ lines: 21, accentEvery: 5, tracers: 28 });
-  const inboard = { x: 0, y: 0, half: 40, thickness: 6, gain: 0, alpha: 0, gamma: 0 };
-  const outboard = { x: 0, y: 0, half: 26, thickness: 5, gain: 0, alpha: 0, gamma: 0 };
-  const hinge = { x: 0, y: 0, fold: 0 };
+  const n = STATIONS;
+  const slope = new Float64Array(n + 1);
+  for (let i = 0; i <= n; i++) slope[i] = firstSlope(i / n) / INNER;
+  const axisX = new Float64Array(n + 1);
+  const axisZ = new Float64Array(n + 1);
+  const plan = { x: 0, y: 0, w: 0, h: 0 };
   const trace = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
+  let root = { x: 0, y: 0 };
+  let scale = 20;                 // pixels per metre
   let history = [];
   let lastSample = -99;
-  /* The lab can hold the flare at one angle. The value null means that
-     the constant applies. */
+  /* The lab can hold the flare. The value null means that the flare of
+     the paper applies. */
   let held = null;
-  /* The state of the joint: the angle and its rate. */
-  let fold = 0;
-  let foldRate = 0;
+  /* The state: the incidence the lift sees, the hinge, and the tip. */
+  let alphaNow = 0;
+  let q = 0; let qd = 0; let qdd = 0;
+  let Theta = 0; let Thetad = 0;
   let clock = 0;
 
   function flare() {
     return held !== null ? held : FLARE;
   }
 
-  function wingIncidence(when) {
-    return WING_INCIDENCE * Math.sin(TWO_PI * WING_HZ * when);
+  function alphaCommand(t) {
+    return (CASES[Math.floor(t / HOLD) % CASES.length] * Math.PI) / 180;
   }
 
-  /** Step the joint forward by dt. The flow acts on the incidence that
-      is left on the tip after the fold takes its part away. */
-  function stepHinge(dt, when) {
-    const coupling = Math.sin(flare());
-    const stiffness = HINGE_LOAD * coupling + HINGE_SPRING;
-    const damping = 2 * HINGE_DAMPING * Math.sqrt(Math.max(stiffness, 1e-6));
-    const accel = HINGE_LOAD * wingIncidence(when) - stiffness * fold - damping * foldRate;
-    foldRate += accel * dt;
-    fold += foldRate * dt;
-    // The stops of the joint. A stop takes the rate away.
-    if (fold > HINGE_TRAVEL) { fold = HINGE_TRAVEL; if (foldRate > 0) foldRate = 0; }
-    if (fold < -HINGE_TRAVEL) { fold = -HINGE_TRAVEL; if (foldRate < 0) foldRate = 0; }
+  function hingeSlope() {
+    return (TIP_SLOPE * q) / INNER;
   }
 
-  /** Run the joint from rest up to a time, for a fixed frame. */
-  function settle(until) {
-    fold = 0; foldRate = 0;
-    const dt = 1 / 60;
-    for (let when = until - 40; when <= until; when += dt) stepHinge(dt, when);
-    clock = until;
+  function fold() {
+    return Theta - hingeSlope();
   }
 
-  function move(t) {
-    inboard.alpha = wingIncidence(t);
-
-    /* The fold takes incidence off the tip. The part it takes is
-       sin(flare) of the fold. */
-    hinge.fold = fold;
-    outboard.alpha = inboard.alpha - hinge.fold * Math.sin(flare());
-
-    const dirIn = chordDirection(inboard.alpha);
-    hinge.x = inboard.x + inboard.half * dirIn.x;
-    hinge.y = inboard.y + inboard.half * dirIn.y;
-
-    const dirOut = chordDirection(outboard.alpha);
-    outboard.x = hinge.x + outboard.half * dirOut.x;
-    outboard.y = hinge.y + outboard.half * dirOut.y;
-
-    inboard.gamma = inboard.gain * Math.sin(inboard.alpha);
-    outboard.gamma = outboard.gain * Math.sin(outboard.alpha);
+  /** The incidence left on the tip after the fold takes its part. */
+  function tipIncidence() {
+    return alphaNow - Math.atan(Math.tan(fold()) * Math.sin(flare()));
   }
 
-  function quarterOf(part) {
-    const dir = chordDirection(part.alpha);
-    const offset = -part.half * 0.5;
-    return { x: part.x + offset * dir.x, y: part.y + offset * dir.y };
+  function step(dt, when) {
+    alphaNow += (alphaCommand(when) - alphaNow) * Math.min(1, dt / LIFT_LAG);
+    const rise = HINGE_RISE * alphaNow;
+    qdd = -2 * WING_DAMPING * WING_OMEGA * qd - WING_OMEGA * WING_OMEGA * (q - rise);
+    qd += qdd * dt;
+    q += qd * dt;
+
+    const stiffness = TIP_LIFT * Math.sin(flare()) + 0.05;
+    const damping = 2 * TIP_DAMPING * Math.sqrt(stiffness);
+    const accel = TIP_LIFT * tipIncidence()
+      - TIP_WEIGHT * (1 + qdd / GRAVITY) * Math.cos(Theta)
+      - damping * (Thetad - (TIP_SLOPE * qd) / INNER);
+    Thetad += accel * dt;
+    Theta += Thetad * dt;
+    // The stops of the joint.
+    const psi = hingeSlope();
+    if (Theta - psi > STOP) { Theta = psi + STOP; Thetad = (TIP_SLOPE * qd) / INNER; }
+    if (Theta - psi < -STOP) { Theta = psi - STOP; Thetad = (TIP_SLOPE * qd) / INNER; }
   }
 
-  function inside(part, x, y) {
-    const dir = chordDirection(part.alpha);
-    return segmentDistance2(x, y, part.x, part.y, dir.x, dir.y, part.half)
-      <= part.thickness * part.thickness;
-  }
-
-  function velocity(x, y) {
-    if (inside(inboard, x, y) || inside(outboard, x, y)) return null;
-    const out = { u: FREESTREAM, v: 0 };
-    addDoublet(out, x, y, inboard.x, inboard.y, inboard.thickness * 2, FREESTREAM);
-    const a = quarterOf(inboard);
-    const b = quarterOf(outboard);
-    addVortex(out, x, y, a.x, a.y, inboard.gamma, CORE2);
-    addVortex(out, x, y, b.x, b.y, outboard.gamma, CORE2);
-    return out;
-  }
-
-  /** The fold that the joint had a time ago, from the trace in memory.
-      The strobe reads it, because the fold is a state and not a
-      formula. */
-  function foldAgo(ago) {
-    if (!history.length) return fold;
-    const back = Math.round(ago / TRACE_STEP);
-    const i = history.length - 1 - back;
-    return i >= 0 ? history[i] : history[0];
-  }
-
-  /* Draw the outboard piece at two earlier times, more faint, at the
-     hinge position of those times. This strobe shows the fold. */
-  function drawGhosts(ctx, t, ink) {
-    for (const [ago, alpha] of [[0.5, 0.09], [0.25, 0.18]]) {
-      const when = t - ago;
-      const ia = wingIncidence(when);
-      const oa = ia - foldAgo(ago) * Math.sin(flare());
-      const dirIn = chordDirection(ia);
-      const hx = inboard.x + inboard.half * dirIn.x;
-      const hy = inboard.y + inboard.half * dirIn.y;
-      const dirOut = chordDirection(oa);
-      ctx.beginPath();
-      ctx.ellipse(
-        hx + outboard.half * dirOut.x, hy + outboard.half * dirOut.y,
-        outboard.half, outboard.thickness, -oa, 0, TWO_PI
-      );
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(ink.body, alpha);
-      ctx.stroke();
+  function advance(t) {
+    if (clock > t) {
+      // The clock went back. Move the past with it.
+      const by = clock - t;
+      history.forEach((s) => { s.t -= by; });
+      lastSample -= by;
+      clock = t;
+    }
+    let left = Math.min(Math.max(t - clock, 0), 0.25);
+    while (left > 0) {
+      const h = Math.min(STEP, left);
+      step(h, clock + h);
+      clock += h;
+      left -= h;
+      if (clock - lastSample >= TRACE_STEP) {
+        lastSample = clock;
+        history.push({ t: clock, fold: fold(), Theta, q });
+        while (history.length && clock - history[0].t > TRACE_SECONDS) history.shift();
+      }
     }
   }
 
-  function drawPart(ctx, part, ink) {
+  /** The inner wing, integrated along its length. The beam keeps its
+      length when it bends. */
+  function traceInner(deflection) {
+    axisX[0] = 0;
+    axisZ[0] = 0;
+    const ds = INNER / n;
+    for (let i = 1; i <= n; i++) {
+      const a = 0.5 * (slope[i - 1] + slope[i]) * deflection;
+      axisX[i] = axisX[i - 1] + Math.cos(a) * ds;
+      axisZ[i] = axisZ[i - 1] + Math.sin(a) * ds;
+    }
+  }
+
+  function toScreen(xm, zm) {
+    return { x: root.x + xm * scale, y: root.y - zm * scale };
+  }
+
+  function drawInner(ctx, ink) {
+    traceInner(q);
     ctx.beginPath();
-    ctx.ellipse(part.x, part.y, part.half, part.thickness, -part.alpha, 0, TWO_PI);
-    ctx.lineWidth = 1.3;
+    for (let i = 0; i <= n; i++) {
+      const p = toScreen(axisX[i], axisZ[i]);
+      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+    }
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = 'round';
     ctx.strokeStyle = ink.body;
     ctx.stroke();
-  }
 
-  /** The axis that the outboard piece turns around. The flare moves
-      the axis back. */
-  function drawAxis(ctx, ink) {
-    const reach = inboard.half * 1.1;
-    const ax = Math.cos(-FLARE - inboard.alpha);
-    const ay = Math.sin(-FLARE - inboard.alpha);
+    // The root, where the wing is clamped.
+    const reach = CHORD * scale * 0.9;
     ctx.beginPath();
-    ctx.setLineDash([3, 4]);
-    ctx.moveTo(hinge.x - ax * reach, hinge.y - ay * reach);
-    ctx.lineTo(hinge.x + ax * reach, hinge.y + ay * reach);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  /** The joint, and the angle across it at this moment. */
-  function drawHinge(ctx, ink) {
-    // Fade in with the fold, because the arc must not appear suddenly
-    // at a threshold.
-    const presence = Math.min(1, Math.max(0, (Math.abs(hinge.fold) - 0.015) / 0.06));
-    if (presence > 0) {
-      const r = outboard.half * 0.8;
-      const from = -inboard.alpha;
-      const to = -outboard.alpha;
-      ctx.beginPath();
-      ctx.arc(hinge.x, hinge.y, r, Math.min(from, to), Math.max(from, to));
-      ctx.lineWidth = 1.1;
-      ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.arc(hinge.x, hinge.y, 3.4, 0, TWO_PI);
-    ctx.lineWidth = 1.4;
+    ctx.moveTo(root.x, root.y - reach);
+    ctx.lineTo(root.x, root.y + reach);
+    ctx.lineWidth = 2.2;
     ctx.strokeStyle = ink.accent;
     ctx.stroke();
   }
 
-  /** The hinge angle with time: the state of the joint. It moves to
-      the left. */
-  function drawTrace(ctx, ink) {
-    if (trace.w <= 0 || history.length < 3) return;
-    const steps = Math.round(TRACE_SECONDS / TRACE_STEP);
-    const midY = trace.y + trace.h / 2;
+  function hingePoint() {
+    return toScreen(axisX[n], axisZ[n]);
+  }
 
-    // The datum has the zero line through midY.
+  function drawTip(ctx, ink, angle, style, width) {
+    const h = hingePoint();
     ctx.beginPath();
-    for (let i = 0; i < history.length; i++) {
-      const px = trace.x + (i / (steps - 1)) * trace.w;
-      const py = midY - (history[i] / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    ctx.moveTo(h.x, h.y);
+    ctx.lineTo(h.x + Math.cos(angle) * OUTER * scale, h.y - Math.sin(angle) * OUTER * scale);
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = style;
+    ctx.stroke();
+  }
+
+  function drawGhosts(ctx, ink) {
+    if (!history.length) return;
+    GHOSTS.forEach((ago, k) => {
+      const when = clock - ago;
+      let best = history[0];
+      for (const s of history) if (Math.abs(s.t - when) < Math.abs(best.t - when)) best = s;
+      traceInner(best.q);
+      drawTip(ctx, ink, best.Theta, withAlpha(ink.body, 0.1 + 0.1 * k), 1.4);
+    });
+    traceInner(q);
+  }
+
+  function drawHinge(ctx, ink) {
+    const h = hingePoint();
+    ctx.beginPath();
+    ctx.arc(h.x, h.y, 3.6, 0, TWO_PI);
+    ctx.fillStyle = ink.ground;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = ink.accent;
+    ctx.stroke();
+
+    // The arc of the fold, from the slope of the wing to the tip.
+    const f = fold();
+    const presence = Math.min(1, Math.max(0, (Math.abs(f) - 0.02) / 0.08));
+    if (presence <= 0) return;
+    const r = OUTER * scale * 0.45;
+    const from = -hingeSlope();
+    const to = -Theta;
+    ctx.beginPath();
+    ctx.arc(h.x, h.y, r, Math.min(from, to), Math.max(from, to));
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = withAlpha(ink.accent, 0.6 * presence);
+    ctx.stroke();
+  }
+
+  /* The lift along the wing and the tip, normal to each surface, and
+     the weight of the tip. */
+  function drawLoads(ctx, ink) {
+    const unit = scale * OUTER * 0.35;
+    const alpha10 = (10 * Math.PI) / 180;
+    ctx.beginPath();
+    for (let k = 1; k <= 6; k++) {
+      const i = Math.round((k / 6) * n) - 1;
+      const a = slope[i] * q;
+      const len = (alphaNow / alpha10) * unit;
+      const p = toScreen(axisX[i], axisZ[i]);
+      arrow(ctx, p.x, p.y, -Math.sin(a), -Math.cos(a), len);
     }
-    /* A clock samples the trace. The head is the fold at this moment,
-       and the marker moves in each frame. */
-    const headX = trace.x + (history.length / (steps - 1)) * trace.w;
-    const headY = midY - (hinge.fold / HINGE_TRAVEL) * (trace.h / 2) * 0.9;
-    ctx.lineTo(Math.min(headX, trace.x + trace.w), headY);
+    const h = hingePoint();
+    const tipLen = (tipIncidence() / alpha10) * unit;
+    for (const r of [0.33, 0.66]) {
+      const x = h.x + Math.cos(Theta) * OUTER * r * scale;
+      const y = h.y - Math.sin(Theta) * OUTER * r * scale;
+      arrow(ctx, x, y, -Math.sin(Theta), -Math.cos(Theta), tipLen);
+    }
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = withAlpha(ink.accent, 0.75);
+    ctx.stroke();
+
+    // The weight of the tip, at its middle.
+    const wx = h.x + Math.cos(Theta) * OUTER * 0.5 * scale;
+    const wy = h.y - Math.sin(Theta) * OUTER * 0.5 * scale;
+    ctx.beginPath();
+    arrow(ctx, wx, wy, 0, 1, unit * 0.45);
     ctx.lineWidth = 1.1;
     ctx.strokeStyle = withAlpha(ink.line, 0.7);
     ctx.stroke();
+  }
+
+  function arrow(ctx, x, y, nx, ny, len) {
+    if (Math.abs(len) < 2) return;
+    const tx = x + nx * len;
+    const ty = y + ny * len;
+    const sg = Math.sign(len);
+    const dx = nx * sg;
+    const dy = ny * sg;
+    ctx.moveTo(x, y);
+    ctx.lineTo(tx, ty);
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(tx - 5 * dx - 3 * dy, ty - 5 * dy + 3 * dx);
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(tx - 5 * dx + 3 * dy, ty - 5 * dy - 3 * dx);
+  }
+
+  /* The plan view: the inner wing, the tip and the hinge line at its
+     flare, with the flow from above, as in the paper's Fig. 17. */
+  function drawPlan(ctx, ink) {
+    if (plan.w <= 0) return;
+    const px = plan.w / SEMISPAN;
+    const strip = Math.max(CHORD * px, 5);
+    const midY = plan.y + plan.h * 0.62;
+    const join = plan.x + INNER * px;
 
     ctx.beginPath();
-    ctx.arc(Math.min(headX, trace.x + trace.w), headY, 2.6, 0, TWO_PI);
+    ctx.rect(plan.x, midY - strip / 2, INNER * px, strip);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = ink.line;
+    ctx.fillStyle = withAlpha(ink.wash, 0.12);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.rect(join, midY - strip / 2, OUTER * px, strip);
+    ctx.fillStyle = withAlpha(ink.accent, 0.16);
+    ctx.fill();
+    ctx.strokeStyle = ink.accent;
+    ctx.stroke();
+
+    // The hinge line, flared from the direction of the flow.
+    const reach = strip * 1.7;
+    const b = flare();
+    ctx.beginPath();
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(join - Math.sin(b) * reach, midY + Math.cos(b) * reach);
+    ctx.lineTo(join + Math.sin(b) * reach, midY - Math.cos(b) * reach);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = ink.accent;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // The flow, from above.
+    const fx = plan.x + plan.w * 0.5;
+    ctx.beginPath();
+    arrow(ctx, fx, plan.y, 0, 1, plan.h * 0.36);
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = withAlpha(ink.line, 0.8);
+    ctx.stroke();
+  }
+
+  /* The fold angle against time, with marks at a fixed spacing. */
+  function drawTrace(ctx, ink) {
+    if (trace.w <= 0 || history.length < 3) return;
+    const lo = (-30 * Math.PI) / 180;
+    const hi = (70 * Math.PI) / 180;
+    const toX = (when) => trace.x + trace.w * (1 - (clock - when) / TRACE_SECONDS);
+    const toY = (f) => trace.y + trace.h * (1 - (f - lo) / (hi - lo));
+
+    ctx.beginPath();
+    ctx.moveTo(trace.x, toY(0));
+    ctx.lineTo(trace.x + trace.w, toY(0));
+    ctx.moveTo(trace.x, trace.y);
+    ctx.lineTo(trace.x, trace.y + trace.h);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = ink.faint;
+    ctx.stroke();
+
+    ctx.beginPath();
+    history.forEach((s, i) => {
+      if (i === 0) ctx.moveTo(toX(s.t), toY(s.fold)); else ctx.lineTo(toX(s.t), toY(s.fold));
+    });
+    ctx.lineTo(toX(clock), toY(fold()));
+    ctx.lineWidth = 1.3;
+    ctx.strokeStyle = ink.body;
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (const s of history) {
+      if (Math.abs((s.t / MARK_EVERY) - Math.round(s.t / MARK_EVERY)) > TRACE_STEP / MARK_EVERY / 2) continue;
+      ctx.moveTo(toX(s.t) + 2.2, toY(s.fold));
+      ctx.arc(toX(s.t), toY(s.fold), 2.2, 0, TWO_PI);
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = ink.accent;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(toX(clock), toY(fold()), 2.6, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
     ctx.fill();
   }
 
+  function paint(ctx, ink) {
+    drawDatum(ctx, stage, ink);
+    drawGhosts(ctx, ink);
+    drawLoads(ctx, ink);
+    drawInner(ctx, ink);
+    drawTip(ctx, ink, Theta, ink.body, 2.6);
+    drawHinge(ctx, ink);
+    drawPlan(ctx, ink);
+    drawTrace(ctx, ink);
+  }
+
+  function reset() {
+    alphaNow = 0;
+    q = 0; qd = 0; qdd = 0;
+    Theta = 0; Thetad = 0;
+    clock = 0;
+    history = [];
+    lastSample = -99;
+  }
+
   return {
-    // A figure with lines. The engine clears it completely in each
-    // frame.
     fade: 1,
 
-    /* The control of this scene on the lab page. The flare is the
-       angle the designer chooses, and it sets how much load the joint
-       takes off the tip. */
+    /* The control of this scene on the lab page: the flare of the
+       hinge line, which sets how much incidence a fold takes off the
+       tip. */
     lab: {
       label: 'Hinge flare',
-      unit: '\u00b0',
+      unit: '°',
       min: 0,
       max: 45,
       step: 1,
       value: () => (flare() * 180) / Math.PI,
       set(v) { held = (v * Math.PI) / 180; },
       release() { held = null; },
+      auto: {
+        name: 'the flare of the paper, 10 degrees',
+        status() {
+          const i = Math.floor(clock / HOLD) % CASES.length;
+          const next = CASES[(i + 1) % CASES.length];
+          const left = Math.ceil(HOLD - (clock % HOLD));
+          return 'Auto keeps the flare of the paper, 10°, and alternates its two cases of incidence, ' + HOLD + ' seconds each. '
+            + 'Now ' + CASES[i] + '° of incidence; ' + next + '° in ' + left + ' s.';
+        },
+      },
+      hold(v) {
+        return 'Flare held at ' + v + '°. The incidence keeps alternating between 10° and 5°, and the tip '
+          + 'coasts at the fold that this flare gives. Auto returns to 10°.';
+      },
     },
 
-    layout(w, h) {
-      const chord = Math.min(w * 0.2, h * 0.34);
-      inboard.half = chord * 0.32;
-      inboard.thickness = Math.max(chord * 0.05, 4);
-      inboard.gain = Math.PI * inboard.half * 2 * FREESTREAM;
-      outboard.half = chord * 0.2;
-      outboard.thickness = Math.max(chord * 0.042, 3.5);
-      outboard.gain = Math.PI * outboard.half * 2 * FREESTREAM;
-      stage = stageFor(w, h);
-      inboard.x = stage.left + stage.width * 0.2;
-      inboard.y = stage.y;
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return {
+        alpha: (alphaNow * 180) / Math.PI,
+        fold: (fold() * 180) / Math.PI,
+        hingeRise: q,
+        tipRise: q + OUTER * Math.sin(Theta),
+        flare: (flare() * 180) / Math.PI,
+      };
+    },
+
+    layout(w, h, fit = {}) {
+      /* A preview shows the top of the box in a small window. The wing
+         then sits lower and in the middle, and it takes the width. */
+      const preview = Boolean(fit.preview);
+      stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
+      const sc = fit.scale || 1;
+      // The tip rises to 0.45 of the semispan, so the room above the
+      // datum limits the scale.
+      const above = stage.y - 18;
+      const spanPx = preview
+        ? Math.min(stage.width * 0.82, above / 0.48)
+        : Math.min(stage.width * 0.6 * sc, above / 0.48, 820);
+      scale = spanPx / SEMISPAN;
+      root = { x: preview ? stage.left + (stage.width - spanPx) / 2 : stage.left + stage.width * 0.02, y: stage.y };
 
       const room = w > 760;
-      trace.w = room ? Math.min(stage.width * 0.15, 170) : 0;
-      trace.h = Math.max(h * 0.055, 34);
-      trace.x = stage.right - trace.w;
-      trace.y = stage.y - trace.h / 2;
+      const width = room ? Math.min(stage.width * 0.17, 170) : 0;
+      plan.w = width;
+      plan.h = width * 0.34;
+      plan.x = stage.right - width;
+      plan.y = stage.y - plan.h - 14;
+      trace.w = width;
+      trace.h = width * 0.42;
+      trace.x = plan.x;
+      trace.y = stage.y - 4;
 
-      history = [];
-      lastSample = -99;
-      fold = 0;
-      foldRate = 0;
-      clock = 0;
-      flow.layout(w, h);
-      move(0);
+      reset();
     },
 
     frame(ctx, dt, t, ink) {
-      /* Step the joint with a fixed step, so the answer does not
-         change with the refresh rate of the screen. */
-      const step = 1 / 120;
-      let left = Math.min(Math.max(t - clock, 0), 0.25);
-      while (left > 0) {
-        const h = Math.min(step, left);
-        stepHinge(h, clock + h);
-        clock += h;
-        left -= h;
-      }
-      move(t);
-      if (t - lastSample >= TRACE_STEP) {
-        lastSample = t;
-        history.push(hinge.fold);
-        while (history.length > TRACE_SECONDS / TRACE_STEP) history.shift();
-      }
-
-      flow.draw(ctx, dt, velocity, ink);
-      drawDatum(ctx, stage, ink);
-      drawAxis(ctx, ink);
-      drawGhosts(ctx, t, ink);
-      drawPart(ctx, inboard, ink);
-      drawPart(ctx, outboard, ink);
-      drawHinge(ctx, ink);
-      drawTrace(ctx, ink);
+      advance(t);
+      paint(ctx, ink);
     },
 
     still(ctx, ink, t) {
-      const at = t || 20;
-      /* Run the joint from rest, and keep the recent angles, so the
-         trace and the strobe have a past to read. */
-      fold = 0; foldRate = 0;
-      history = [];
-      const dt = 1 / 120;
-      const from = at - 40;
-      let next = at - TRACE_SECONDS;
-      for (let when = from; when <= at; when += dt) {
-        stepHinge(dt, when);
-        if (when >= next) { history.push(fold); next += TRACE_STEP; }
-      }
-      while (history.length > TRACE_SECONDS / TRACE_STEP) history.shift();
-      clock = at;
-      move(at);
-      flow.still(ctx, velocity, ink);
-      drawDatum(ctx, stage, ink);
-      drawAxis(ctx, ink);
-      drawGhosts(ctx, at, ink);
-      drawPart(ctx, inboard, ink);
-      drawPart(ctx, outboard, ink);
-      drawHinge(ctx, ink);
-      drawTrace(ctx, ink);
+      const at = t || 6;
+      // Run from the start, because the first transient is the one
+      // the paper shows.
+      reset();
+      const end = Math.min(at, 90);
+      while (clock < end) advance(Math.min(clock + 0.25, end));
+      paint(ctx, ink);
+      return at;
     },
   };
 }

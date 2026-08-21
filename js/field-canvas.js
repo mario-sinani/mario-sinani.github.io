@@ -9,19 +9,33 @@
 
      fade                    the fade to the background in each frame,
                              from 0 to 1
-     layout(width, height)   set the positions and the sizes
+     layout(w, h, fit)       set the positions and the sizes. The fit
+                             gives band, how far down the box the
+                             subject sits; scale, the size of the
+                             subject against its normal size; and
+                             preview, true in a small window that shows
+                             the top of the box only.
      frame(ctx, dt, t, ink)  draw one frame
-     still(ctx, ink, t)      draw one fixed frame
+     still(ctx, ink, t)      draw one fixed frame. A scene that draws a
+                             later time than t, because t is zero and
+                             its subject needs a past, gives that time
+                             back, and the loop continues from it.
 
    The engine passes a palette and the theme to each call (see ink.js),
    so a scene does not read the CSS. The loop runs only while the canvas
    is on the screen and the tab is in front, because a hero field is off
    the screen for most of a visit. The visitor can also stop the loop
-   with setPaused. */
+   with setPaused.
+
+   A preview asks for one fixed frame at a chosen time with
+   options.still. The loop then never runs, and every visitor gets
+   the same picture. A page that shows a scene alone gives a larger
+   options.band and options.scale, and the subject then sits near the
+   middle of the box and takes more of it. */
 
 import { resolveInk } from './ink.js';
 
-export function initFieldCanvas(canvas, isDark, scene) {
+export function initFieldCanvas(canvas, isDark, scene, options = {}) {
   if (!canvas || !scene) return null;
 
   const ctx = canvas.getContext('2d');
@@ -29,11 +43,14 @@ export function initFieldCanvas(canvas, isDark, scene) {
   /* A visitor on a metered connection asks for reduced data. The scene
      then draws one fixed frame and does not run. */
   const reducedData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
-  const fixed = reducedMotion || reducedData;
+  /* The time of a preview. The value null means that the field runs. */
+  const stillAt = typeof options.still === 'number' ? options.still : null;
+  const fit = { band: options.band, scale: options.scale, preview: Boolean(options.preview) };
+  const fixed = reducedMotion || reducedData || stillAt !== null;
   let ink = resolveInk(false, '#ffffff');
   let width = 0;
   let height = 0;
-  let clock = 0;
+  let clock = stillAt === null ? 0 : stillAt;
   let lastFrameTime = 0;
   let handle = 0;
   let onScreen = true;
@@ -61,12 +78,14 @@ export function initFieldCanvas(canvas, isDark, scene) {
     canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     readInk();
-    scene.layout(width, height);
+    scene.layout(width, height, fit);
     wash(1);
     /* One fixed frame at once. The field then never shows an empty
        box before the first animation frame, and it shows this frame
-       while the loop is off. */
-    scene.still(ctx, ink, clock);
+       while the loop is off. The loop continues from the time of that
+       frame, so the past the scene built for it stays in the past. */
+    const shown = scene.still(ctx, ink, clock);
+    if (typeof shown === 'number' && shown > clock) clock = shown;
   }
 
   function frame(time) {

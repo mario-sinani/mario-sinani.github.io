@@ -1,171 +1,270 @@
-/* Scene: event-triggered image-based visual servoing. The camera sees
-   the coastline, and the controller moves it back to the correct
-   position.
+/* Scene: the coast as the camera sees it, and a new plan only at an
+   event.
 
    Background for "Coastline Tracking for UAVs Using Event-Triggered
    Image-Based Visual Servoing Nonlinear Model Predictive Control".
 
-   The loop closes in the image: the error is the distance between where
-   a feature is on the sensor and where it belongs. The left panel is the
-   sensor, with crosses for the correct positions, dots for the positions
-   now, and curves for the trajectories. The camera rolls, so the
-   trajectories are arcs.
-
-   One solution gives one velocity command, and the craft keeps it until
-   the pose moves a set distance or the horizon ends. The ticks below the
-   error plot are the solution times. */
+   The camera looks down from the craft. A network detects the
+   coastline in the image and gives its bounding box, and the four
+   corners of the box are the features. Their desired positions are
+   the corners of a narrow box across the middle of the frame, and
+   those positions slide along the frame at a set rate, so the craft
+   moves along the coast. In the image of the thesis the coast runs
+   along the vertical axis; the scene turns the picture so that the
+   coast runs across the frame, as in the view from above. Between two solutions the camera keeps the velocity
+   of the last solution in an open loop. It solves again only when the
+   features, as the tracking reports them with its noise, depart from
+   the features the last solution predicted by more than a bound that
+   scales with the error, or when the horizon of six steps ends. The
+   thesis names the noise of the visual tracking as the disturbance,
+   and the control of the scene is that noise. The scene solves no
+   optimal control problem: a proportional law stands in for it at each
+   solution. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 
 const TWO_PI = 6.2832;
-const FEATURES = 9;
-const GAIN = 1.45;              // servo gain on the image error
-const HORIZON = 0.9;            // seconds a command stays valid for
-const DRIFT_TRIGGER = 0.055;    // pose drift, as a fraction of frame height
-const KICK_SECONDS = 7;         // how often the view is knocked off
-const KICK_RAMP = 0.6;          // seconds the gust takes to land
-const TRAIL_SECONDS = 2.6;
-const SAMPLE_STEP = 0.04;       // seconds between trail and plot samples
+const FRAME_RATIO = 720 / 480;  // the camera of the thesis
+const DESIRED_BAND = 40 / 480;  // the desired box: 40 pixels of the 480 across the coast
+const HORIZON = 0.6;            // seconds a solution stays valid for: 6 steps of 0.1 s in the thesis
+const ALONG = 40;               // px/s the desired features slide along the frame
+const GAIN_U = 1.6;             // 1/s on the lateral error
+const GAIN_ROLL = 1.4;          // 1/s on the tilt
+/* The triggering condition: the departure of the measured features
+   from the predicted ones must stay under a floor plus a fraction of
+   the image error. The floor is in pixels. */
+const SIGMA = 0.25;
+const FLOOR = 2.5;
+const NOISE = 1.5;              // pixels of noise in the visual tracking, unless the lab holds it
+const KICK_SECONDS = 9;         // how often a gust moves the craft
+const KICK_RAMP = 0.7;          // seconds the gust takes to land
 const PLOT_SECONDS = 8;
-const GRID_X = 8;
+const SAMPLE_STEP = 0.04;
+const GRID_X = 6;
 const GRID_Y = 4;
+const SAMPLES = 64;             // points of the coast along the frame
 
 export function createImageServo() {
   const frame = { x: 0, y: 0, w: 0, h: 0 };
   const plot = { x: 0, y: 0, w: 0, h: 0 };
-  const pose = { u: 0, v: 0, roll: 0 };
-  const held = { u: 0, v: 0, roll: 0 };
-  const atSolve = { u: 0, v: 0, roll: 0 };
+  const coast = { a1: 0, a2: 0, k1: 0, k2: 0 };
+  /* The pose of the camera: the lateral offset from the coast, the
+     roll, and the position along the coast, all in the pixels of the
+     image. */
+  const pose = { u: 0, roll: 0, s: 0 };
+  const held = { u: 0, roll: 0 };
+  const atSolve = { u: 0, roll: 0, s: 0, corners: [] };
+  const kickFrom = { u: 0, roll: 0 };
+  const kickTo = { u: 0, roll: 0 };
   let stage = null;
-  let trails = [];
   let errorLog = [];
   let triggers = [];
+  let events = 0;
   let lastSolve = -99;
   let lastSample = -99;
-  let nextKick = 1.4;
+  let nextKick = 2;
   let kicks = 0;
   let kickAt = -99;
-  const kickFrom = { u: 0, v: 0, roll: 0 };
-  const kickTo = { u: 0, v: 0, roll: 0 };
+  let lastTime = 0;
+  /* The lab can hold the noise. The value null means that the constant
+     applies. */
+  let heldNoise = null;
 
-  /** The contour in the coordinates of the sensor: a smooth curve
-      across the view. */
-  function shoreY(u) {
-    return Math.sin(u * 3.1) * 0.17 + Math.sin(u * 6.7 + 0.9) * 0.07;
+  function noiseLevel() {
+    return heldNoise !== null ? heldNoise : NOISE;
   }
 
-  function desiredPoint(u) {
-    return {
-      x: frame.x + u * frame.w,
-      y: frame.y + frame.h / 2 + shoreY(u) * frame.h,
-    };
+  /** The lateral position of the coast at a point along it. */
+  function coastAt(s) {
+    return coast.a1 * Math.sin(coast.k1 * s) + coast.a2 * Math.sin(coast.k2 * s + 1.3);
   }
 
-  /* Project a point through the pose of the camera. The roll is around
-     the centre of the sensor, and a feature moves along an arc. */
-  function project(point, at) {
-    const cx = frame.x + frame.w / 2;
-    const cy = frame.y + frame.h / 2;
-    const dx = point.x - cx;
-    const dy = point.y - cy;
-    const c = Math.cos(at.roll);
-    const s = Math.sin(at.roll);
-    return {
-      x: cx + dx * c - dy * s + at.u,
-      y: cy + dx * s + dy * c + at.v,
-    };
+  function centre() {
+    return { x: frame.x + frame.w / 2, y: frame.y + frame.h / 2 };
   }
 
-  function featureU(i) {
-    return (i + 0.5) / FEATURES;
+  /** A point of the coast in the image, through the pose of the
+      camera. The coast runs across the frame; the lateral offset is
+      down the frame. The roll turns the image about its centre. */
+  function project(s, at) {
+    const c = centre();
+    const along = s - at.s;
+    const lateral = coastAt(s) - at.u;
+    const cr = Math.cos(at.roll);
+    const sr = Math.sin(at.roll);
+    return { x: c.x + along * cr - lateral * sr, y: c.y + along * sr + lateral * cr };
   }
 
-  function imagePoint(u, at) {
-    return project(desiredPoint(u), at || pose);
-  }
-
-  /** The mean distance between the position of a feature and its
-      correct position. */
-  function errorNorm() {
-    let sum = 0;
-    for (let i = 0; i < FEATURES; i++) {
-      const u = featureU(i);
-      const want = desiredPoint(u);
-      const have = imagePoint(u);
-      sum += Math.hypot(have.x - want.x, have.y - want.y);
+  /** The coast in the frame: its points, and the box the detection
+      gives, with the lateral position and the tilt of the coast. */
+  function detect(at) {
+    const pts = [];
+    let vMin = Infinity;
+    let vMax = -Infinity;
+    let vLeft = 0;
+    let vRight = 0;
+    const left = frame.x;
+    const right = frame.x + frame.w;
+    for (let i = 0; i <= SAMPLES; i++) {
+      const s = at.s + (i / SAMPLES - 0.5) * frame.w * 1.6;
+      const p = project(s, at);
+      pts.push(p);
+      if (p.x >= left && p.x <= right) {
+        vMin = Math.min(vMin, p.y);
+        vMax = Math.max(vMax, p.y);
+      }
     }
-    return sum / FEATURES;
+    // The lateral position at the left edge and at the right edge.
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1];
+      const b = pts[i];
+      if ((a.x - left) * (b.x - left) <= 0 && a.x !== b.x) vLeft = a.y + ((left - a.x) * (b.y - a.y)) / (b.x - a.x);
+      if ((a.x - right) * (b.x - right) <= 0 && a.x !== b.x) vRight = a.y + ((right - a.x) * (b.y - a.y)) / (b.x - a.x);
+    }
+    if (!Number.isFinite(vMin)) { vMin = centre().y; vMax = centre().y; }
+    vMin = Math.max(vMin, frame.y);
+    vMax = Math.min(vMax, frame.y + frame.h);
+    return {
+      pts,
+      corners: [{ x: left, y: vMin }, { x: right, y: vMin }, { x: left, y: vMax }, { x: right, y: vMax }],
+      boxV: (vMin + vMax) / 2,
+      tilt: Math.atan2(vRight - vLeft, frame.w),
+    };
   }
 
-  /* One solution gives one velocity command. The next solution runs
-     when the pose moves a sufficient distance from the last solution
-     point, or when the horizon ends. This is the event. */
+  /** The desired features: the corners of the band across the
+      middle. */
+  function desired() {
+    const c = centre();
+    const half = (frame.h * DESIRED_BAND) / 2;
+    return [
+      { x: frame.x, y: c.y - half }, { x: frame.x + frame.w, y: c.y - half },
+      { x: frame.x, y: c.y + half }, { x: frame.x + frame.w, y: c.y + half },
+    ];
+  }
+
+  /** The noise of the tracking on one corner: small, smooth and
+      deterministic. */
+  function jitter(i, t) {
+    const n = noiseLevel();
+    return { x: n * Math.sin(9.7 * t + i * 1.7), y: n * Math.sin(12.3 * t + i * 2.3) };
+  }
+
+  function measured(t) {
+    return detect(pose).corners.map((p, i) => {
+      const j = jitter(i, t);
+      return { x: p.x + j.x, y: p.y + j.y };
+    });
+  }
+
+  /** The mean distance between the features and their desired
+      positions. */
+  function errorNorm(t) {
+    const want = desired();
+    const have = measured(t);
+    let sum = 0;
+    for (let i = 0; i < 4; i++) sum += Math.hypot(have[i].x - want[i].x, have[i].y - want[i].y);
+    return sum / 4;
+  }
+
+  /** The features as the last solution predicts them: the features it
+      measured at that moment, moved by its own command since then. The
+      lateral velocity moves all four down or up the frame; the roll
+      moves the left corners one way and the right corners the other.
+      The model knows nothing of the coast ahead, so the bends of the
+      coast make the real features leave this prediction. */
+  function predicted(t) {
+    const dt = t - lastSolve;
+    const cx = centre().x;
+    return atSolve.corners.map((p) => ({
+      x: p.x,
+      y: p.y - held.u * dt + (p.x > cx ? 1 : -1) * held.roll * dt * (frame.w / 2),
+    }));
+  }
+
+  function departure(t) {
+    if (!atSolve.corners.length) return Infinity;
+    const have = measured(t);
+    const guess = predicted(t);
+    let sum = 0;
+    for (let i = 0; i < 4; i++) sum += Math.hypot(have[i].x - guess[i].x, have[i].y - guess[i].y);
+    return sum / 4;
+  }
+
+  /* One solution gives one velocity command: a proportional law on
+     the lateral position of the box and on the tilt of the coast,
+     where the thesis solves its optimal control problem. */
   function solve(t) {
-    held.u = -GAIN * pose.u;
-    held.v = -GAIN * pose.v;
-    held.roll = -GAIN * pose.roll;
+    const d = detect(pose);
+    const c = centre();
+    held.u = GAIN_U * (d.boxV - c.y);
+    // A positive roll turns the right of the image down, and so adds
+    // to a positive tilt. The command turns the other way.
+    held.roll = -GAIN_ROLL * d.tilt;
     atSolve.u = pose.u;
-    atSolve.v = pose.v;
     atSolve.roll = pose.roll;
+    atSolve.s = pose.s;
+    atSolve.corners = measured(t);
     lastSolve = t;
+    events += 1;
     triggers.push(t);
     while (triggers.length && t - triggers[0] > PLOT_SECONDS) triggers.shift();
-  }
-
-  function drift() {
-    return Math.hypot(pose.u - atSolve.u, pose.v - atSolve.v)
-      + Math.abs(pose.roll - atSolve.roll) * frame.h * 0.5;
   }
 
   function step(dt, t) {
     if (t > nextKick) {
       /* The disturbance is a gust, and the pose does not move
-         suddenly. A smooth ramp moves the pose to its new value. The
-         trails continue, and the movement is then part of the
-         trajectory on the screen. */
+         suddenly. A smooth ramp moves it. The values are
+         deterministic, and the rhythm stays constant. */
       kicks += 1;
-      kickFrom.u = pose.u;
-      kickFrom.v = pose.v;
-      kickFrom.roll = pose.roll;
-      // The values are deterministic, and the rhythm stays constant.
-      kickTo.u = frame.w * 0.16 * Math.sin(kicks * 2.4);
-      kickTo.v = frame.h * 0.42 * Math.cos(kicks * 1.1);
-      kickTo.roll = 0.2 * Math.sin(kicks * 1.7);
+      kickFrom.u = 0;
+      kickFrom.roll = 0;
+      kickTo.u = frame.h * 0.12 * Math.sin(kicks * 2.4);
+      kickTo.roll = 0.16 * Math.sin(kicks * 1.7);
       kickAt = t;
       nextKick = t + KICK_SECONDS;
     }
 
+    /* The event: the measured features against the predicted ones,
+       with a bound that scales with the image error. The horizon is
+       the other event. */
+    if (t - lastSolve > HORIZON || departure(t) > FLOOR + SIGMA * errorNorm(t)) solve(t);
+
+    // Between two solutions the loop is open, and the command does
+    // not change. The craft moves along the coast at the set rate,
+    // and the gust moves it as well.
+    pose.u += held.u * dt;
+    pose.roll += held.roll * dt;
+    pose.s += ALONG * dt;
     if (t - kickAt < KICK_RAMP) {
-      const s = Math.min((t - kickAt) / KICK_RAMP, 1);
-      const e = s * s * (3 - 2 * s);
-      pose.u = kickFrom.u + (kickTo.u - kickFrom.u) * e;
-      pose.v = kickFrom.v + (kickTo.v - kickFrom.v) * e;
-      pose.roll = kickFrom.roll + (kickTo.roll - kickFrom.roll) * e;
-      // The controller calculates a new solution at the end of the
-      // gust.
-      lastSolve = -99;
-    } else {
-      if (t - lastSolve > HORIZON || drift() > DRIFT_TRIGGER * frame.h) solve(t);
-      // Between two solutions the loop is open, and the command does
-      // not change.
-      pose.u += held.u * dt;
-      pose.v += held.v * dt;
-      pose.roll += held.roll * dt;
+      const s0 = Math.max(Math.min((t - dt - kickAt) / KICK_RAMP, 1), 0);
+      const s1 = Math.min((t - kickAt) / KICK_RAMP, 1);
+      const e0 = s0 * s0 * (3 - 2 * s0);
+      const e1 = s1 * s1 * (3 - 2 * s1);
+      pose.u += (kickTo.u - kickFrom.u) * (e1 - e0);
+      pose.roll += (kickTo.roll - kickFrom.roll) * (e1 - e0);
     }
 
+    lastTime = t;
     if (t - lastSample < SAMPLE_STEP) return;
     lastSample = t;
-    for (let i = 0; i < FEATURES; i++) {
-      trails[i].push(imagePoint(featureU(i)));
-      while (trails[i].length > TRAIL_SECONDS / SAMPLE_STEP) trails[i].shift();
-    }
-    errorLog.push({ t, e: errorNorm() });
+    errorLog.push({ t, e: errorNorm(t) });
     while (errorLog.length && t - errorLog[0].t > PLOT_SECONDS) errorLog.shift();
   }
 
+  /** Move the past with the clock, if the clock goes back. */
+  function shiftPast(by) {
+    errorLog.forEach((p) => { p.t -= by; });
+    triggers = triggers.map((x) => x - by);
+    lastSolve -= by;
+    lastSample -= by;
+    kickAt -= by;
+    nextKick -= by;
+    lastTime -= by;
+  }
+
   function drawFrame(ctx, ink) {
-    // The grid of pixels that gives the scale for the features.
     ctx.beginPath();
     for (let i = 1; i < GRID_X; i++) {
       const x = frame.x + (i / GRID_X) * frame.w;
@@ -187,7 +286,7 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    // The marks at the corners make the frame look like a viewfinder.
+    // The marks at the corners make the frame a viewfinder.
     const c = Math.min(frame.w, frame.h) * 0.09;
     ctx.beginPath();
     for (const [cx, sx] of [[frame.x, 1], [frame.x + frame.w, -1]]) {
@@ -202,119 +301,106 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The contour continues past the edges of the sensor, because a roll
-     must not move its ends into the view. */
-  function traceContour(ctx, at, from = -0.3, to = 1.3) {
+  /* The coast, with the sea below it, and the faint coast beyond the
+     frame: the viewfinder is a window on a longer coast. */
+  function drawCoast(ctx, d, ink) {
     ctx.beginPath();
-    const span = to - from;
-    for (let i = 0; i <= 128; i++) {
-      const u = from + (span * i) / 128;
-      const p = at ? imagePoint(u, at) : desiredPoint(u);
-      if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
-    }
-  }
-
-  /* Draw the coastline faint outside the sensor. The viewfinder is a
-     window on a longer coast, and the craft uses only the part that it
-     can see. */
-  function drawBeyond(ctx, ink) {
-    traceContour(ctx, pose, -2.2, 3.2);
+    d.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
     ctx.lineWidth = 1.2;
     ctx.strokeStyle = withAlpha(ink.line, 0.16);
     ctx.stroke();
-  }
 
-  function drawContours(ctx, ink) {
-    traceContour(ctx, null);
-    ctx.setLineDash([3, 4]);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(frame.x, frame.y, frame.w, frame.h);
+    ctx.clip();
+    // The sea: a wash from the coast to the bottom of the frame.
+    ctx.beginPath();
+    d.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    const last = d.pts[d.pts.length - 1];
+    ctx.lineTo(last.x, frame.y + frame.h + 40);
+    ctx.lineTo(d.pts[0].x, frame.y + frame.h + 40);
+    ctx.closePath();
+    ctx.fillStyle = withAlpha(ink.wash, 0.07);
+    ctx.fill();
 
-    traceContour(ctx, pose);
-    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    d.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+    ctx.lineWidth = 1.6;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
+    ctx.restore();
   }
 
-  /** The positions of the features if the command in use continues
-      with no change. */
-  function drawHorizon(ctx, ink) {
-    const ahead = {
-      u: pose.u + held.u * HORIZON,
-      v: pose.v + held.v * HORIZON,
-      roll: pose.roll + held.roll * HORIZON,
-    };
+  /* The desired box in the middle, with a cross at each corner. */
+  function drawDesired(ctx, ink) {
+    const want = desired();
     ctx.beginPath();
-    for (let i = 0; i < FEATURES; i++) {
-      const u = featureU(i);
-      const from = imagePoint(u);
-      const to = imagePoint(u, ahead);
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
+    ctx.setLineDash([3, 3]);
+    ctx.rect(want[0].x, want[0].y, want[1].x - want[0].x, want[2].y - want[0].y);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(ink.line, 0.7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const arm = 3.2;
+    ctx.beginPath();
+    for (const p of want) {
+      ctx.moveTo(p.x - arm, p.y);
+      ctx.lineTo(p.x + arm, p.y);
+      ctx.moveTo(p.x, p.y - arm);
+      ctx.lineTo(p.x, p.y + arm);
     }
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(ink.line, 0.8);
+    ctx.stroke();
+  }
+
+  /* The box of the detection and its four corners, as the tracking
+     reports them; the line from each corner to its desired position;
+     and where the last solution predicts each corner at the end of
+     the horizon. */
+  function drawFeatures(ctx, t, ink) {
+    const have = measured(t);
+    const want = desired();
+    const ahead = predicted(lastSolve + HORIZON);
+
+    ctx.beginPath();
+    ctx.rect(have[0].x, have[0].y, have[1].x - have[0].x, have[2].y - have[0].y);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(ink.accent, 0.6);
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      if (Math.hypot(have[i].x - want[i].x, have[i].y - want[i].y) > 2) {
+        ctx.moveTo(have[i].x, have[i].y);
+        ctx.lineTo(want[i].x, want[i].y);
+      }
+    }
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = withAlpha(ink.accent, 0.3);
+    ctx.stroke();
+
+    ctx.beginPath();
     ctx.setLineDash([2, 3]);
+    for (let i = 0; i < 4; i++) {
+      ctx.moveTo(have[i].x, have[i].y);
+      ctx.lineTo(ahead[i].x, ahead[i].y);
+    }
     ctx.lineWidth = 1;
     ctx.strokeStyle = withAlpha(ink.accent, 0.45);
     ctx.stroke();
     ctx.setLineDash([]);
+
+    ctx.fillStyle = ink.accent;
+    for (const p of have) ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
   }
 
-  /** The path of each feature across the sensor. */
-  function drawTrails(ctx, ink) {
-    for (let i = 0; i < FEATURES; i++) {
-      const path = trails[i];
-      if (path.length < 2) continue;
-      ctx.beginPath();
-      for (let k = 0; k < path.length; k++) {
-        if (k === 0) ctx.moveTo(path[k].x, path[k].y);
-        else ctx.lineTo(path[k].x, path[k].y);
-      }
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(ink.accent, 0.38);
-      ctx.stroke();
-    }
-  }
-
-  function drawFeatures(ctx, ink) {
-    const arm = 3.2;
-    for (let i = 0; i < FEATURES; i++) {
-      const u = featureU(i);
-      const want = desiredPoint(u);
-      const have = imagePoint(u);
-
-      ctx.beginPath();
-      ctx.moveTo(want.x - arm, want.y);
-      ctx.lineTo(want.x + arm, want.y);
-      ctx.moveTo(want.x, want.y - arm);
-      ctx.lineTo(want.x, want.y + arm);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(ink.line, 0.7);
-      ctx.stroke();
-
-      if (Math.hypot(have.x - want.x, have.y - want.y) > 2) {
-        ctx.beginPath();
-        ctx.moveTo(have.x, have.y);
-        ctx.lineTo(want.x, want.y);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = withAlpha(ink.accent, 0.3);
-        ctx.stroke();
-      }
-
-      ctx.beginPath();
-      ctx.arc(have.x, have.y, 2.3, 0, TWO_PI);
-      ctx.fillStyle = ink.accent;
-      ctx.fill();
-    }
-  }
-
-  /* The error with time, and the times when the controller calculated
-     a new command. */
+  /* The error with time, and the times when the controller solved. */
   function drawPlot(ctx, t, ink) {
     if (plot.w <= 0 || errorLog.length < 2) return;
     const baseY = plot.y + plot.h;
-    const scale = frame.h * 0.55;
+    const scale = frame.h * 0.3;
     const toX = (when) => plot.x + plot.w * (1 - (t - when) / PLOT_SECONDS);
     const toY = (e) => baseY - Math.min(e / scale, 1) * plot.h;
 
@@ -327,15 +413,11 @@ export function createImageServo() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    /* A clock samples the log. The curve ends at the error at this
-       moment, and the head moves in each frame. */
-    const liveE = errorNorm();
+    const liveE = errorNorm(t);
     ctx.beginPath();
-    for (let i = 0; i < errorLog.length; i++) {
-      const px = toX(errorLog[i].t);
-      const py = toY(errorLog[i].e);
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
+    errorLog.forEach((p, i) => {
+      if (i === 0) ctx.moveTo(toX(p.t), toY(p.e)); else ctx.lineTo(toX(p.t), toY(p.e));
+    });
     ctx.lineTo(toX(t), toY(liveE));
     ctx.lineWidth = 1.3;
     ctx.strokeStyle = ink.body;
@@ -343,7 +425,6 @@ export function createImageServo() {
 
     for (const at of triggers) {
       const px = toX(at);
-      // Fade in at the start. Fade out at the left edge of the plot.
       const presence = Math.min(1, (t - at) / 0.3, (px - plot.x) / 14);
       if (presence <= 0) continue;
       ctx.beginPath();
@@ -361,77 +442,118 @@ export function createImageServo() {
   }
 
   function paint(ctx, t, ink) {
-    drawBeyond(ctx, ink);
+    const d = detect(pose);
+    drawCoast(ctx, d, ink);
     drawFrame(ctx, ink);
-    // The sensor is the limit for each item on it.
     ctx.save();
     ctx.beginPath();
-    ctx.rect(frame.x, frame.y, frame.w, frame.h);
+    ctx.rect(frame.x - 1, frame.y - 1, frame.w + 2, frame.h + 2);
     ctx.clip();
-    drawContours(ctx, ink);
-    drawTrails(ctx, ink);
-    drawHorizon(ctx, ink);
-    drawFeatures(ctx, ink);
+    drawDesired(ctx, ink);
+    drawFeatures(ctx, t, ink);
     ctx.restore();
     drawPlot(ctx, t, ink);
   }
 
   function reset() {
     pose.u = 0;
-    pose.v = 0;
     pose.roll = 0;
+    pose.s = 0;
     held.u = 0;
-    held.v = 0;
     held.roll = 0;
     lastSolve = -99;
     lastSample = -99;
     kicks = 0;
     kickAt = -99;
-    trails = Array.from({ length: FEATURES }, () => []);
+    nextKick = 2;
     errorLog = [];
     triggers = [];
+    lastTime = 0;
   }
 
   return {
     fade: 1,   // a drawn figure; the engine clears it each frame
 
-    layout(w, h) {
-      stage = stageFor(w, h);
-      frame.w = Math.min(stage.width * 0.52, 620);
-      frame.h = Math.min(h * 0.16, frame.w * 0.46);
-      frame.x = stage.left;
-      // Put the panel above the centre of the band, because the
-      // viewfinder is the highest element in these scenes.
-      frame.y = stage.y - h * 0.03 - frame.h / 2;
+    /* The control of this scene on the lab page: the noise of the
+       visual tracking, the disturbance the thesis names. */
+    lab: {
+      label: 'Tracking noise',
+      unit: ' px',
+      min: 0,
+      max: 4,
+      step: 0.25,
+      value: () => noiseLevel(),
+      set(v) { heldNoise = v; },
+      release() { heldNoise = null; },
+      auto: {
+        name: 'a small noise in the tracking',
+        status() {
+          return 'Auto keeps a noise of ' + NOISE + ' px in the tracking. The events come from the bends of the coast, '
+            + 'the gusts, the noise and the horizon of 0.6 s, which is 6 steps of 0.1 s in the thesis.';
+        },
+      },
+      hold(v) {
+        return 'Noise held at ' + v + ' px. With no noise the events come from the coast, the gusts and the horizon alone. '
+          + 'With more noise the tracking departs from the prediction more often, and the solutions come closer together.';
+      },
+    },
 
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return { events, noise: noiseLevel(), error: errorNorm(lastTime), along: pose.s };
+    },
+
+    layout(w, h, fit = {}) {
+      /* A preview shows the top of the box in a small window. The frame
+         then sits in the middle of it. */
+      const preview = Boolean(fit.preview);
+      stage = stageFor(w, h, preview ? 0.5 * (184 / 480) : fit.band);
       const room = w > 760;
-      plot.w = room ? Math.min(stage.width * 0.15, 170) : 0;
+      // The frame keeps the ratio of the camera. The room above the
+      // datum and the width of the stage limit it.
+      // The frame keeps the ratio of the camera. Most of it stands
+      // above the datum, so that on a hero it stays clear of the text
+      // below the band.
+      const widthLimit = room ? stage.width * 0.5 : stage.width * 0.56;
+      frame.h = Math.min(h * 0.42, (stage.y - 12) / 0.62, widthLimit / FRAME_RATIO);
+      frame.w = frame.h * FRAME_RATIO;
+      frame.x = preview ? stage.left + (stage.width - frame.w) / 2 : stage.left;
+      frame.y = stage.y - frame.h * 0.62;
+
+      plot.w = room ? Math.min(stage.width * 0.17, 170) : 0;
       plot.h = frame.h * 0.62;
       plot.x = stage.right - plot.w;
-      plot.y = stage.y - h * 0.03 - plot.h / 2;
+      plot.y = frame.y + (frame.h - plot.h) / 2;
+
+      // The coast bends on two scales, gently, in the pixels of the
+      // image.
+      coast.a1 = frame.h * 0.1;
+      coast.a2 = frame.h * 0.03;
+      coast.k1 = TWO_PI / (frame.w * 2.5);
+      coast.k2 = TWO_PI / (frame.w * 1.1);
 
       reset();
-      nextKick = 1.4;
     },
 
     frame(ctx, dt, t, ink) {
+      if (lastTime > t) shiftPast(lastTime - t);
       step(dt, t);
       paint(ctx, t, ink);
     },
 
     still(ctx, ink, t) {
-      /* Do one sequence again, because the fixed frame must show the
-         trajectories and the plot. */
+      /* Run one sequence again, because the fixed frame must show the
+         features and the plot with a past. */
       const at = t || 5;
       reset();
-      nextKick = at + 999;
-      pose.u = frame.w * 0.14;
-      pose.v = frame.h * 0.4;
-      pose.roll = 0.17;
-      solve(at - 3.2);
+      pose.u = frame.h * 0.1;
+      pose.roll = 0.12;
+      nextKick = at - 3.2 + 1.5;
       const dt = 0.02;
+      lastSample = at - 3.2 - 1;
       for (let k = 1; k <= Math.round(3.2 / dt); k++) step(dt, at - 3.2 + k * dt);
       paint(ctx, at, ink);
+      return at;
     },
   };
 }
