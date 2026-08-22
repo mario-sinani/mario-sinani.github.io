@@ -36,7 +36,8 @@ node tools/trace.mjs --write  # record the fingerprints again after a change
 ```
 
 `tools/trace.mjs` draws each scene into a stub context and hashes the
-calls, so a refactor that changes no behaviour keeps the same hash.
+calls, so a refactor that changes no behaviour keeps the same hash. The
+same checks run on each push, in `.github/workflows/checks.yml`.
 
 ## Local development
 

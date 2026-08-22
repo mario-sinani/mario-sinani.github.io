@@ -1,0 +1,26 @@
+# The checks that run on each push: the pages, the fingerprints of the
+# scenes, and the models against the numbers of the papers. The site
+# itself needs no build step, so nothing here writes a file.
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check the pages, the links and the sitemap
+        run: python3 tools/check.py
+      - name: Compare each scene with its recorded fingerprint
+        run: node tools/trace.mjs
+      - name: Run the models against the numbers of the papers
+        run: node tools/test-scenes.mjs
+      - name: Run the engine against its rules
+        run: node tools/test-engine.mjs
