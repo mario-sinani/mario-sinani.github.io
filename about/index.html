@@ -25,14 +25,14 @@
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="About Mario A. Sinani, shown over streamlines around a lifting body.">
+  <meta property="og:image:alt" content="About Mario A. Sinani, with a portrait of him beside the title.">
 
   <!-- Twitter / X card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="About - Mario A. Sinani, Aeronautics Researcher">
   <meta name="twitter:description" content="Marie Sklodowska-Curie Researcher and PhD candidate in Aeronautics at Imperial College London - the profile and the background.">
   <meta name="twitter:image" content="https://mariosinani.com/assets/og/about.png">
-  <meta name="twitter:image:alt" content="About Mario A. Sinani, shown over streamlines around a lifting body.">
+  <meta name="twitter:image:alt" content="About Mario A. Sinani, with a portrait of him beside the title.">
 
   <!-- The icons and the manifest -->
   <link rel="icon" href="../assets/icons/favicon.svg" type="image/svg+xml">
@@ -85,11 +85,23 @@
     "@id": "https://mariosinani.com/#website"
   },
   "inLanguage": "en-US",
+  "primaryImageOfPage": {
+    "@type": "ImageObject",
+    "@id": "https://mariosinani.com/#portrait",
+    "url": "https://mariosinani.com/assets/portrait.jpg",
+    "contentUrl": "https://mariosinani.com/assets/portrait.jpg",
+    "width": 460,
+    "height": 460,
+    "caption": "Mario A. Sinani"
+  },
   "mainEntity": {
     "@type": "Person",
     "@id": "https://mariosinani.com/#person",
     "name": "Mario A. Sinani",
-    "url": "https://mariosinani.com/"
+    "url": "https://mariosinani.com/",
+    "image": {
+      "@id": "https://mariosinani.com/#portrait"
+    }
   },
   "about": {
     "@type": "Person",
