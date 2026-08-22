@@ -333,6 +333,15 @@ export function createPazyFlutter() {
       return { alpha, q1, q2, growth: growthAt(alpha), trim: trimTip(alpha) };
     },
 
+    /* Put the model back at its start. The engine calls it before
+       it draws a fixed frame after a resize. */
+    reset() {
+      for (let i = 0; i <= n; i++) flat[i] = 0;
+      clock = 0;
+      caseIndex = -1;
+      perturb(scheduled(0));
+    },
+
     layout(w, h, fit = {}) {
       /* A preview shows the top of the box, so the wing sits lower and in
          the middle, and takes the width. */
@@ -361,10 +370,6 @@ export function createPazyFlutter() {
       trace.y = inset.y - trace.h - 14;
       if (trace.y < 6) trace.h = 0;
 
-      for (let i = 0; i <= n; i++) flat[i] = 0;
-      clock = 0;
-      caseIndex = -1;
-      perturb(scheduled(0));
     },
 
     frame(ctx, dt, t, ink) {

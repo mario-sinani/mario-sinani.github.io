@@ -426,6 +426,10 @@ export function createHingedWingtip() {
       };
     },
 
+    /* Put the model back at its start. The engine calls it before it
+       draws a fixed frame after a resize. */
+    reset,
+
     layout(w, h, fit = {}) {
       /* A preview shows the top of the box, so the wing sits lower and in
          the middle, and takes the width. */
@@ -452,7 +456,6 @@ export function createHingedWingtip() {
       trace.x = plan.x;
       trace.y = stage.y - 4;
 
-      reset();
     },
 
     frame(ctx, dt, t, ink) {

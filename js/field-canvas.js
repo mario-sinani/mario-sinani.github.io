@@ -9,6 +9,8 @@
      layout(w, h, fit)       set the positions. fit.band is how far down
                              the box the subject sits, fit.scale its
                              size, fit.preview true in a small window
+     reset()                 put the model back at its start, if it has
+                             one to put back
      frame(ctx, dt, t, ink)  draw one frame
      still(ctx, ink, t)      draw one fixed frame. A scene that needs a
                              past draws a later time and gives it back,
@@ -64,6 +66,9 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     readInk();
     scene.layout(width, height, fit);
+    /* The geometry changed, so the model starts again and the fixed frame
+       below builds the past it needs. */
+    if (scene.reset) scene.reset();
     wash(1);
     /* One fixed frame at once, so the box is never empty. The loop
        continues from the time of that frame, and the past the scene built

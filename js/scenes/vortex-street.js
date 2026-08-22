@@ -123,6 +123,14 @@ export function createVortexStreet() {
     // A figure with lines. The engine clears it in each frame.
     fade: 1,
 
+    /* Put the wake back at its start. The engine calls it before it
+       draws a fixed frame after a resize. */
+    reset() {
+      vortices = [];
+      sinceShed = street.period / 2;
+      nextSide = 1;
+    },
+
     layout(w, h) {
       width = w;
       height = h;
@@ -138,9 +146,6 @@ export function createVortexStreet() {
       street.strength = STRENGTH * FREESTREAM * diameter;
       street.core2 = (CORE * diameter) ** 2;
 
-      vortices = [];
-      sinceShed = street.period / 2;
-      nextSide = 1;
       flow.layout(w, h);
     },
 

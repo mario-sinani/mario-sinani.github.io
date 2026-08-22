@@ -25,6 +25,7 @@ async function scene(file, factory, hold) {
   const s = module[factory]();
   const { ctx } = recordingContext();
   s.layout(1000, 560, { band: 0.42, scale: 1.3 });
+  if (s.reset) s.reset();
   if (hold !== undefined && s.lab) s.lab.set(hold);
   s.still(ctx, INK, 0);
   return {

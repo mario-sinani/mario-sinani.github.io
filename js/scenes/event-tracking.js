@@ -452,6 +452,15 @@ export function createEventTracking() {
       return { events, horizon: horizon(), offset: craft.y - target(lastTime), trackEnd: track.length ? track[track.length - 1].t : null };
     },
 
+    /* Put the model back at its start. The engine calls it before
+       it draws a fixed frame after a resize. */
+    reset() {
+      plan.at = -99;
+      track = [];
+      stamps = [];
+      lastTime = 0;
+    },
+
     layout(w, h, fit = {}) {
       view.w = w;
       view.h = h;
@@ -483,10 +492,6 @@ export function createEventTracking() {
       plot.x = stage.right - plot.w;
       plot.y = clear - plot.h;
 
-      plan.at = -99;
-      track = [];
-      stamps = [];
-      lastTime = 0;
     },
 
     frame(ctx, dt, t, ink) {

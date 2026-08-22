@@ -339,6 +339,13 @@ export function createBeamModes() {
       };
     },
 
+    /* Put the model back at its start. The engine calls it before
+       it draws a fixed frame after a resize. */
+    reset() {
+      clock = 0;
+      launch(scheduled(0), 0);
+    },
+
     layout(w, h, fit = {}) {
       /* A preview shows the top of the box, so the beam sits lower and in
          the middle, and takes the width. */
@@ -355,8 +362,6 @@ export function createBeamModes() {
       bars.x = stage.right - bars.w;
       bars.gap = Math.max(h * 0.028, 12);
       bars.y = stage.y - bars.gap * 0.5;
-      clock = 0;
-      launch(scheduled(0), 0);
     },
 
     frame(ctx, dt, t, ink) {

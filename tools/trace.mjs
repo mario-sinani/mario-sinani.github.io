@@ -32,6 +32,7 @@ async function fingerprint(file, factory, still) {
   const scene = module[factory]();
   const { ctx, calls } = recordingContext();
   scene.layout(1000, 560, { band: 0.42, scale: 1.3 });
+  if (scene.reset) scene.reset();
   const shown = scene.still(ctx, INK, still);
   let clock = typeof shown === 'number' && shown > still ? shown : still;
   for (let i = 0; i < FRAMES; i += 1) {

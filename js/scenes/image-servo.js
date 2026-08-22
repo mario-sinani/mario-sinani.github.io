@@ -491,6 +491,10 @@ export function createImageServo() {
       return { events, noise: noiseLevel(), error: errorNorm(lastTime), along: pose.s };
     },
 
+    /* Put the model back at its start. The engine calls it before it
+       draws a fixed frame after a resize. */
+    reset,
+
     layout(w, h, fit = {}) {
       /* A preview shows the top of the box, so the frame sits in the middle
          of it. */
@@ -517,7 +521,6 @@ export function createImageServo() {
       coast.k1 = TWO_PI / (frame.w * 2.5);
       coast.k2 = TWO_PI / (frame.w * 1.1);
 
-      reset();
     },
 
     frame(ctx, dt, t, ink) {

@@ -298,6 +298,17 @@ export function createPazyStep() {
       };
     },
 
+    /* Put the model back at its start. The engine calls it before
+       it draws a fixed frame after a resize. */
+    reset() {
+      q[0] = 0; q[1] = 0; qd[0] = 0; qd[1] = 0;
+      alphaNow = 0;
+      clock = 0;
+      history = [];
+      lastLog = -99;
+      steadyFor = -1;
+    },
+
     layout(w, h, fit = {}) {
       /* A preview shows the top of the box, so the wing sits lower and in
          the middle, and takes the width. */
@@ -320,12 +331,6 @@ export function createPazyStep() {
       inset.x = stage.right - inset.w;
       inset.y = stage.y - inset.h * 0.72;
 
-      q[0] = 0; q[1] = 0; qd[0] = 0; qd[1] = 0;
-      alphaNow = 0;
-      clock = 0;
-      history = [];
-      lastLog = -99;
-      steadyFor = -1;
     },
 
     frame(ctx, dt, t, ink) {
