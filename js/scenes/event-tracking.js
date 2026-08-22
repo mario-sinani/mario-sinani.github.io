@@ -1,35 +1,18 @@
-/* Scene: a multirotor that tracks a contour from above, and makes a new
-   plan only at an event. Background for "An Event-Triggered Visual Servoing
-   Predictive Control Strategy for the Surveillance of Contour-Based Areas
-   using Multirotor Aerial Vehicles".
+/* Scene: the drawing of a multirotor that tracks a contour from above, and
+   plans again only at an event. Background for "An Event-Triggered Visual
+   Servoing Predictive Control Strategy for the Surveillance of
+   Contour-Based Areas using Multirotor Aerial Vehicles".
 
-   The camera looks down, and the frame on the ground is what it sees. A
-   network detects the contour in that frame and draws its bounding box, and
-   the four corners are the features the controller drives to the middle of
-   the frame. Between events the craft follows the last plan in an open
-   loop. The plan takes the contour ahead as straight and predicts the
-   state. The craft plans again when the measured state departs from the
-   predicted one by more than a bound that scales with the tracking error,
-   or when the horizon ends. The events come close together where
-   the coastline turns. The paper flew an octorotor, so the craft here has
-   eight rotors. */
+   The model is in js/models/event-tracking.js. The scene draws the sea and
+   the coastline, the flown path with a mark at each event, the rest of the
+   plan in memory, the frame of the camera with the detected box, the craft
+   with its eight rotors, and the chart of the image error. */
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
+import { createEventTrackingModel, DRIFT, HORIZON, TRACK_SECONDS } from '../models/event-tracking.js';
 
 const TWO_PI = 6.2832;
-const DRIFT = 46;               // px/s the world moves below the vehicle
-const HORIZON = 1.2;            // seconds a plan is valid for: 12 steps of 0.1 s in the paper
-/* The triggering condition: the departure of the measured state from the
-   predicted one stays under a floor plus a fraction of the tracking error.
-   The floor is a fraction of the canvas height, and the standoff is 0.05 of
-   it. */
-const SIGMA = 0.5;
-const FLOOR = 0.0025;
-/* The noise of the visual tracking, as a fraction of the canvas height. It
-   is one of the disturbances the paper names. */
-const NOISE = 0.0012;
-const TRACK_SECONDS = 9;        // how much flown path is kept, and how much time the plot shows
 const CONTOURS = 6;             // depth lines off the shore
 const STEP = 6;                 // px between samples along a curve
 const ROTORS = 8;               // an octorotor, as on the coastline in the paper
@@ -42,106 +25,14 @@ export function createEventTracking() {
   const craft = { x: 0, y: 0, standoff: 0, span: 0 };
   const frame = { w: 0, h: 0 };
   const plot = { x: 0, y: 0, w: 0, h: 0 };
-  const plan = { at: -99, v0: 0, base: 0, slope: 0, e0: 0 };
+  const model = createEventTrackingModel(view, shore, craft);
+  const plan = model.plan;
   let stage = null;
-  let craftVel = 0;
-  let track = [];
-  let stamps = [];
-  let events = 0;
-  let lastTime = 0;
-  /* The lab can hold the horizon. null uses the constant. The horizon is
-     the time a plan stays valid, so it sets the longest space between two
-     events. */
-  let held = null;
-
-  function horizon() {
-    return held !== null ? held : HORIZON;
-  }
-
-  /** The contour, in world coordinates that move to the left with time. */
-  function shoreAt(x, t) {
-    const s = x + DRIFT * t;
-    return shore.y + shore.a1 * Math.sin(shore.k1 * s) + shore.a2 * Math.sin(shore.k2 * s + 1.3);
-  }
-
-  /** The correct position of the vehicle: a fixed standoff from the
-      contour. */
-  function target(t) {
-    return shoreAt(craft.x, t) - craft.standoff;
-  }
-
-  /** The noise of the measurement: small, smooth and deterministic. */
-  function noise(t) {
-    return NOISE * view.h * (Math.sin(7.3 * t) + 0.6 * Math.sin(11.9 * t + 1));
-  }
-
-  /** The model of the controller takes the contour ahead as straight: the
-      target moves on at the slope it has at the time of the plan. */
-  function predictedTarget(t) {
-    return plan.base + plan.slope * (t - plan.at);
-  }
-
-  /** The position the plan predicts: the offset from the target goes to
-      zero along a Hermite arc over the horizon. */
-  function predicted(t) {
-    const s = Math.min((t - plan.at) / horizon(), 1);
-    const s2 = s * s;
-    const s3 = s2 * s;
-    const offset = (2 * s3 - 3 * s2 + 1) * plan.e0
-      + (s3 - 2 * s2 + s) * horizon() * (plan.v0 - plan.slope);
-    return predictedTarget(t) + offset;
-  }
-
-  function replan(t) {
-    plan.at = t;
-    plan.base = target(t);
-    plan.slope = (target(t) - target(t - 0.1)) / 0.1;
-    plan.e0 = craft.y - plan.base;
-    // Start the new plan at the velocity of the craft: an event bends the
-    // path, and does not stop it.
-    plan.v0 = craftVel;
-  }
-
-  function follow(dt, t) {
-    const before = craft.y;
-    const age = t - plan.at;
-    /* The event: the measured state against the predicted one. The state is
-       the offset from the target. The plan takes the contour as straight;
-       the measurement has the real contour and the noise. The bound is a
-       floor plus a fraction of the offset the plan still expects. */
-    const expected = predicted(t);
-    const expectedOffset = expected - predictedTarget(t);
-    const measuredOffset = craft.y + noise(t) - target(t);
-    const departure = Math.abs(measuredOffset - expectedOffset);
-    const bound = FLOOR * view.h + SIGMA * Math.abs(expectedOffset);
-    if (age > horizon() || departure > bound) {
-      replan(t);
-      events += 1;
-      stamps.push(t);
-      while (stamps.length && t - stamps[0] > TRACK_SECONDS) stamps.shift();
-    } else {
-      /* Between two events the craft is in an open loop, on the plan in
-         memory. */
-      craft.y = expected;
-    }
-    if (dt > 0) craftVel = (craft.y - before) / dt;
-    track.push({ t, y: craft.y, e: craft.y - target(t) });
-    while (track.length && t - track[0].t > TRACK_SECONDS) track.shift();
-    lastTime = t;
-  }
-
-  /** Move the past with the clock, if the clock goes back. */
-  function shiftPast(by) {
-    track.forEach((p) => { p.t -= by; });
-    stamps = stamps.map((s) => s - by);
-    plan.at -= by;
-    lastTime -= by;
-  }
 
   function traceShore(ctx, t, drop) {
     ctx.beginPath();
     for (let x = -STEP; x <= view.w + STEP; x += STEP) {
-      const y = shoreAt(x, t) + drop;
+      const y = model.shoreAt(x, t) + drop;
       if (x === -STEP) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
   }
@@ -177,6 +68,7 @@ export function createEventTracking() {
 
   /** The path of the flight, with a mark at each event. */
   function drawTrack(ctx, t, ink) {
+    const { track, stamps } = model;
     if (track.length < 2) return;
     ctx.beginPath();
     for (let i = 0; i < track.length; i++) {
@@ -203,13 +95,13 @@ export function createEventTracking() {
   /* The rest of the plan in memory. Where the coastline turns, this line
      leaves the shore, and that triggers the next plan. */
   function drawPlan(ctx, t, ink) {
-    const left = Math.max(horizon() - (t - plan.at), 0.05);
+    const left = Math.max(model.horizon() - (t - plan.at), 0.05);
     ctx.beginPath();
     ctx.setLineDash([4, 4]);
     for (let i = 0; i <= 12; i++) {
       const ahead = (i / 12) * left;
       const x = craft.x + ahead * DRIFT;
-      const y = predicted(t + ahead);
+      const y = model.predicted(t + ahead);
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.lineWidth = 1;
@@ -260,7 +152,7 @@ export function createEventTracking() {
     let hi = -Infinity;
     ctx.beginPath();
     for (let x = left; x <= left + frame.w; x += 2) {
-      const y = shoreAt(x, t);
+      const y = model.shoreAt(x, t);
       lo = Math.min(lo, y);
       hi = Math.max(hi, y);
       if (x === left) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -367,6 +259,7 @@ export function createEventTracking() {
      figures of the paper. The chart stands above the coast, so it covers no
      ground. */
   function drawPlot(ctx, t, ink) {
+    const { track, stamps } = model;
     if (plot.w <= 0 || plot.h <= 0 || track.length < 2) return;
     const midY = plot.y + plot.h / 2;
     const scale = craft.standoff * 0.7;
@@ -432,9 +325,9 @@ export function createEventTracking() {
       min: 0.4,
       max: 3,
       step: 0.1,
-      value: () => horizon(),
-      set(v) { held = v; },
-      release() { held = null; },
+      value: () => model.horizon(),
+      set(v) { model.hold(v); },
+      release() { model.release(); },
       auto: {
         name: 'the horizon of the paper, 1.2 seconds',
         status() {
@@ -449,16 +342,14 @@ export function createEventTracking() {
 
     /** A few numbers of the state, for a test. */
     probe() {
-      return { events, horizon: horizon(), offset: craft.y - target(lastTime), trackEnd: track.length ? track[track.length - 1].t : null };
+      const track = model.track;
+      return { events: model.events, horizon: model.horizon(), offset: craft.y - model.target(model.lastTime), trackEnd: track.length ? track[track.length - 1].t : null };
     },
 
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */
     reset() {
-      plan.at = -99;
-      track = [];
-      stamps = [];
-      lastTime = 0;
+      model.reset();
     },
 
     layout(w, h, fit = {}) {
@@ -495,8 +386,8 @@ export function createEventTracking() {
     },
 
     frame(ctx, dt, t, ink) {
-      if (lastTime > t) shiftPast(lastTime - t);
-      follow(dt, t);
+      if (model.lastTime > t) model.shiftPast(model.lastTime - t);
+      model.follow(dt, t);
       paint(ctx, t, ink);
     },
 
@@ -504,13 +395,9 @@ export function createEventTracking() {
       const at = t || 4;
       /* Run the real law over the recent past, so the events show the
          horizon in use and not a fixed pattern. */
-      track = [];
-      stamps = [];
-      plan.at = -99;
-      craftVel = 0;
-      craft.y = target(at - TRACK_SECONDS);
+      model.startPast(at - TRACK_SECONDS);
       const dt = 1 / 30;
-      for (let when = at - TRACK_SECONDS; when <= at; when += dt) follow(dt, when);
+      for (let when = at - TRACK_SECONDS; when <= at; when += dt) model.follow(dt, when);
       paint(ctx, at, ink);
       return at;
     },
