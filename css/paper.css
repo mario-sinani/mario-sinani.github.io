@@ -81,16 +81,6 @@
 
 .snapshot .fact-value { overflow-wrap: anywhere; }
 
-.snapshot .fact-value a {
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-.snapshot .fact-value a:hover, .snapshot .fact-value a:focus-visible {
-  border-bottom-color: var(--accent-strong);
-}
-
 .topics {
   margin-top: 1.5rem;
   display: flex;

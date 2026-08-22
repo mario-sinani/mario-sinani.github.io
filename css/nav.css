@@ -75,9 +75,6 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-.theme-toggle:hover, .theme-toggle:focus-visible,
-.nav-toggle:hover, .nav-toggle:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
-
 .theme-toggle svg, .nav-toggle svg { width: 0.95rem; height: 0.95rem; }
 
 /* A finger needs 44px, and the circle is 32px. A transparent box adds the

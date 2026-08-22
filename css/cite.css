@@ -68,10 +68,6 @@
 
 .js .copy-btn { display: inline-flex; }
 
-.copy-btn:hover, .copy-btn:focus-visible { color: var(--accent-strong); border-color: var(--accent); }
-
-.copy-btn.is-copied { color: var(--accent-strong); border-color: var(--accent); }
-
 @media (max-width: 720px) {
   .cite-body pre { padding: 0.85rem 0.9rem; }
   .copy-btn { position: static; margin: 0.55rem 0.9rem 0.85rem; }
@@ -104,7 +100,3 @@
 
 .cite-tab:hover, .cite-tab:focus-visible { color: var(--accent-strong); }
 
-.cite-tab[aria-pressed="true"] {
-  color: var(--accent-strong);
-  border-color: var(--accent);
-}

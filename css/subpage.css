@@ -23,13 +23,6 @@
   padding-top: 0.2rem;
 }
 
-.topic-mark .index {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-}
-
 .topic-mark .glyph {
   color: var(--accent);
   width: 1.5rem;
@@ -140,14 +133,6 @@
   color: var(--muted);
 }
 
-.page-note a {
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-.page-note a:hover, .page-note a:focus-visible { border-bottom-color: var(--accent-strong); }
-
 /* A description below the degree in a card. */
 .edu-card p {
   margin-top: 0.9rem;
@@ -155,14 +140,6 @@
   line-height: 1.6;
   color: var(--muted);
 }
-
-.edu-card p a {
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-.edu-card p a:hover, .edu-card p a:focus-visible { border-bottom-color: var(--accent-strong); }
 
 /* The links to the other pages, at the end of each page. */
 .cross-nav {

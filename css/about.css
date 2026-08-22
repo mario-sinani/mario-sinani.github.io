@@ -8,15 +8,6 @@
 
 .about-prose p + p { margin-top: 1.2em; }
 
-.about-prose a {
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  transition: border-color 140ms ease;
-}
-
-.about-prose a:hover, .about-prose a:focus-visible { border-bottom-color: var(--accent-strong); }
-
 .about-aside {
   border-left: 1px solid var(--line);
   padding-left: 1.6rem;

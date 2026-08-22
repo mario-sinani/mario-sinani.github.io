@@ -29,12 +29,7 @@
 .footer-email {
   font-family: var(--font-mono);
   font-size: 0.95rem;
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
-
-.footer-email:hover, .footer-email:focus-visible { border-bottom-color: var(--accent-strong); }
 
 .footer-links {
   margin-top: 2.2rem;

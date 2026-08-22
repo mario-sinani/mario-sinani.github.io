@@ -18,13 +18,6 @@
   margin-bottom: 2.4rem;
 }
 
-.section-head .index {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-}
-
 .section-head h2 {
   font-family: var(--font-display);
   font-weight: 600;
@@ -114,6 +107,62 @@
 }
 
 .node-icon svg { width: 1.05rem; height: 1.05rem; }
+
+/* A link inside a sentence: the accent colour with a light underline,
+   which becomes solid on a pointer or the focus. Every block of prose
+   on the site uses it. */
+.about-prose a,
+.snapshot .fact-value a,
+.footer-email,
+.page-note a,
+.edu-card p a,
+.model-note p a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  transition: border-color 140ms ease;
+}
+
+.about-prose a:hover, .about-prose a:focus-visible,
+.snapshot .fact-value a:hover, .snapshot .fact-value a:focus-visible,
+.footer-email:hover, .footer-email:focus-visible,
+.page-note a:hover, .page-note a:focus-visible,
+.edu-card p a:hover, .edu-card p a:focus-visible,
+.model-note p a:hover, .model-note p a:focus-visible {
+  border-bottom-color: var(--accent-strong);
+}
+
+/* The number of a section, of a card or of a topic. */
+.index {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+/* A round or square control under a pointer or the focus. */
+.theme-toggle:hover, .theme-toggle:focus-visible,
+.nav-toggle:hover, .nav-toggle:focus-visible,
+.field-pause:hover, .field-pause:focus-visible,
+.copy-btn:hover, .copy-btn:focus-visible,
+.copy-btn.is-copied,
+.cite-tab[aria-pressed="true"],
+.chip:hover, .chip:focus-visible,
+.lab-mode:hover, .lab-mode:focus-visible {
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+/* A canvas that fills the box of its parent. */
+#flowfield,
+.model-preview canvas,
+.instrument-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 /* Logo chips. The white background keeps each logo easy to read in the dark
    theme. */

@@ -39,25 +39,10 @@
   height: 30rem;
 }
 
-.model-preview canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
 .model-card-head {
   display: flex;
   align-items: baseline;
   gap: 1.1rem;
-}
-
-.model-card-head .index {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
 }
 
 .model-card-head h2 {
@@ -189,14 +174,6 @@
   overflow: hidden;
 }
 
-.instrument-stage canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
 /* The script fills the control row. Without a script it takes no space. */
 .lab-controls {
   margin-top: 1.05rem;
@@ -244,11 +221,6 @@
   transition: color 140ms ease, border-color 140ms ease;
 }
 
-.lab-mode:hover, .lab-mode:focus-visible {
-  color: var(--accent-strong);
-  border-color: var(--accent);
-}
-
 .lab-mode[aria-pressed="true"] {
   color: var(--accent-fill-ink);
   background: var(--accent-fill);
@@ -291,14 +263,6 @@
   margin-top: 0.85rem;
   font-size: 0.99rem;
 }
-
-.model-note p a {
-  color: var(--accent-strong);
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-.model-note p a:hover, .model-note p a:focus-visible { border-bottom-color: var(--accent-strong); }
 
 .model-note code {
   font-family: var(--font-mono);
