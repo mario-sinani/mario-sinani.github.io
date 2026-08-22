@@ -36,11 +36,9 @@ function show(value, unit) {
   return unit ? text + unit : text;
 }
 
-function buildControls(container, scene, field, name) {
-  const lab = scene.lab;
-  if (!lab) return;
-  const id = 'ctl-' + name;
-
+/* The parts of the control: the slider with its label and readout, the
+   two mode buttons, and the line of status. */
+function buildParts(lab, id) {
   const label = document.createElement('label');
   label.htmlFor = id;
   label.textContent = lab.label;
@@ -60,7 +58,6 @@ function buildControls(container, scene, field, name) {
      so it says the unit. */
   input.setAttribute('aria-valuetext', readout.textContent);
 
-  /* Auto: the model sets the parameter. Hold: the slider sets it. */
   const modes = document.createElement('div');
   modes.className = 'lab-modes';
   modes.setAttribute('role', 'group');
@@ -69,10 +66,34 @@ function buildControls(container, scene, field, name) {
   const hold = modeButton('Hold', false, 'The slider sets the parameter');
   modes.append(auto, hold);
 
-  /* What the model does at this moment, in words. */
   const status = document.createElement('p');
   status.className = 'lab-status';
   status.setAttribute('role', 'status');
+
+  return { label, input, readout, modes, auto, hold, status };
+}
+
+/* In Auto the slider and the status follow the scene. The timer stops
+   while the tab is behind another one, or the instrument off the screen. */
+function follow(container, tick) {
+  let onScreen = true;
+  setInterval(() => {
+    if (document.hidden || !onScreen) return;
+    tick();
+  }, FOLLOW_MS);
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting;
+    }).observe(container);
+  }
+}
+
+/* The control of one instrument: the parts, and what each one does. */
+function buildControls(container, scene, field, name) {
+  const lab = scene.lab;
+  if (!lab) return;
+  const { label, input, readout, modes, auto, hold, status } = buildParts(lab, 'ctl-' + name);
 
   const isAuto = () => auto.getAttribute('aria-pressed') === 'true';
 
@@ -92,49 +113,43 @@ function buildControls(container, scene, field, name) {
     else status.textContent = lab.hold ? lab.hold(v) : 'Held at ' + show(v, lab.unit) + '.';
   }
 
+  /* A fixed page draws one frame for each change, because its loop is off. */
+  function apply() {
+    refresh();
+    if (stillPage) field.repaint();
+  }
+
   input.addEventListener('input', () => {
     setMode(false);
     lab.set(Number(input.value));
     /* Show the value of the slider. The scene applies it in its next frame. */
     showValue(Number(input.value));
-    refresh();
-    if (stillPage) field.repaint();
+    apply();
   });
 
   auto.addEventListener('click', () => {
     if (isAuto()) return;
     setMode(true);
     lab.release();
-    refresh();
-    if (stillPage) field.repaint();
+    apply();
   });
 
   hold.addEventListener('click', () => {
-    if (!isAuto()) return;
-    setMode(false);
-    lab.set(Number(input.value));
-    refresh();
-    if (stillPage) field.repaint();
+    if (isAuto()) {
+      setMode(false);
+      lab.set(Number(input.value));
+      apply();
+    }
   });
 
-  /* In Auto the slider and the status follow the scene. A fixed page needs
-     no timer, and the timer stops when the instrument leaves the screen. */
   if (!stillPage) {
-    let onScreen = true;
-    setInterval(() => {
-      if (document.hidden || !onScreen) return;
+    follow(container, () => {
       if (isAuto()) {
         input.value = String(lab.value());
         showValue(lab.value());
       }
       refresh();
-    }, FOLLOW_MS);
-
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver((entries) => {
-        onScreen = entries[entries.length - 1].isIntersecting;
-      }).observe(container);
-    }
+    });
   }
 
   refresh();
