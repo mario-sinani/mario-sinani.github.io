@@ -168,5 +168,8 @@ document.querySelectorAll('canvas[data-scene]').forEach((canvas) => {
     if (preview || still !== undefined) return;
     const controls = canvas.closest('.instrument')?.querySelector('.lab-controls');
     if (controls) buildControls(controls, scene, field, canvas.dataset.scene);
+  }).catch((error) => {
+    /* A field that does not load leaves the box empty. Say why. */
+    console.error('the scene did not load', error);
   });
 });

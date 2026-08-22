@@ -19,5 +19,8 @@ if (canvas) {
   import('./scenes/vortex-street.js').then((m) => {
     field = initFieldCanvas(canvas, () => effectiveTheme() === 'dark', m.createVortexStreet());
     applyPause();
+  }).catch((error) => {
+    /* A field that does not load leaves the box empty. Say why. */
+    console.error('the scene did not load', error);
   });
 }

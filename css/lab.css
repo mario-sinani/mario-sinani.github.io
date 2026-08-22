@@ -174,33 +174,6 @@
 
 .instrument:first-of-type { border-top: 0; padding-top: 0; }
 
-.instrument-head {
-  display: flex;
-  align-items: baseline;
-  gap: 1.1rem;
-}
-
-.instrument-head .index {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-}
-
-.instrument-head h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.015em;
-}
-
-.instrument-brief {
-  max-width: var(--w-prose);
-  margin-top: 0.7rem;
-  font-size: 0.98rem;
-  color: var(--muted);
-}
-
 /* The stage holds the canvas, and the engine sizes it to this box. It needs
    a script, so CSS hides it without one, and the notes below tell the
    subject. */

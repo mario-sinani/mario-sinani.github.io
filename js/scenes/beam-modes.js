@@ -22,6 +22,7 @@
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 import { firstMode, firstSlope } from '../beam-modes-shape.js';
+import { caseAt } from './schedule.js';
 
 const TWO_PI = Math.PI * 2;
 const BEND_HZ = 0.28;             // the first bending mode, on the screen
@@ -313,9 +314,7 @@ export function createBeamModes() {
       auto: {
         name: 'four amplitudes in turn',
         status() {
-          const i = Math.floor(clock / HOLD) % AMPLITUDES.length;
-          const next = AMPLITUDES[(i + 1) % AMPLITUDES.length];
-          const left = Math.ceil(HOLD - (clock % HOLD));
+          const { next, left } = caseAt(clock, HOLD, AMPLITUDES);
           return 'Auto runs four amplitudes in turn, 14 seconds each, and restarts the run at each one. '
             + 'Now ' + Math.round(amplitude * 100) + ' per cent of the length; next ' + Math.round(next * 100) + ' per cent in ' + left + ' s.';
         },

@@ -21,6 +21,7 @@
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 import { firstMode, firstSlope } from '../beam-modes-shape.js';
+import { caseAt } from './schedule.js';
 
 const TWO_PI = Math.PI * 2;
 const INNER = 12;                 // metres
@@ -403,11 +404,9 @@ export function createHingedWingtip() {
       auto: {
         name: 'the flare of the paper, 10 degrees',
         status() {
-          const i = Math.floor(clock / HOLD) % CASES.length;
-          const next = CASES[(i + 1) % CASES.length];
-          const left = Math.ceil(HOLD - (clock % HOLD));
+          const { now, next, left } = caseAt(clock, HOLD, CASES);
           return 'Auto keeps the flare of the paper, 10°, and alternates its two cases of incidence, ' + HOLD + ' seconds each. '
-            + 'Now ' + CASES[i] + '° of incidence; ' + next + '° in ' + left + ' s.';
+            + 'Now ' + now + '° of incidence; ' + next + '° in ' + left + ' s.';
         },
       },
       hold(v) {

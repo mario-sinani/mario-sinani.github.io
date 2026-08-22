@@ -20,6 +20,7 @@ import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
 import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
+import { caseAt } from './schedule.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
@@ -315,9 +316,7 @@ export function createPazyFlutter() {
       auto: {
         name: 'the four cases of the paper',
         status() {
-          const i = Math.floor(clock / HOLD) % CASES.length;
-          const next = CASES[(i + 1) % CASES.length];
-          const left = Math.ceil(HOLD - (clock % HOLD));
+          const { next, left } = caseAt(clock, HOLD, CASES);
           return 'Auto runs the four cases of the paper, 11 seconds each. Now ' + alpha + '°, '
             + (inBand(alpha) ? 'inside the flutter band: the perturbation grows' : 'outside the band: the perturbation decays')
             + '; next ' + next + '° in ' + left + ' s.';

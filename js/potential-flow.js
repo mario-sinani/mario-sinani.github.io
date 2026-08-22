@@ -27,21 +27,3 @@ export function addDoublet(out, x, y, cx, cy, radius, u0) {
   out.u += -u0 * R2 * (dx * dx - dy * dy) / r4;
   out.v += -u0 * R2 * (2 * dx * dy) / r4;
 }
-
-/** The square of the distance from a point to a segment at (cx, cy), of the
-    given half-length, along the unit direction (dirX, dirY). */
-export function segmentDistance2(x, y, cx, cy, dirX, dirY, half) {
-  const dx = x - cx;
-  const dy = y - cy;
-  let along = dx * dirX + dy * dirY;
-  if (along > half) along = half;
-  if (along < -half) along = -half;
-  const px = dx - along * dirX;
-  const py = dy - along * dirY;
-  return px * px + py * py;
-}
-
-/** The unit vector along a chord at the given nose-up incidence. */
-export function chordDirection(alpha) {
-  return { x: Math.cos(alpha), y: -Math.sin(alpha) };
-}

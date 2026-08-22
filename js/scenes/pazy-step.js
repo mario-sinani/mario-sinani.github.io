@@ -17,6 +17,7 @@ import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
 import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
+import { caseAt } from './schedule.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
@@ -271,11 +272,9 @@ export function createPazyStep() {
       auto: {
         name: 'the steps of the paper',
         status() {
-          const i = Math.floor(clock / HOLD) % SCHEDULE.length;
-          const next = SCHEDULE[(i + 1) % SCHEDULE.length];
-          const left = Math.ceil(HOLD - (clock % HOLD));
+          const { now, next, left } = caseAt(clock, HOLD, SCHEDULE);
           return 'Auto runs the steps of the paper: 1, 2, 4, 7 and 8 degrees, 7 seconds each. '
-            + 'Now a step to ' + SCHEDULE[i] + '°; next ' + next + '° in ' + left + ' s.';
+            + 'Now a step to ' + now + '°; next ' + next + '° in ' + left + ' s.';
         },
       },
       hold(v) {

@@ -25,5 +25,8 @@ if (load) {
   load().then((scene) => {
     field = initFieldCanvas(canvas, () => effectiveTheme() === 'dark', scene);
     applyPause();
+  }).catch((error) => {
+    /* A field that does not load leaves the box empty. Say why. */
+    console.error('the scene did not load', error);
   });
 }
