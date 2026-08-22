@@ -1,96 +1,38 @@
-/* Scene: the Pazy wing at its trim, and the growth or the decay of a
-   perturbation with the angle of attack. Background for "Data-Driven
-   Parametric Aeroelastic Modeling of the Pazy Wing".
+/* Scene: the drawing of the Pazy wing at its trim, and of the growth or the
+   decay of a perturbation. Background for "Data-Driven Parametric
+   Aeroelastic Modeling of the Pazy Wing".
 
-   The paper trims the wing from 0.5 to 8 degrees, perturbs each trim by one
-   degree, and records the response. The wing flutters in a band only: from
-   3 to 4.6 degrees the second bending mode couples with the first torsion
-   mode and the perturbation grows. The largest real part of the eigenvalues
-   against the angle, Fig. 6, is the curve its parametric model learns.
-
-   The scene holds the trim of the angle, integrates the first two bending
-   modes with the growth rate of that angle, and twists the wing with the
-   second mode, as the coupled mode does. A soft limit holds the unstable
-   motion at a small amplitude, where the paper also sees the peaks
-   saturate. The fan is the trims of the range (Fig. 2), the trace is the
-   velocity of the tip (Fig. 7 and Fig. 10), and the chart below is the
-   growth rate against the angle. */
+   The model is in js/models/pazy-flutter.js. The scene draws the wing, the
+   faint fan of the trims of the range (Fig. 2), the strobe of its recent
+   shapes, the trace of the tip velocity (Fig. 7 and Fig. 10), and the chart
+   of the growth rate against the angle (Fig. 6) with the flutter band. */
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
-import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
+import { ROOTS, slope as modeSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
+import { createPazyFlutterModel, trimTip, inBand, growthAt, GROWTH,
+  CASES, HOLD, STROBES, LOG_SECONDS, FLUTTER_BAND, ALPHA_MIN, ALPHA_MAX, LIMIT_SPEED } from '../models/pazy-flutter.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
 const TIP_RAW = [2.0, -2.0];
 
-/* The largest real part of the eigenvalues against the angle, in 1/s, from
-   Fig. 6. The sign changes at 3.0 and at 4.6 degrees. */
-const GROWTH = [
-  [0.5, -0.5], [0.75, -0.9], [1, -1.5], [1.25, -3.0], [1.5, -5.3], [1.75, -5.6],
-  [2, -5.5], [2.25, -4.0], [2.5, -1.8], [2.75, -0.6], [3, 0.0], [3.25, 1.2],
-  [3.5, 1.7], [3.75, 1.8], [4, 1.7], [4.25, 1.6], [4.5, 1.4], [4.6, 0.0],
-  [4.75, -0.6], [5, -1.1], [5.25, -7.0], [5.5, -6.2], [5.75, -2.8], [6, -0.4],
-  [6.5, -0.6], [7, -0.9], [7.5, -1.7], [8, -2.3],
-];
-const FLUTTER_BAND = [3.0, 4.6];
-const ALPHA_MIN = 0.5;
-const ALPHA_MAX = 8;
 
-/* The second bending mode is at 29 Hz in the paper and at 2.4 Hz on the
-   screen. The rates scale with the same ratio, so the growth in one cycle
-   is the one of the paper. */
-const PAPER_HZ = 29;
-const SCREEN_HZ = 2.4;
-const TIME_SCALE = SCREEN_HZ / PAPER_HZ;
-const FIRST_DAMPING = 0.12;
-const KICK = 1;                   // degrees; the perturbation of the paper
-const SECOND_SHARE = 0.12;        // the part of the kick the second mode takes
-const LIMIT = 0.045;              // span fraction; where the soft limit holds the unstable mode
 const TWIST_GAIN = 2.2;           // radians of tip twist per span fraction of the second mode, a quarter cycle behind
-const CASES = [1.75, 4, 5, 7.5];  // degrees: the four cases of the paper's Fig. 10
-const HOLD = 11;                  // seconds at each case
-const STROBE_STEP = 0.15;
-const STROBES = 8;
-const LOG_SECONDS = 6;            // seconds of tip velocity the trace shows
-const LOG_STEP = 1 / 30;
 const FAN = [1, 2, 3, 4, 5, 6, 7, 8];
 /* The subject rises above the datum, so the datum sits lower by this
    fraction of the height. */
 const RISE = 0.10;
-const STEP = 1 / 240;
 
-/** The rise of the tip at the trim, as a fraction of the span, from the
-    flutter chart the paper reproduces. */
-function trimTip(alphaDeg) {
-  return 0.062 * alphaDeg - 0.0008 * alphaDeg * alphaDeg;
-}
 
-/** True if the angle is in the flutter band. */
-function inBand(alphaDeg) {
-  return alphaDeg >= FLUTTER_BAND[0] && alphaDeg <= FLUTTER_BAND[1];
-}
 
-/** The growth rate at an angle, by interpolation in the table. */
-function growthAt(alphaDeg) {
-  if (alphaDeg <= GROWTH[0][0]) return GROWTH[0][1];
-  for (let i = 1; i < GROWTH.length; i++) {
-    if (alphaDeg <= GROWTH[i][0]) {
-      const [a0, g0] = GROWTH[i - 1];
-      const [a1, g1] = GROWTH[i];
-      return g0 + ((g1 - g0) * (alphaDeg - a0)) / (a1 - a0);
-    }
-  }
-  return GROWTH[GROWTH.length - 1][1];
-}
 
 export function createPazyFlutter() {
   const n = STATIONS;
   const wing = createPazyWing(n);
-  const omega2 = TWO_PI * SCREEN_HZ;
-  const omega1 = omega2 * (ROOTS[0] * ROOTS[0]) / (ROOTS[1] * ROOTS[1]);
+  const model = createPazyFlutterModel((ROOTS[1] * ROOTS[1]) / (ROOTS[0] * ROOTS[0]));
   const slope = [new Float64Array(n + 1), new Float64Array(n + 1)];
   for (let m = 0; m < 2; m++) {
     for (let i = 0; i <= n; i++) slope[m][i] = modeSlope(m, i / n) / TIP_RAW[m];
@@ -101,89 +43,16 @@ export function createPazyFlutter() {
   const inset = { x: 0, y: 0, w: 0, h: 0 };
   const trace = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
-  let history = [];
-  let lastLog = -99;
   let span = 300;
-  let alpha = CASES[0];
-  let q1 = 0; let q1d = 0;
-  let q2 = 0; let q2d = 0;
-  let clock = 0;
-  let strobe = [];
-  let lastStrobe = -99;
-  /* The lab can hold the angle. null runs the four cases of the paper in
-     turn. */
-  let held = null;
-  let caseIndex = -1;
-
-  function scheduled(t) {
-    if (held !== null) return held;
-    return CASES[Math.floor(t / HOLD) % CASES.length];
-  }
-
-  /** Put the wing at the trim plus one degree, at rest, as the paper does
-      before each record. */
-  function perturb(a) {
-    alpha = a;
-    const shift = trimTip(a + KICK) - trimTip(a);
-    q1 = trimTip(a) + shift * (1 - SECOND_SHARE);
-    q1d = 0;
-    q2 = shift * SECOND_SHARE;
-    q2d = 0;
-    strobe = [];
-    lastStrobe = -99;
-    history = [];
-    lastLog = -99;
-  }
-
-  function integrate(dt) {
-    const trim = trimTip(alpha);
-    const a1 = -2 * FIRST_DAMPING * omega1 * q1d - omega1 * omega1 * (q1 - trim);
-    const sigma = TIME_SCALE * growthAt(alpha);
-    const soft = 1.8 * TIME_SCALE * (q2 / LIMIT) * (q2 / LIMIT);
-    const a2 = -omega2 * omega2 * q2 + 2 * (sigma - soft) * q2d;
-    q1d += a1 * dt;
-    q1 += q1d * dt;
-    q2d += a2 * dt;
-    q2 += q2d * dt;
-  }
-
-  function advance(t) {
-    if (clock > t) {
-      // The clock went back. Move the past with it.
-      const by = clock - t;
-      history.forEach((h) => { h.t -= by; });
-      lastLog -= by;
-      lastStrobe -= by;
-      clock = t;
-    }
-    let left = Math.min(Math.max(t - clock, 0), 0.25);
-    while (left > 0) {
-      const h = Math.min(STEP, left);
-      clock += h;
-      const a = scheduled(clock);
-      if (a !== alpha) perturb(a);
-      integrate(h);
-      left -= h;
-      if (clock - lastStrobe >= STROBE_STEP) {
-        lastStrobe = clock;
-        strobe.push({ q1, q2 });
-        while (strobe.length > STROBES) strobe.shift();
-      }
-      if (clock - lastLog >= LOG_STEP) {
-        lastLog = clock;
-        history.push({ t: clock, v: q1d + q2d });
-        while (history.length && clock - history[0].t > LOG_SECONDS) history.shift();
-      }
-    }
-  }
 
   /* The trace: the velocity of the tip. The scale is the velocity of the
      limit cycle, so the growth fills the box and the decay empties it. */
   function drawTrace(ctx, ink) {
+    const history = model.history;
     if (trace.h <= 0 || history.length < 2) return;
     const midY = trace.y + trace.h / 2;
-    const scale = LIMIT * omega2 * 1.15;
-    const toX = (when) => trace.x + trace.w * (1 - (clock - when) / LOG_SECONDS);
+    const scale = LIMIT_SPEED * 1.15;
+    const toX = (when) => trace.x + trace.w * (1 - (model.clock - when) / LOG_SECONDS);
     const toY = (v) => midY - Math.max(-1, Math.min(1, v / scale)) * (trace.h / 2) * 0.92;
 
     ctx.beginPath();
@@ -220,7 +89,7 @@ export function createPazyFlutter() {
      torsion is a quarter cycle behind the bending. The shape is the first
      torsion mode. */
   function twistFrom() {
-    const tip = (TWIST_GAIN * q2d) / omega2;
+    const tip = (TWIST_GAIN * model.q2d) / model.omega2;
     for (let i = 0; i <= n; i++) theta[i] = tip * Math.sin((Math.PI / 2) * (i / n));
   }
 
@@ -232,7 +101,7 @@ export function createPazyFlutter() {
   }
 
   function drawStrobe(ctx, ink) {
-    strobe.forEach((s, k) => {
+    model.strobe.forEach((s, k) => {
       slopesFrom(s.q1, s.q2);
       wing.axis(ctx, psi, withAlpha(ink.body, (0.05 + 0.2 * (k + 1)) / STROBES));
     });
@@ -274,8 +143,8 @@ export function createPazyFlutter() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    const mx = toX(alpha);
-    const my = toY(growthAt(alpha));
+    const mx = toX(model.alpha);
+    const my = toY(growthAt(model.alpha));
     ctx.beginPath();
     ctx.moveTo(mx, inset.y + inset.h);
     ctx.lineTo(mx, my);
@@ -292,7 +161,7 @@ export function createPazyFlutter() {
     drawDatum(ctx, stage, ink);
     drawFan(ctx, ink);
     drawStrobe(ctx, ink);
-    slopesFrom(q1, q2);
+    slopesFrom(model.q1, model.q2);
     twistFrom();
     wing.draw(ctx, ink, psi, theta);
     drawTrace(ctx, ink);
@@ -310,15 +179,15 @@ export function createPazyFlutter() {
       min: ALPHA_MIN,
       max: ALPHA_MAX,
       step: 0.25,
-      value: () => alpha,
-      set(v) { held = v; },
-      release() { held = null; },
+      value: () => model.alpha,
+      set(v) { model.hold(v); },
+      release() { model.release(); },
       auto: {
         name: 'the four cases of the paper',
         status() {
-          const { next, left } = caseAt(clock, HOLD, CASES);
-          return 'Auto runs the four cases of the paper, 11 seconds each. Now ' + alpha + '°, '
-            + (inBand(alpha) ? 'inside the flutter band: the perturbation grows' : 'outside the band: the perturbation decays')
+          const { next, left } = caseAt(model.clock, HOLD, CASES);
+          return 'Auto runs the four cases of the paper, 11 seconds each. Now ' + model.alpha + '°, '
+            + (inBand(model.alpha) ? 'inside the flutter band: the perturbation grows' : 'outside the band: the perturbation decays')
             + '; next ' + next + '° in ' + left + ' s.';
         },
       },
@@ -330,16 +199,14 @@ export function createPazyFlutter() {
 
     /** A few numbers of the state, for a test. */
     probe() {
-      return { alpha, q1, q2, growth: growthAt(alpha), trim: trimTip(alpha) };
+      return { alpha: model.alpha, q1: model.q1, q2: model.q2, growth: growthAt(model.alpha), trim: trimTip(model.alpha) };
     },
 
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */
     reset() {
       for (let i = 0; i <= n; i++) flat[i] = 0;
-      clock = 0;
-      caseIndex = -1;
-      perturb(scheduled(0));
+      model.reset(0);
     },
 
     layout(w, h, fit = {}) {
@@ -373,7 +240,7 @@ export function createPazyFlutter() {
     },
 
     frame(ctx, dt, t, ink) {
-      advance(t);
+      model.advance(t);
       paint(ctx, ink);
     },
 
@@ -381,11 +248,9 @@ export function createPazyFlutter() {
       const at = t || 19;   // 8 s into the case at 4 degrees, inside the band
       /* Run from the last perturbation to this time, so the strobe shows
          the growth or the decay. */
-      const a = scheduled(at);
-      const since = held !== null ? Math.min(at, 6) : at % HOLD;
-      perturb(a);
-      clock = at - since;
-      while (clock < at) advance(Math.min(clock + 0.25, at));
+      const since = model.heldValue() !== null ? Math.min(at, 6) : at % HOLD;
+      model.reset(at - since);
+      while (model.clock < at) model.advance(Math.min(model.clock + 0.25, at));
       paint(ctx, ink);
       return at;
     },
