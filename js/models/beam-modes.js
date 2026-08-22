@@ -144,6 +144,18 @@ export function createBeamModel() {
     /** The energy of the coupling itself, which the sum must hold. */
     coupling() { return 0.5 * COUPLING * state.x1 * state.x1 * state.x2; },
     advance,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      const e = energies(state, w1, w2);
+      return {
+        amplitude,
+        share: e.share,
+        mean: meanTime > 0 ? meanSum / meanTime : e.share,
+        bound,
+        energy: (e.e1 + e.e2 + 0.5 * COUPLING * state.x1 * state.x1 * state.x2)
+          / (0.5 * w1 * w1 * amplitude * amplitude),
+      };
+    },
     reset(at = 0) { clock = at; launch(scheduled(at), at); },
     setAt(t, a) { launch(a, t); },
     hold(a) { held = a; },

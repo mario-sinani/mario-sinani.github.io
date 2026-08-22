@@ -253,6 +253,10 @@ export function createImageServoModel(frame, coast) {
     predicted,
     step,
     shiftPast,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return { events, noise: noiseLevel(), error: errorNorm(lastTime), along: pose.s };
+    },
     reset() {
       pose.u = 0;
       pose.roll = 0;

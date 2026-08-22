@@ -290,30 +290,23 @@ export function createHingedWingtip() {
       value: () => (model.flare() * 180) / Math.PI,
       set(v) { model.hold((v * Math.PI) / 180); },
       release() { model.release(); },
-      auto: {
-        name: 'the flare of the paper, 10 degrees',
-        status() {
-          const { now, next, left } = caseAt(model.clock, HOLD, CASES);
-          return 'Auto keeps the flare of the paper, 10°, and alternates its two cases of incidence, ' + HOLD + ' seconds each. '
-            + 'Now ' + now + '° of incidence; ' + next + '° in ' + left + ' s.';
-        },
-      },
-      hold(v) {
-        return 'Flare held at ' + v + '°. The incidence keeps alternating between 10° and 5°, and the tip '
-          + 'coasts at the fold that this flare gives. Auto returns to 10°.';
+      autoName: 'the flare of the paper, 10 degrees',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Flare held at ' + v + '°. The incidence keeps alternating between 10° and 5°, and the tip '
+            + 'coasts at the fold that this flare gives. Auto returns to 10°.';
+        }
+        const { now, next, left } = caseAt(model.clock, HOLD, CASES);
+        return 'Auto keeps the flare of the paper, 10°, and alternates its two cases of incidence, ' + HOLD + ' seconds each. '
+          + 'Now ' + now + '° of incidence; ' + next + '° in ' + left + ' s.';
       },
     },
 
     /** A few numbers of the state, for a test. */
-    probe() {
-      return {
-        alpha: (model.alphaNow * 180) / Math.PI,
-        fold: (model.fold() * 180) / Math.PI,
-        hingeRise: model.q,
-        tipRise: model.q + OUTER * Math.sin(model.Theta),
-        flare: (model.flare() * 180) / Math.PI,
-      };
-    },
+    probe: model.probe,
 
     /* Put the model back at its start. The engine calls it before it
        draws a fixed frame after a resize. */

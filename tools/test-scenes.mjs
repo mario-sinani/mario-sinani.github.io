@@ -146,9 +146,9 @@ async function scene(file, factory, hold) {
         s.lab.value();
         s.lab.set(middle);
         s.frame(ctx, DT, 5 + 2 * DT, INK);
-        if (s.lab.hold) s.lab.hold(middle);
+        s.lab.status(false, middle);
         s.lab.release();
-        if (s.lab.auto) s.lab.auto.status();
+        s.lab.status(true, s.lab.value());
         s.lab.value();
       }
       s.layout(700, 400, { preview: true });

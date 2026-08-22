@@ -237,23 +237,22 @@ export function createImageServo() {
       value: () => model.noiseLevel(),
       set(v) { model.hold(v); },
       release() { model.release(); },
-      auto: {
-        name: 'a small noise in the tracking',
-        status() {
-          return 'Auto keeps a noise of ' + NOISE + ' px in the tracking. The events come from the bends of the coast, '
-            + 'the gusts, the noise and the horizon of 0.6 s, which is 6 steps of 0.1 s in the thesis.';
-        },
-      },
-      hold(v) {
-        return 'Noise held at ' + v + ' px. With no noise the events come from the coast, the gusts and the horizon alone. '
-          + 'With more noise the tracking departs from the prediction more often, and the solutions come closer together.';
+      autoName: 'a small noise in the tracking',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Noise held at ' + v + ' px. With no noise the events come from the coast, the gusts and the horizon alone. '
+            + 'With more noise the tracking departs from the prediction more often, and the solutions come closer together.';
+        }
+        return 'Auto keeps a noise of ' + NOISE + ' px in the tracking. The events come from the bends of the coast, '
+          + 'the gusts, the noise and the horizon of 0.6 s, which is 6 steps of 0.1 s in the thesis.';
       },
     },
 
     /** A few numbers of the state, for a test. */
-    probe() {
-      return { events: model.events, noise: model.noiseLevel(), error: model.errorNorm(model.lastTime), along: pose.s };
-    },
+    probe: model.probe,
 
     /* Put the model back at its start. The engine calls it before it
        draws a fixed frame after a resize. */

@@ -134,6 +134,15 @@ export function createEventTrackingModel(view, shore, craft) {
     predictedTarget,
     follow,
     shiftPast,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return {
+        events,
+        horizon: horizon(),
+        offset: craft.y - target(lastTime),
+        trackEnd: track.length ? track[track.length - 1].t : null,
+      };
+    },
     reset() {
       plan.at = -99;
       track = [];

@@ -182,25 +182,24 @@ export function createPazyFlutter() {
       value: () => model.alpha,
       set(v) { model.hold(v); },
       release() { model.release(); },
-      auto: {
-        name: 'the four cases of the paper',
-        status() {
-          const { next, left } = caseAt(model.clock, HOLD, CASES);
-          return 'Auto runs the four cases of the paper, 11 seconds each. Now ' + model.alpha + '°, '
-            + (inBand(model.alpha) ? 'inside the flutter band: the perturbation grows' : 'outside the band: the perturbation decays')
-            + '; next ' + next + '° in ' + left + ' s.';
-        },
-      },
-      hold(v) {
-        return 'Held at ' + v + '°, ' + (inBand(v) ? 'inside' : 'outside') + ' the flutter band of 3° to 4.6°. '
-          + 'A new angle is a new trim with the perturbation of one degree. Auto returns to the four cases.';
+      autoName: 'the four cases of the paper',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Held at ' + v + '°, ' + (inBand(v) ? 'inside' : 'outside') + ' the flutter band of 3° to 4.6°. '
+            + 'A new angle is a new trim with the perturbation of one degree. Auto returns to the four cases.';
+        }
+        const { next, left } = caseAt(model.clock, HOLD, CASES);
+        return 'Auto runs the four cases of the paper, 11 seconds each. Now ' + model.alpha + '°, '
+          + (inBand(model.alpha) ? 'inside the flutter band: the perturbation grows' : 'outside the band: the perturbation decays')
+          + '; next ' + next + '° in ' + left + ' s.';
       },
     },
 
     /** A few numbers of the state, for a test. */
-    probe() {
-      return { alpha: model.alpha, q1: model.q1, q2: model.q2, growth: growthAt(model.alpha), trim: trimTip(model.alpha) };
-    },
+    probe: model.probe,
 
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */

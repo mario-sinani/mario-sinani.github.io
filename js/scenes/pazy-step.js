@@ -126,17 +126,18 @@ export function createPazyStep() {
       value: () => (model.targetAlpha(model.clock) * 180) / Math.PI,
       set(v) { model.hold((v * Math.PI) / 180); },
       release() { model.release(); },
-      auto: {
-        name: 'the steps of the paper',
-        status() {
-          const { now, next, left } = caseAt(model.clock, HOLD, SCHEDULE);
-          return 'Auto runs the steps of the paper: 1, 2, 4, 7 and 8 degrees, 7 seconds each. '
-            + 'Now a step to ' + now + '°; next ' + next + '° in ' + left + ' s.';
-        },
-      },
-      hold(v) {
-        return 'Held at ' + v + '°. Each new value of the slider is a step input, and the wing '
-          + 'answers with a transient. Auto returns to the steps of the paper.';
+      autoName: 'the steps of the paper',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Held at ' + v + '°. Each new value of the slider is a step input, and the wing '
+            + 'answers with a transient. Auto returns to the steps of the paper.';
+        }
+        const { now, next, left } = caseAt(model.clock, HOLD, SCHEDULE);
+        return 'Auto runs the steps of the paper: 1, 2, 4, 7 and 8 degrees, 7 seconds each. '
+          + 'Now a step to ' + now + '°; next ' + next + '° in ' + left + ' s.';
       },
     },
 
@@ -144,15 +145,7 @@ export function createPazyStep() {
     probe() {
       model.slopesInto(psi, q);
       wing.trace(psi);
-      return {
-        alpha: (model.alphaNow * 180) / Math.PI,
-        tipRise: q[0] + q[1],
-        tipForce: model.tipForce(model.alphaNow, q, qd) / (LOAD * ALPHA_8),
-        linearForce: model.alphaNow / ALPHA_8,
-        steadyForce: model.settle(model.targetAlpha(model.clock)).tip / (LOAD * ALPHA_8),
-        datum: stage.y,
-        span,
-      };
+      return { ...model.probe(), datum: stage.y, span };
     },
 
     /* Put the model back at its start. The engine calls it before

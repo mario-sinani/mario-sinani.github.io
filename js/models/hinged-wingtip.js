@@ -124,6 +124,16 @@ export function createHingedWingtipModel() {
     hingeSlope,
     tipIncidence,
     advance,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return {
+        alpha: (alphaNow * 180) / Math.PI,
+        fold: (fold() * 180) / Math.PI,
+        hingeRise: q,
+        tipRise: q + OUTER * Math.sin(Theta),
+        flare: (flare() * 180) / Math.PI,
+      };
+    },
     reset() {
       alphaNow = 0;
       q = 0; qd = 0; qdd = 0;

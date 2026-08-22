@@ -328,23 +328,21 @@ export function createEventTracking() {
       value: () => model.horizon(),
       set(v) { model.hold(v); },
       release() { model.release(); },
-      auto: {
-        name: 'the horizon of the paper, 1.2 seconds',
-        status() {
-          return 'Auto keeps the horizon of the paper: 1.2 s, which is 12 steps of 0.1 s. '
-            + 'The events come from the coastline and the noise alone.';
-        },
-      },
-      hold(v) {
-        return 'Horizon held at ' + v + ' s. A short horizon gives many plans, a long one few. Auto returns to 1.2 s.';
+      autoName: 'the horizon of the paper, 1.2 seconds',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Horizon held at ' + v + ' s. A short horizon gives many plans, a long one few. Auto returns to 1.2 s.';
+        }
+        return 'Auto keeps the horizon of the paper: 1.2 s, which is 12 steps of 0.1 s. '
+          + 'The events come from the coastline and the noise alone.';
       },
     },
 
     /** A few numbers of the state, for a test. */
-    probe() {
-      const track = model.track;
-      return { events: model.events, horizon: model.horizon(), offset: craft.y - model.target(model.lastTime), trackEnd: track.length ? track[track.length - 1].t : null };
-    },
+    probe: model.probe,
 
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */

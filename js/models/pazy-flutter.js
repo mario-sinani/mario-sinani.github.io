@@ -158,6 +158,10 @@ export function createPazyFlutterModel(secondOverFirst) {
     scheduled,
     perturb,
     advance,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return { alpha, q1, q2, growth: growthAt(alpha), trim: trimTip(alpha) };
+    },
     reset(at = 0) { clock = at; perturb(scheduled(at)); },
     hold(v) { held = v; },
     release() { held = null; },

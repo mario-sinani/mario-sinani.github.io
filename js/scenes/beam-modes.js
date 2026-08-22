@@ -184,31 +184,23 @@ export function createBeamModes() {
       value: () => model.amplitude * 100,
       set(v) { model.hold(v / 100); },
       release() { model.release(); },
-      auto: {
-        name: 'four amplitudes in turn',
-        status() {
-          const { next, left } = caseAt(model.clock, HOLD, AMPLITUDES);
-          return 'Auto runs four amplitudes in turn, 14 seconds each, and restarts the run at each one. '
-            + 'Now ' + Math.round(model.amplitude * 100) + ' per cent of the length; next ' + Math.round(next * 100) + ' per cent in ' + left + ' s.';
-        },
-      },
-      hold(v) {
-        return 'Amplitude held at ' + v + ' per cent. The run and its averages restart at each new value. '
-          + 'Auto returns to the four amplitudes.';
+      autoName: 'four amplitudes in turn',
+      /* What the model does at this moment, for the line below the
+         control. In Auto the model sets the parameter; in Hold the
+         slider holds the value v. */
+      status(isAuto, v) {
+        if (!isAuto) {
+          return 'Amplitude held at ' + v + ' per cent. The run and its averages restart at each new value. '
+            + 'Auto returns to the four amplitudes.';
+        }
+        const { next, left } = caseAt(model.clock, HOLD, AMPLITUDES);
+        return 'Auto runs four amplitudes in turn, 14 seconds each, and restarts the run at each one. '
+          + 'Now ' + Math.round(model.amplitude * 100) + ' per cent of the length; next ' + Math.round(next * 100) + ' per cent in ' + left + ' s.';
       },
     },
 
     /** A few numbers of the state, for a test. */
-    probe() {
-      const e = model.energies();
-      return {
-        amplitude: model.amplitude,
-        share: e.share,
-        mean: e.mean,
-        bound: model.bound,
-        energy: (e.e1 + e.e2 + model.coupling()) / e.total,
-      };
-    },
+    probe: model.probe,
 
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */

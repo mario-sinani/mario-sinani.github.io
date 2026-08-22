@@ -12,6 +12,9 @@
      reset()                 put the model back at its start, if it has
                              one to put back
      frame(ctx, dt, t, ink)  draw one frame
+     lab                     the control of the lab page: the range, the
+                             value, set, release, autoName, and status
+     probe()                 a few numbers of the state, for a test
      still(ctx, ink, t)      draw one fixed frame. A scene that needs a
                              past draws a later time and gives it back,
                              and the loop continues from it.

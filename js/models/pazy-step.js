@@ -184,6 +184,16 @@ export function createPazyStepModel(n) {
     targetAlpha,
     advance,
     stateAgo,
+    /** A few numbers of the state, for a test. */
+    probe() {
+      return {
+        alpha: (alphaNow * 180) / Math.PI,
+        tipRise: q[0] + q[1],
+        tipForce: tipForce(alphaNow, q, qd) / (LOAD * ALPHA_8),
+        linearForce: alphaNow / ALPHA_8,
+        steadyForce: settle(targetAlpha(clock)).tip / (LOAD * ALPHA_8),
+      };
+    },
     /** Start at rest, with no past. */
     reset() {
       q[0] = 0; q[1] = 0; qd[0] = 0; qd[1] = 0;

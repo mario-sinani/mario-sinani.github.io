@@ -62,7 +62,7 @@ function buildParts(lab, id) {
   modes.className = 'lab-modes';
   modes.setAttribute('role', 'group');
   modes.setAttribute('aria-label', 'Who sets the parameter');
-  const auto = modeButton('Auto', true, lab.auto ? 'The model sets the parameter: ' + lab.auto.name : 'The model sets the parameter');
+  const auto = modeButton('Auto', true, lab.autoName ? 'The model sets the parameter: ' + lab.autoName : 'The model sets the parameter');
   const hold = modeButton('Hold', false, 'The slider sets the parameter');
   modes.append(auto, hold);
 
@@ -108,9 +108,7 @@ function buildControls(container, scene, field, name) {
   }
 
   function refresh() {
-    const v = Number(input.value);
-    if (isAuto()) status.textContent = lab.auto ? lab.auto.status() : '';
-    else status.textContent = lab.hold ? lab.hold(v) : 'Held at ' + show(v, lab.unit) + '.';
+    status.textContent = lab.status(isAuto(), Number(input.value));
   }
 
   /* A fixed page draws one frame for each change, because its loop is off. */

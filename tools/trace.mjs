@@ -40,7 +40,7 @@ async function fingerprint(file, factory, still) {
     scene.frame(ctx, DT, clock, INK);
   }
   const probe = scene.probe ? scene.probe() : null;
-  const status = scene.lab && scene.lab.auto ? scene.lab.auto.status() : null;
+  const status = scene.lab ? scene.lab.status(true, scene.lab.value()) : null;
   return {
     calls: calls.length,
     drawing: createHash('sha256').update(calls.join('\n')).digest('hex').slice(0, 16),
