@@ -1,0 +1,86 @@
+{
+  "pazy-step": {
+    "calls": 63427,
+    "drawing": "2034304d3c8122fc",
+    "probe": {
+      "alpha": 8,
+      "tipRise": 0.45,
+      "tipForce": 0.678,
+      "linearForce": 1,
+      "steadyForce": 0.705,
+      "datum": 291.2,
+      "span": 525.385
+    },
+    "status": "Auto runs the steps of the paper: 1, 2, 4, 7 and 8 degrees, 7 seconds each. Now a step to 8°; next 4° in 5 s."
+  },
+  "pazy-flutter": {
+    "calls": 111839,
+    "drawing": "73b418f1503dde65",
+    "probe": {
+      "alpha": 4,
+      "q1": 0.233,
+      "q2": 0.008,
+      "growth": 1.7,
+      "trim": 0.235
+    },
+    "status": "Auto runs the four cases of the paper, 11 seconds each. Now 4°, inside the flutter band: the perturbation grows; next 5° in 2 s."
+  },
+  "hinged-wingtip": {
+    "calls": 24430,
+    "drawing": "a043b038143059d9",
+    "probe": {
+      "alpha": 10,
+      "fold": 46.466,
+      "hingeRise": 2.443,
+      "tipRise": 5.992,
+      "flare": 10
+    },
+    "status": "Auto keeps the flare of the paper, 10°, and alternates its two cases of incidence, 7 seconds each. Now 10° of incidence; 5° in 2 s."
+  },
+  "beam-modes": {
+    "calls": 128583,
+    "drawing": "7b8d7cfc0c7ce971",
+    "probe": {
+      "amplitude": 0.4,
+      "share": 0.764,
+      "mean": 0.826,
+      "bound": 0.978,
+      "energy": 1.004
+    },
+    "status": "Auto runs four amplitudes in turn, 14 seconds each, and restarts the run at each one. Now 40 per cent of the length; next 8 per cent in 9 s."
+  },
+  "event-tracking": {
+    "calls": 207682,
+    "drawing": "26a7f05395be7271",
+    "probe": {
+      "events": 15,
+      "horizon": 1.2,
+      "offset": -4.102,
+      "trackEnd": 23.5
+    },
+    "status": "Auto keeps the horizon of the paper: 1.2 s, which is 12 steps of 0.1 s. The events come from the coastline and the noise alone."
+  },
+  "image-servo": {
+    "calls": 50491,
+    "drawing": "f900f9c88d656293",
+    "probe": {
+      "events": 23,
+      "noise": 1.5,
+      "error": 4.591,
+      "along": 188
+    },
+    "status": "Auto keeps a noise of 1.5 px in the tracking. The events come from the bends of the coast, the gusts, the noise and the horizon of 0.6 s, which is 6 steps of 0.1 s in the thesis."
+  },
+  "vortex-street": {
+    "calls": 688837,
+    "drawing": "bc30f65f7ecc3aae",
+    "probe": null,
+    "status": null
+  },
+  "lifting-cylinder": {
+    "calls": 68602,
+    "drawing": "1cc8bb737844bf2e",
+    "probe": null,
+    "status": null
+  }
+}

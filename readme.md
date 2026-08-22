@@ -21,8 +21,21 @@ Personal website of Mario A. Sinani.
 ├── lab
 ├── publications
 ├── research
+├── tools
 └── index.html
 ```
+
+## Checks
+
+```
+python3 tools/check.py        # pages, links, classes, sitemap, imports
+node tools/test-scenes.mjs    # the models against the numbers of the papers
+node tools/trace.mjs          # each scene against its recorded fingerprint
+node tools/trace.mjs --write  # record the fingerprints again after a change
+```
+
+`tools/trace.mjs` draws each scene into a stub context and hashes the
+calls, so a refactor that changes no behaviour keeps the same hash.
 
 ## Local development
 
