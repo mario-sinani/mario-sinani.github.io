@@ -9,6 +9,8 @@
 
    The scene of the same name draws this model. */
 
+import { createSeries } from './series.js';
+
 const TWO_PI = Math.PI * 2;
 const BEND_HZ = 0.28;             // the first bending mode, on the screen
 const RATIO = 6;                  // the axial frequency over the bending frequency; 58 and 14 in the paper
@@ -53,7 +55,7 @@ export function createBeamModel() {
   const w1 = TWO_PI * BEND_HZ;
   const w2 = w1 * RATIO;
   const state = { x1: 0, v1: 0, x2: 0, v2: 0 };
-  const strobe = [];
+  const strobe = createSeries({ keep: STROBES });
   let amplitude = AMPLITUDES[0];
   let clock = 0;
   let meanSum = 0;
@@ -74,7 +76,7 @@ export function createBeamModel() {
     state.x1 = a; state.v1 = 0; state.x2 = 0; state.v2 = 0;
     meanSum = 0;
     meanTime = 0;
-    strobe.length = 0;
+    strobe.clear();
     lastStrobe = -99;
     bound = estimateBound(a);
   }
@@ -125,14 +127,16 @@ export function createBeamModel() {
       if (clock - lastStrobe >= STROBE_STEP) {
         lastStrobe = clock;
         strobe.push({ x1: state.x1, x2: state.x2 });
-        while (strobe.length > STROBES) strobe.shift();
       }
     }
   }
 
   return {
-    state,
     strobe,
+    /** The bending coordinate, which sets the shape of the beam. */
+    get bending() { return state.x1; },
+    /** The axial coordinate, which moves the stations along it. */
+    get axial() { return state.x2; },
     get clock() { return clock; },
     get amplitude() { return amplitude; },
     get bound() { return bound; },

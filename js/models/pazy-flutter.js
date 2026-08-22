@@ -8,6 +8,8 @@
    saturate. On the wing the second mode is at 29 Hz and on the screen at
    2.4 Hz, and the rates scale with the same ratio. */
 
+import { createSeries } from './series.js';
+
 const TWO_PI = Math.PI * 2;
 
 /* The largest real part of the eigenvalues against the angle, in 1/s, from
@@ -71,8 +73,8 @@ export function growthAt(alphaDeg) {
 export function createPazyFlutterModel(secondOverFirst) {
   const omega2 = TWO_PI * SCREEN_HZ;
   const omega1 = omega2 / secondOverFirst;
-  const history = [];
-  const strobe = [];
+  const history = createSeries({ seconds: LOG_SECONDS });
+  const strobe = createSeries({ keep: STROBES });
   let alpha = CASES[0];
   let q1 = 0; let q1d = 0;
   let q2 = 0; let q2d = 0;
@@ -97,9 +99,9 @@ export function createPazyFlutterModel(secondOverFirst) {
     q1d = 0;
     q2 = shift * SECOND_SHARE;
     q2d = 0;
-    strobe.length = 0;
+    strobe.clear();
     lastStrobe = -99;
-    history.length = 0;
+    history.clear();
     lastLog = -99;
   }
 
@@ -119,7 +121,7 @@ export function createPazyFlutterModel(secondOverFirst) {
     if (clock > t) {
       // The clock went back. Move the past with it.
       const by = clock - t;
-      history.forEach((h) => { h.t -= by; });
+      history.shiftTime(by);
       lastLog -= by;
       lastStrobe -= by;
       clock = t;
@@ -135,12 +137,10 @@ export function createPazyFlutterModel(secondOverFirst) {
       if (clock - lastStrobe >= STROBE_STEP) {
         lastStrobe = clock;
         strobe.push({ q1, q2 });
-        while (strobe.length > STROBES) strobe.shift();
       }
       if (clock - lastLog >= LOG_STEP) {
         lastLog = clock;
         history.push({ t: clock, v: q1d + q2d });
-        while (history.length && clock - history[0].t > LOG_SECONDS) history.shift();
       }
     }
   }

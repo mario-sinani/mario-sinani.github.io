@@ -20,7 +20,6 @@ const TICKS = 10;
 
 export function createBeamModes() {
   const model = createBeamModel();
-  const state = model.state;
   const slope = new Float64Array(SAMPLES + 1);
   const axial = new Float64Array(SAMPLES + 1);
   for (let i = 0; i <= SAMPLES; i++) {
@@ -59,7 +58,7 @@ export function createBeamModes() {
   }
 
   function drawStrobe(ctx, ink) {
-    model.strobe.forEach((s, k) => {
+    model.strobe.each((s, k) => {
       pathBeam(ctx, s.x1);
       ctx.lineWidth = 1;
       ctx.strokeStyle = withAlpha(ink.line, (0.42 * (k + 1)) / STROBES);
@@ -68,25 +67,25 @@ export function createBeamModes() {
   }
 
   function drawBeam(ctx, ink) {
-    pathBeam(ctx, state.x1);
+    pathBeam(ctx, model.bending);
     ctx.lineWidth = 1.8;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
     /* The ticks move with the axial mode, each at its station plus the
        axial displacement, drawn larger than it is. */
-    traceBeam(state.x1);
+    traceBeam(model.bending);
     ctx.beginPath();
     for (let k = 1; k <= TICKS; k++) {
       const xi = k / TICKS;
-      const shifted = Math.min(Math.max(xi + state.x2 * axial[Math.round(xi * SAMPLES)] * AXIAL_SHOW, 0), 1);
+      const shifted = Math.min(Math.max(xi + model.axial * axial[Math.round(xi * SAMPLES)] * AXIAL_SHOW, 0), 1);
       const i = shifted * SAMPLES;
       const i0 = Math.floor(i);
       const i1 = Math.min(i0 + 1, SAMPLES);
       const f = i - i0;
       const px = beam.x + (X[i0] + (X[i1] - X[i0]) * f) * beam.length;
       const py = beam.y - (Z[i0] + (Z[i1] - Z[i0]) * f) * beam.length;
-      const a = slope[i0] * state.x1;
+      const a = slope[i0] * model.bending;
       const nx = -Math.sin(a) * 4;
       const ny = -Math.cos(a) * 4;
       ctx.moveTo(px - nx, py - ny);

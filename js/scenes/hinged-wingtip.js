@@ -94,11 +94,9 @@ export function createHingedWingtip() {
 
   function drawGhosts(ctx, ink) {
     const history = model.history;
-    if (!history.length) return;
+    if (!history.count) return;
     GHOSTS.forEach((ago, k) => {
-      const when = model.clock - ago;
-      let best = history[0];
-      for (const s of history) if (Math.abs(s.t - when) < Math.abs(best.t - when)) best = s;
+      const best = history.nearest(model.clock - ago);
       traceInner(best.q);
       drawTip(ctx, ink, best.Theta, withAlpha(ink.body, 0.1 + 0.1 * k), 1.4);
     });
@@ -225,7 +223,7 @@ export function createHingedWingtip() {
   /* The fold angle against time, with marks at a fixed spacing. */
   function drawTrace(ctx, ink) {
     const history = model.history;
-    if (trace.w <= 0 || history.length < 3) return;
+    if (trace.w <= 0 || history.count < 3) return;
     const lo = (-30 * Math.PI) / 180;
     const hi = (70 * Math.PI) / 180;
     const toX = (when) => trace.x + trace.w * (1 - (model.clock - when) / TRACE_SECONDS);
@@ -241,7 +239,7 @@ export function createHingedWingtip() {
     ctx.stroke();
 
     ctx.beginPath();
-    history.forEach((s, i) => {
+    history.each((s, i) => {
       if (i === 0) ctx.moveTo(toX(s.t), toY(s.fold)); else ctx.lineTo(toX(s.t), toY(s.fold));
     });
     ctx.lineTo(toX(model.clock), toY(model.fold()));
@@ -250,11 +248,11 @@ export function createHingedWingtip() {
     ctx.stroke();
 
     ctx.beginPath();
-    for (const s of history) {
-      if (Math.abs((s.t / MARK_EVERY) - Math.round(s.t / MARK_EVERY)) > TRACE_STEP / MARK_EVERY / 2) continue;
+    history.each((s) => {
+      if (Math.abs((s.t / MARK_EVERY) - Math.round(s.t / MARK_EVERY)) > TRACE_STEP / MARK_EVERY / 2) return;
       ctx.moveTo(toX(s.t) + 2.2, toY(s.fold));
       ctx.arc(toX(s.t), toY(s.fold), 2.2, 0, TWO_PI);
-    }
+    })
     ctx.lineWidth = 1;
     ctx.strokeStyle = ink.accent;
     ctx.stroke();

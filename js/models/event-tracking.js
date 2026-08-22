@@ -11,6 +11,8 @@
    The geometry lives in the scene, which gives it here: the shore, the
    craft and the size of the view, in the pixels of the drawing. */
 
+import { createSeries } from './series.js';
+
 export const DRIFT = 46;        // px/s the world moves below the vehicle
 export const HORIZON = 1.2;     // seconds a plan is valid for: 12 steps of 0.1 s in the paper
 /* The triggering condition: the departure of the measured state from the
@@ -25,11 +27,16 @@ const NOISE = 0.0012;
 
 export const TRACK_SECONDS = 9; // how much flown path is kept, and how much time the plot shows
 
-export function createEventTrackingModel(view, shore, craft) {
+/* The scene gives the geometry it draws in: the height of the view, the
+   shape of the shore, and the station of the craft along it with its
+   standoff. The model reads that geometry and never writes to it. */
+export function createEventTrackingModel(view, shore, station) {
   const plan = { at: -99, v0: 0, base: 0, slope: 0, e0: 0 };
+  /* Where the craft is, across the coast. The scene reads it to draw. */
+  let y = 0;
   let craftVel = 0;
-  let track = [];
-  let stamps = [];
+  const track = createSeries({ seconds: TRACK_SECONDS });
+  const stamps = createSeries({ seconds: TRACK_SECONDS });
   let events = 0;
   let lastTime = 0;
   /* The lab can hold the horizon. null uses the constant. The horizon is
@@ -50,7 +57,7 @@ export function createEventTrackingModel(view, shore, craft) {
   /** The correct position of the vehicle: a fixed standoff from the
       contour. */
   function target(t) {
-    return shoreAt(craft.x, t) - craft.standoff;
+    return shoreAt(station.x, t) - station.standoff;
   }
 
   /** The noise of the measurement: small, smooth and deterministic. */
@@ -79,14 +86,14 @@ export function createEventTrackingModel(view, shore, craft) {
     plan.at = t;
     plan.base = target(t);
     plan.slope = (target(t) - target(t - 0.1)) / 0.1;
-    plan.e0 = craft.y - plan.base;
+    plan.e0 = y - plan.base;
     // Start the new plan at the velocity of the craft: an event bends the
     // path, and does not stop it.
     plan.v0 = craftVel;
   }
 
   function follow(dt, t) {
-    const before = craft.y;
+    const before = y;
     const age = t - plan.at;
     /* The event: the measured state against the predicted one. The state is
        the offset from the target. The plan takes the contour as straight;
@@ -94,35 +101,37 @@ export function createEventTrackingModel(view, shore, craft) {
        floor plus a fraction of the offset the plan still expects. */
     const expected = predicted(t);
     const expectedOffset = expected - predictedTarget(t);
-    const measuredOffset = craft.y + noise(t) - target(t);
+    const measuredOffset = y + noise(t) - target(t);
     const departure = Math.abs(measuredOffset - expectedOffset);
     const bound = FLOOR * view.h + SIGMA * Math.abs(expectedOffset);
     if (age > horizon() || departure > bound) {
       replan(t);
       events += 1;
       stamps.push(t);
-      while (stamps.length && t - stamps[0] > TRACK_SECONDS) stamps.shift();
     } else {
       /* Between two events the craft is in an open loop, on the plan in
          memory. */
-      craft.y = expected;
+      y = expected;
     }
-    if (dt > 0) craftVel = (craft.y - before) / dt;
-    track.push({ t, y: craft.y, e: craft.y - target(t) });
-    while (track.length && t - track[0].t > TRACK_SECONDS) track.shift();
+    if (dt > 0) craftVel = (y - before) / dt;
+    track.push({ t, y, e: y - target(t) });
     lastTime = t;
   }
 
   /** Move the past with the clock, if the clock goes back. */
   function shiftPast(by) {
-    track.forEach((p) => { p.t -= by; });
-    stamps = stamps.map((s) => s - by);
+    track.shiftTime(by);
+    stamps.shiftTime(by);
     plan.at -= by;
     lastTime -= by;
   }
 
   return {
     plan,
+    /** Where the craft is now, across the coast. */
+    get y() { return y; },
+    /** Put the craft on a line, when the geometry of the scene changes. */
+    placeAt(at) { y = at; },
     get track() { return track; },
     get stamps() { return stamps; },
     get events() { return events; },
@@ -139,23 +148,23 @@ export function createEventTrackingModel(view, shore, craft) {
       return {
         events,
         horizon: horizon(),
-        offset: craft.y - target(lastTime),
-        trackEnd: track.length ? track[track.length - 1].t : null,
+        offset: y - target(lastTime),
+        trackEnd: track.count ? track.last.t : null,
       };
     },
     reset() {
       plan.at = -99;
-      track = [];
-      stamps = [];
+      track.clear();
+      stamps.clear();
       lastTime = 0;
     },
     /* Start the past of a fixed frame at the given time, on the target. */
     startPast(at) {
-      track = [];
-      stamps = [];
+      track.clear();
+      stamps.clear();
       plan.at = -99;
       craftVel = 0;
-      craft.y = target(at);
+      y = target(at);
     },
     hold(v) { held = v; },
     release() { held = null; },

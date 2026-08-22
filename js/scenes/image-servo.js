@@ -26,7 +26,6 @@ export function createImageServo() {
   const plot = { x: 0, y: 0, w: 0, h: 0 };
   const coast = { a1: 0, a2: 0, k1: 0, k2: 0 };
   const model = createImageServoModel(frame, coast);
-  const pose = model.pose;
   let stage = null;
 
   /* One solution gives one velocity command: a proportional law on the
@@ -166,7 +165,7 @@ export function createImageServo() {
   /* The error with time, and a mark at each solution. */
   function drawPlot(ctx, t, ink) {
     const { errorLog, triggers } = model;
-    if (plot.w <= 0 || errorLog.length < 2) return;
+    if (plot.w <= 0 || errorLog.count < 2) return;
     const baseY = plot.y + plot.h;
     const scale = frame.h * 0.3;
     const toX = (when) => plot.x + plot.w * (1 - (t - when) / PLOT_SECONDS);
@@ -183,7 +182,7 @@ export function createImageServo() {
 
     const liveE = model.errorNorm(t);
     ctx.beginPath();
-    errorLog.forEach((p, i) => {
+    errorLog.each((p, i) => {
       if (i === 0) ctx.moveTo(toX(p.t), toY(p.e)); else ctx.lineTo(toX(p.t), toY(p.e));
     });
     ctx.lineTo(toX(t), toY(liveE));
@@ -191,17 +190,17 @@ export function createImageServo() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    for (const at of triggers) {
+    triggers.each((at) => {
       const px = toX(at);
       const presence = Math.min(1, (t - at) / 0.3, (px - plot.x) / 14);
-      if (presence <= 0) continue;
+      if (presence <= 0) return;
       ctx.beginPath();
       ctx.moveTo(px, baseY);
       ctx.lineTo(px, baseY + 4);
       ctx.lineWidth = 1.1;
       ctx.strokeStyle = withAlpha(ink.accent, presence);
       ctx.stroke();
-    }
+    });
 
     ctx.beginPath();
     ctx.arc(toX(t), toY(liveE), 2.4, 0, TWO_PI);
@@ -210,7 +209,7 @@ export function createImageServo() {
   }
 
   function paint(ctx, t, ink) {
-    const d = model.detect(pose);
+    const d = model.detect();
     drawCoast(ctx, d, ink);
     drawFrame(ctx, ink);
     ctx.save();

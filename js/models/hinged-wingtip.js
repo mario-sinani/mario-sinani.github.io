@@ -9,6 +9,8 @@
    the tip coasts where its own lift carries it. The constants are
    calibrated to the two cases of the paper. */
 
+import { createSeries } from './series.js';
+
 export const INNER = 12;          // metres
 export const OUTER = 4;
 export const SEMISPAN = INNER + OUTER;
@@ -39,7 +41,7 @@ export const TRACE_SECONDS = 14;
 export const TRACE_STEP = 0.1;   // seconds between the samples of the trace
 
 export function createHingedWingtipModel() {
-  const history = [];
+  const history = createSeries({ seconds: TRACE_SECONDS });
   let lastSample = -99;
   /* The lab can hold the flare. null uses the flare of the paper. */
   let held = null;
@@ -94,7 +96,7 @@ export function createHingedWingtipModel() {
     if (clock > t) {
       // The clock went back. Move the past with it.
       const by = clock - t;
-      history.forEach((s) => { s.t -= by; });
+      history.shiftTime(by);
       lastSample -= by;
       clock = t;
     }
@@ -107,7 +109,6 @@ export function createHingedWingtipModel() {
       if (clock - lastSample >= TRACE_STEP) {
         lastSample = clock;
         history.push({ t: clock, fold: fold(), Theta, q });
-        while (history.length && clock - history[0].t > TRACE_SECONDS) history.shift();
       }
     }
   }
@@ -139,7 +140,7 @@ export function createHingedWingtipModel() {
       q = 0; qd = 0; qdd = 0;
       Theta = 0; Thetad = 0;
       clock = 0;
-      history.length = 0;
+      history.clear();
       lastSample = -99;
     },
     hold(v) { held = v; },

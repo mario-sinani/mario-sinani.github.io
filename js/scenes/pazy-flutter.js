@@ -49,7 +49,7 @@ export function createPazyFlutter() {
      limit cycle, so the growth fills the box and the decay empties it. */
   function drawTrace(ctx, ink) {
     const history = model.history;
-    if (trace.h <= 0 || history.length < 2) return;
+    if (trace.h <= 0 || history.count < 2) return;
     const midY = trace.y + trace.h / 2;
     const scale = LIMIT_SPEED * 1.15;
     const toX = (when) => trace.x + trace.w * (1 - (model.clock - when) / LOG_SECONDS);
@@ -65,7 +65,7 @@ export function createPazyFlutter() {
     ctx.stroke();
 
     ctx.beginPath();
-    history.forEach((h, i) => {
+    history.each((h, i) => {
       const px = toX(h.t);
       const py = toY(h.v);
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
@@ -74,7 +74,7 @@ export function createPazyFlutter() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    const last = history[history.length - 1];
+    const last = history.last;
     ctx.beginPath();
     ctx.arc(toX(last.t), toY(last.v), 2.6, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
@@ -101,7 +101,7 @@ export function createPazyFlutter() {
   }
 
   function drawStrobe(ctx, ink) {
-    model.strobe.forEach((s, k) => {
+    model.strobe.each((s, k) => {
       slopesFrom(s.q1, s.q2);
       wing.axis(ctx, psi, withAlpha(ink.body, (0.05 + 0.2 * (k + 1)) / STROBES));
     });

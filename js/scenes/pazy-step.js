@@ -25,7 +25,7 @@ export function createPazyStep() {
   const n = STATIONS;
   const wing = createPazyWing(n);
   const model = createPazyStepModel(n);
-  const { q, qd, LOAD } = model;
+  const { LOAD } = model;
 
   const psi = new Float64Array(n + 1);
   const theta = new Float64Array(n + 1);   // no twist in this scene
@@ -44,7 +44,7 @@ export function createPazyStep() {
   }
 
   function drawLoad(ctx, ink) {
-    model.slopesInto(psi, q);
+    model.slopesInto(psi);
     model.velocityInto(vel);
     const unit = LOAD * ALPHA_8;
     wing.arrows(ctx, ink, psi, (i) => (model.load(model.alphaNow, psi[i], vel[i]) / unit) * span * 0.16);
@@ -54,7 +54,7 @@ export function createPazyStep() {
      level of the linear model and the level the nonlinear model settles at. */
   function drawInset(ctx, ink) {
     const history = model.history;
-    if (inset.w <= 0 || history.length < 2) return;
+    if (inset.w <= 0 || history.count < 2) return;
     const unit = LOAD * ALPHA_8;
     const toX = (when) => inset.x + inset.w * (1 - (model.clock - when) / LOG_SECONDS);
     const toY = (f) => inset.y + inset.h * (1 - (f / unit + 0.25) / 1.4);
@@ -86,7 +86,7 @@ export function createPazyStep() {
     ctx.setLineDash([]);
 
     ctx.beginPath();
-    history.forEach((h, i) => {
+    history.each((h, i) => {
       const px = toX(h.t);
       const py = toY(h.force);
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
@@ -95,7 +95,7 @@ export function createPazyStep() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
-    const last = history[history.length - 1];
+    const last = history.last;
     ctx.beginPath();
     ctx.arc(toX(last.t), toY(last.force), 2.6, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
@@ -106,7 +106,7 @@ export function createPazyStep() {
     drawDatum(ctx, stage, ink);
     drawGhosts(ctx, ink);
     drawLoad(ctx, ink);
-    model.slopesInto(psi, q);
+    model.slopesInto(psi);
     wing.draw(ctx, ink, psi, theta);
     drawInset(ctx, ink);
   }
@@ -143,7 +143,7 @@ export function createPazyStep() {
 
     /** A few numbers of the state, for a test. */
     probe() {
-      model.slopesInto(psi, q);
+      model.slopesInto(psi);
       wing.trace(psi);
       return { ...model.probe(), datum: stage.y, span };
     },

@@ -10,6 +10,7 @@
    and it settles at the deformed trim, which is the steady-state one. */
 
 import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
+import { createSeries } from './series.js';
 
 const TWO_PI = Math.PI * 2;
 const TIP_RAW = [2.0, -2.0];
@@ -58,7 +59,7 @@ export function createPazyStepModel(n) {
   const qd = [0, 0];
   let alphaNow = 0;
   let clock = 0;
-  let history = [];
+  const history = createSeries({ seconds: LOG_SECONDS });
   let lastLog = -99;
   let steady = { tip: 0, q: [0, 0] };
   let steadyFor = -1;
@@ -131,7 +132,7 @@ export function createPazyStepModel(n) {
     if (clock > t) {
       // The clock went back. Move the past with it.
       const by = clock - t;
-      history.forEach((h) => { h.t -= by; });
+      history.shiftTime(by);
       lastLog -= by;
       clock = t;
     }
@@ -146,32 +147,25 @@ export function createPazyStepModel(n) {
       if (clock - lastLog >= LOG_STEP) {
         lastLog = clock;
         history.push({ t: clock, q: [q[0], q[1]], force: tipForce(alphaNow, q, qd) });
-        while (history.length && clock - history[0].t > LOG_SECONDS) history.shift();
       }
     }
   }
 
   /** The state a time ago, from the log. */
   function stateAgo(ago) {
-    if (!history.length) return null;
-    const when = clock - ago;
-    let best = history[0];
-    for (const h of history) if (Math.abs(h.t - when) < Math.abs(best.t - when)) best = h;
-    return best;
+    return history.nearest(clock - ago);
   }
 
   return {
     n,
-    shape,
-    slope,
-    q,
-    qd,
     LOAD,
     get alphaNow() { return alphaNow; },
     get clock() { return clock; },
     get history() { return history; },
-    /** Write the slope of the surface at each station into out. */
-    slopesInto(out, qs) {
+    /* Write the slope of the surface at each station into out. The
+       state of a moment ago comes from stateAgo; with no state it is the
+       one of now. */
+    slopesInto(out, qs = q) {
       for (let i = 0; i <= n; i++) out[i] = qs[0] * slope[0][i] + qs[1] * slope[1][i];
     },
     /** The normal velocity of the surface at each station. */
@@ -199,7 +193,7 @@ export function createPazyStepModel(n) {
       q[0] = 0; q[1] = 0; qd[0] = 0; qd[1] = 0;
       alphaNow = 0;
       clock = 0;
-      history = [];
+      history.clear();
       lastLog = -99;
       steadyFor = -1;
     },
@@ -209,7 +203,7 @@ export function createPazyStepModel(n) {
       q[0] = trim.q[0]; q[1] = trim.q[1]; qd[0] = 0; qd[1] = 0;
       alphaNow = targetAlpha(from);
       clock = from;
-      history = [];
+      history.clear();
       lastLog = -99;
     },
     hold(v) { held = v; },

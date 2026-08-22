@@ -12,6 +12,8 @@
    The geometry lives in the scene, which gives it here: the frame of the
    camera and the shape of the coast, in the pixels of the image. */
 
+import { createSeries } from './series.js';
+
 export const DESIRED_BAND = 40 / 480;  // the desired box: 40 pixels of the 480 across the coast
 export const HORIZON = 0.6;     // seconds a solution stays valid for: 6 steps of 0.1 s in the thesis
 export const ALONG = 40;        // px/s the desired features slide along the frame
@@ -37,8 +39,8 @@ export function createImageServoModel(frame, coast) {
   const atSolve = { u: 0, roll: 0, s: 0, corners: [] };
   const kickFrom = { u: 0, roll: 0 };
   const kickTo = { u: 0, roll: 0 };
-  let errorLog = [];
-  let triggers = [];
+  const errorLog = createSeries({ seconds: PLOT_SECONDS });
+  const triggers = createSeries({ seconds: PLOT_SECONDS });
   let events = 0;
   let lastSolve = -99;
   let lastSample = -99;
@@ -74,9 +76,9 @@ export function createImageServoModel(frame, coast) {
     return { x: c.x + along * cr - lateral * sr, y: c.y + along * sr + lateral * cr };
   }
 
-  /** The coast in the frame: its points, and the box of the detection, with
-      the lateral position and the tilt. */
-  function detect(at) {
+  /* The coast in the frame: its points, and the box of the detection, with
+     the lateral position and the tilt. With no pose it is the one of now. */
+  function detect(at = pose) {
     const pts = [];
     let vMin = Infinity;
     let vMax = -Infinity;
@@ -181,7 +183,7 @@ export function createImageServoModel(frame, coast) {
     lastSolve = t;
     events += 1;
     triggers.push(t);
-    while (triggers.length && t - triggers[0] > PLOT_SECONDS) triggers.shift();
+
   }
 
   function step(dt, t) {
@@ -221,13 +223,12 @@ export function createImageServoModel(frame, coast) {
     if (t - lastSample < SAMPLE_STEP) return;
     lastSample = t;
     errorLog.push({ t, e: errorNorm(t) });
-    while (errorLog.length && t - errorLog[0].t > PLOT_SECONDS) errorLog.shift();
   }
 
   /** Move the past with the clock, if the clock goes back. */
   function shiftPast(by) {
-    errorLog.forEach((p) => { p.t -= by; });
-    triggers = triggers.map((x) => x - by);
+    errorLog.shiftTime(by);
+    triggers.shiftTime(by);
     lastSolve -= by;
     lastSample -= by;
     kickAt -= by;
@@ -236,7 +237,6 @@ export function createImageServoModel(frame, coast) {
   }
 
   return {
-    pose,
     get errorLog() { return errorLog; },
     get triggers() { return triggers; },
     get events() { return events; },
@@ -268,8 +268,8 @@ export function createImageServoModel(frame, coast) {
       kicks = 0;
       kickAt = -99;
       nextKick = 2;
-      errorLog = [];
-      triggers = [];
+      errorLog.clear();
+      triggers.clear();
       lastTime = 0;
     },
     /* Start the past of a fixed frame: a pose off the desired one, and the

@@ -22,9 +22,11 @@ const DESIRED_BAND = 40 / 376;  // the desired box: 40 pixels of 376 across the 
 export function createEventTracking() {
   const view = { w: 0, h: 0 };
   const shore = { y: 0, a1: 0, a2: 0, k1: 0, k2: 0, spacing: 9 };
-  const craft = { x: 0, y: 0, standoff: 0, span: 0 };
+  const craft = { x: 0, standoff: 0, span: 0 };
   const frame = { w: 0, h: 0 };
   const plot = { x: 0, y: 0, w: 0, h: 0 };
+  /* The station of the craft along the coast comes from the layout; where
+     it flies across the coast comes from the model. */
   const model = createEventTrackingModel(view, shore, craft);
   const plan = model.plan;
   let stage = null;
@@ -69,25 +71,24 @@ export function createEventTracking() {
   /** The path of the flight, with a mark at each event. */
   function drawTrack(ctx, t, ink) {
     const { track, stamps } = model;
-    if (track.length < 2) return;
+    if (track.count < 2) return;
     ctx.beginPath();
-    for (let i = 0; i < track.length; i++) {
-      const x = craft.x - (t - track[i].t) * DRIFT;
-      if (i === 0) ctx.moveTo(x, track[i].y); else ctx.lineTo(x, track[i].y);
-    }
+    track.each((p, i) => {
+      const x = craft.x - (t - p.t) * DRIFT;
+      if (i === 0) ctx.moveTo(x, p.y); else ctx.lineTo(x, p.y);
+    });
     ctx.lineWidth = 1.2;
     ctx.strokeStyle = withAlpha(ink.body, 0.45);
     ctx.stroke();
 
     ctx.beginPath();
-    for (const at of stamps) {
+    stamps.each((at) => {
       const x = craft.x - (t - at) * DRIFT;
-      if (x < stage.left) continue;
-      let best = track[0];
-      for (const p of track) if (Math.abs(p.t - at) < Math.abs(best.t - at)) best = p;
+      if (x < stage.left) return;
+      const best = track.nearest(at);
       ctx.moveTo(x + 2.2, best.y);
       ctx.arc(x, best.y, 2.2, 0, TWO_PI);
-    }
+    });
     ctx.fillStyle = ink.accent;
     ctx.fill();
   }
@@ -114,7 +115,7 @@ export function createEventTracking() {
      box with the four corners, and the desired box in the middle. */
   function drawCamera(ctx, t, ink) {
     const left = craft.x - frame.w / 2;
-    const top = craft.y - frame.h / 2;
+    const top = model.y - frame.h / 2;
     ctx.beginPath();
     ctx.rect(left, top, frame.w, frame.h);
     ctx.lineWidth = 1;
@@ -137,7 +138,7 @@ export function createEventTracking() {
     const band = frame.h * DESIRED_BAND;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
-    ctx.rect(left, craft.y - band / 2, frame.w, band);
+    ctx.rect(left, model.y - band / 2, frame.w, band);
     ctx.lineWidth = 1;
     ctx.strokeStyle = withAlpha(ink.line, 0.6);
     ctx.stroke();
@@ -186,7 +187,7 @@ export function createEventTracking() {
     const arms = [];
     for (let k = 0; k < ROTORS; k++) {
       const a = (TWO_PI * (k + 0.5)) / ROTORS;
-      arms.push({ a, x: craft.x + Math.cos(a) * reach, y: craft.y + Math.sin(a) * reach });
+      arms.push({ a, x: craft.x + Math.cos(a) * reach, y: model.y + Math.sin(a) * reach });
     }
 
     // The discs of the rotors, under everything else.
@@ -204,7 +205,7 @@ export function createEventTracking() {
     // The arms, from the body to the motors.
     ctx.beginPath();
     for (const m of arms) {
-      ctx.moveTo(craft.x + Math.cos(m.a) * body * 0.9, craft.y + Math.sin(m.a) * body * 0.9);
+      ctx.moveTo(craft.x + Math.cos(m.a) * body * 0.9, model.y + Math.sin(m.a) * body * 0.9);
       ctx.lineTo(m.x, m.y);
     }
     ctx.lineWidth = 2.2;
@@ -236,20 +237,20 @@ export function createEventTracking() {
 
     // The body plate, and the camera under its centre.
     ctx.beginPath();
-    ctx.arc(craft.x, craft.y, body, 0, TWO_PI);
+    ctx.arc(craft.x, model.y, body, 0, TWO_PI);
     ctx.fillStyle = ink.ground;
     ctx.fill();
     ctx.lineWidth = 1.6;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
     ctx.fillStyle = ink.accent;
-    ctx.fillRect(craft.x - 2.5, craft.y - 2.5, 5, 5);
+    ctx.fillRect(craft.x - 2.5, model.y - 2.5, 5, 5);
 
     // The nose: the direction of flight.
     ctx.beginPath();
-    ctx.moveTo(craft.x + body * 1.55, craft.y);
-    ctx.lineTo(craft.x + body * 1.05, craft.y - body * 0.32);
-    ctx.lineTo(craft.x + body * 1.05, craft.y + body * 0.32);
+    ctx.moveTo(craft.x + body * 1.55, model.y);
+    ctx.lineTo(craft.x + body * 1.05, model.y - body * 0.32);
+    ctx.lineTo(craft.x + body * 1.05, model.y + body * 0.32);
     ctx.closePath();
     ctx.fillStyle = ink.accent;
     ctx.fill();
@@ -260,7 +261,7 @@ export function createEventTracking() {
      ground. */
   function drawPlot(ctx, t, ink) {
     const { track, stamps } = model;
-    if (plot.w <= 0 || plot.h <= 0 || track.length < 2) return;
+    if (plot.w <= 0 || plot.h <= 0 || track.count < 2) return;
     const midY = plot.y + plot.h / 2;
     const scale = craft.standoff * 0.7;
     const toX = (when) => plot.x + plot.w * (1 - (t - when) / TRACK_SECONDS);
@@ -276,27 +277,27 @@ export function createEventTracking() {
     ctx.stroke();
 
     ctx.beginPath();
-    for (let i = 0; i < track.length; i++) {
-      const px = toX(track[i].t);
-      const py = toY(track[i].e);
+    track.each((p, i) => {
+      const px = toX(p.t);
+      const py = toY(p.e);
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-    }
+    });
     ctx.lineWidth = 1.3;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
 
     ctx.beginPath();
-    for (const at of stamps) {
+    stamps.each((at) => {
       const px = toX(at);
-      if (px < plot.x) continue;
+      if (px < plot.x) return;
       ctx.moveTo(px, plot.y + plot.h);
       ctx.lineTo(px, plot.y + plot.h + 4);
-    }
+    });
     ctx.lineWidth = 1.1;
     ctx.strokeStyle = ink.accent;
     ctx.stroke();
 
-    const last = track[track.length - 1];
+    const last = track.last;
     ctx.beginPath();
     ctx.arc(toX(last.t), toY(last.e), 2.4, 0, TWO_PI);
     ctx.fillStyle = ink.accent;
@@ -367,7 +368,7 @@ export function createEventTracking() {
       shore.k2 = TWO_PI / Math.max(w * 0.21, 110);
       shore.spacing = Math.max(h * 0.0075, 5);
       craft.x = stage.left + stage.width * (preview ? 0.5 : 0.34);
-      craft.y = stage.y;
+      model.placeAt(stage.y);
       frame.h = craft.standoff * 2.6;
       frame.w = frame.h * FRAME_RATIO;
 
