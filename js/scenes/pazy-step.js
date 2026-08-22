@@ -1,71 +1,31 @@
-/* Scene: the Pazy wing after a step in the angle of attack. Background for
-   "Physics-Informed Data-Driven Modelling of Nonlinear Aerodynamic Forces
-   of the Pazy Wing".
+/* Scene: the drawing of the Pazy wing after a step in the angle of attack.
+   Background for "Physics-Informed Data-Driven Modelling of Nonlinear
+   Aerodynamic Forces of the Pazy Wing".
 
-   The paper trains its model on steps of 1, 2, 7 and 8 degrees and tests it
-   at 4. The tip rises to almost half the span, so the force is a nonlinear
-   function of the shape. The scene integrates the first two bending modes
-   under a load that follows the deformed surface: the incidence falls with
-   the slope, and so does the vertical part of the force, which bends away
-   from the straight line of the linear model.
-
-   The two constraints of the paper are visible: the transient decays, and
-   it settles at the deformed trim. The inset is the vertical force at the
-   tip, with the steady level of each model. */
+   The model is in js/models/pazy-step.js. The scene draws the wing, the
+   ghosts of its recent shapes, the arrows of the load, and the inset of the
+   vertical force at the tip with the level of each model. */
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
-import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
+import { createPazyStepModel, SCHEDULE, HOLD, LOG_SECONDS, ALPHA_8 } from '../models/pazy-step.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
-const TIP_RAW = [2.0, -2.0];
-/* The tip-normalised modes: the integral of the square along the span is
-   0.25, and 0.3915 for the first. */
-const MODAL_MASS = 0.25;
-const FIRST_INTEGRAL = 0.3915;
 
-const FIRST_HZ = 0.42;            // the first bending mode, on the screen
-const AERO_DAMPING = 0.09;        // of the first mode, from the plunge rate
-const STRUCTURAL_DAMPING = 0.01;
-/* The rise of the tip of the linear model at 8 degrees, as a fraction of
-   the span. The true rise is smaller, because the surface turns away from
-   the flow. */
-const LINEAR_RISE_AT_8 = 0.50;
-const STEP_LAG = 0.04;            // seconds; the step is sharp, but not a jump
-const SCHEDULE = [1, 2, 4, 7, 8, 4];   // degrees: the training set of the paper, and its test angle
-const HOLD = 7;                   // seconds at each angle
-const LOG_SECONDS = 6;
-const LOG_STEP = 1 / 30;
 const GHOSTS = [0.6, 0.4, 0.2];   // seconds ago
 /* The subject rises above the datum, so the datum sits lower by this
    fraction of the height. */
 const RISE = 0.10;
-const STEP = 1 / 240;
 
-const ALPHA_8 = (8 * Math.PI) / 180;
 
 export function createPazyStep() {
   const n = STATIONS;
   const wing = createPazyWing(n);
-  const omega = [TWO_PI * FIRST_HZ, 0];
-  omega[1] = omega[0] * (ROOTS[1] * ROOTS[1]) / (ROOTS[0] * ROOTS[0]);
-  /* The lift per unit span per radian, in the units of the modes, and the
-     speed in spans per second. The first sets the rise of the tip, the
-     second the damping of the first mode. */
-  const LOAD = (LINEAR_RISE_AT_8 * MODAL_MASS * omega[0] * omega[0]) / (ALPHA_8 * FIRST_INTEGRAL);
-  const STREAM = LOAD / (2 * AERO_DAMPING * omega[0]);
-
-  const shape = [new Float64Array(n + 1), new Float64Array(n + 1)];
-  const slope = [new Float64Array(n + 1), new Float64Array(n + 1)];
-  for (let m = 0; m < 2; m++) {
-    for (let i = 0; i <= n; i++) {
-      shape[m][i] = modeShape(m, i / n) / TIP_RAW[m];
-      slope[m][i] = modeSlope(m, i / n) / TIP_RAW[m];
-    }
-  }
+  const model = createPazyStepModel(n);
+  const { q, qd, LOAD } = model;
 
   const psi = new Float64Array(n + 1);
   const theta = new Float64Array(n + 1);   // no twist in this scene
@@ -73,133 +33,30 @@ export function createPazyStep() {
   const inset = { x: 0, y: 0, w: 0, h: 0 };
   let stage = null;
   let span = 300;
-  const q = [0, 0];
-  const qd = [0, 0];
-  let alphaNow = 0;
-  let clock = 0;
-  let history = [];
-  let lastLog = -99;
-  let steady = { tip: 0, q: [0, 0] };
-  let steadyFor = -1;
-  /* The lab can hold the angle. null runs the schedule of the paper. */
-  let held = null;
-
-  function targetAlpha(t) {
-    if (held !== null) return held;
-    return (SCHEDULE[Math.floor(t / HOLD) % SCHEDULE.length] * Math.PI) / 180;
-  }
-
-  function slopesFrom(qs) {
-    for (let i = 0; i <= n; i++) psi[i] = qs[0] * slope[0][i] + qs[1] * slope[1][i];
-  }
-
-  /** The normal load per unit span at station i, for an incidence and the
-      slope and the normal velocity there. */
-  function load(alpha, slopeAt, velocity) {
-    return LOAD * (alpha * Math.cos(slopeAt) - velocity / STREAM);
-  }
-
-  /** The vertical force at the tip, which the paper plots. */
-  function tipForce(alpha, qs, qds) {
-    const s = qs[0] * slope[0][n] + qs[1] * slope[1][n];
-    const v = qds[0] * shape[0][n] + qds[1] * shape[1][n];
-    return load(alpha, s, v) * Math.cos(s);
-  }
-
-  function integrate(dt, alpha) {
-    slopesFrom(q);
-    for (let i = 0; i <= n; i++) vel[i] = qd[0] * shape[0][i] + qd[1] * shape[1][i];
-    const ds = 1 / n;
-    const Q = [0, 0];
-    for (let i = 1; i <= n; i++) {
-      const ln = load(alpha, psi[i], vel[i]);
-      Q[0] += ln * shape[0][i] * ds;
-      Q[1] += ln * shape[1][i] * ds;
-    }
-    for (let m = 0; m < 2; m++) {
-      const acc = Q[m] / MODAL_MASS - 2 * STRUCTURAL_DAMPING * omega[m] * qd[m] - omega[m] * omega[m] * q[m];
-      qd[m] += acc * dt;
-      q[m] += qd[m] * dt;
-    }
-  }
-
-  /** The deformed trim of an angle: the balance of the load and the
-      stiffness, by iteration. */
-  function settle(alpha) {
-    if (steadyFor === alpha) return steady;
-    const qs = [0, 0];
-    const ds = 1 / n;
-    for (let k = 0; k < 80; k++) {
-      const Q = [0, 0];
-      for (let i = 1; i <= n; i++) {
-        const s = qs[0] * slope[0][i] + qs[1] * slope[1][i];
-        const ln = load(alpha, s, 0);
-        Q[0] += ln * shape[0][i] * ds;
-        Q[1] += ln * shape[1][i] * ds;
-      }
-      for (let m = 0; m < 2; m++) qs[m] += 0.5 * (Q[m] / (MODAL_MASS * omega[m] * omega[m]) - qs[m]);
-    }
-    steady = { q: qs, tip: tipForce(alpha, qs, [0, 0]) };
-    steadyFor = alpha;
-    return steady;
-  }
-
-  /** Step the wing with a fixed step up to the time t. */
-  function advance(t) {
-    if (clock > t) {
-      // The clock went back. Move the past with it.
-      const by = clock - t;
-      history.forEach((h) => { h.t -= by; });
-      lastLog -= by;
-      clock = t;
-    }
-    let left = Math.min(Math.max(t - clock, 0), 0.25);
-    while (left > 0) {
-      const h = Math.min(STEP, left);
-      const target = targetAlpha(clock + h);
-      alphaNow += (target - alphaNow) * Math.min(1, h / STEP_LAG);
-      integrate(h, alphaNow);
-      clock += h;
-      left -= h;
-      if (clock - lastLog >= LOG_STEP) {
-        lastLog = clock;
-        history.push({ t: clock, q: [q[0], q[1]], force: tipForce(alphaNow, q, qd) });
-        while (history.length && clock - history[0].t > LOG_SECONDS) history.shift();
-      }
-    }
-  }
-
-  /** The state a time ago, from the log. */
-  function stateAgo(ago) {
-    if (!history.length) return null;
-    const when = clock - ago;
-    let best = history[0];
-    for (const h of history) if (Math.abs(h.t - when) < Math.abs(best.t - when)) best = h;
-    return best;
-  }
 
   function drawGhosts(ctx, ink) {
     GHOSTS.forEach((ago, k) => {
-      const s = stateAgo(ago);
+      const s = model.stateAgo(ago);
       if (!s) return;
-      slopesFrom(s.q);
+      model.slopesInto(psi, s.q);
       wing.ghost(ctx, psi, theta, withAlpha(ink.body, 0.07 + 0.06 * k));
     });
   }
 
   function drawLoad(ctx, ink) {
-    slopesFrom(q);
-    for (let i = 0; i <= n; i++) vel[i] = qd[0] * shape[0][i] + qd[1] * shape[1][i];
+    model.slopesInto(psi, q);
+    model.velocityInto(vel);
     const unit = LOAD * ALPHA_8;
-    wing.arrows(ctx, ink, psi, (i) => (load(alphaNow, psi[i], vel[i]) / unit) * span * 0.16);
+    wing.arrows(ctx, ink, psi, (i) => (model.load(model.alphaNow, psi[i], vel[i]) / unit) * span * 0.16);
   }
 
   /* The inset: the vertical force at the tip. The dashed lines are the
      level of the linear model and the level the nonlinear model settles at. */
   function drawInset(ctx, ink) {
+    const history = model.history;
     if (inset.w <= 0 || history.length < 2) return;
     const unit = LOAD * ALPHA_8;
-    const toX = (when) => inset.x + inset.w * (1 - (clock - when) / LOG_SECONDS);
+    const toX = (when) => inset.x + inset.w * (1 - (model.clock - when) / LOG_SECONDS);
     const toY = (f) => inset.y + inset.h * (1 - (f / unit + 0.25) / 1.4);
 
     ctx.beginPath();
@@ -211,9 +68,9 @@ export function createPazyStep() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    const alpha = targetAlpha(clock);
+    const alpha = model.targetAlpha(model.clock);
     const linear = LOAD * alpha;
-    const trim = settle(alpha).tip;
+    const trim = model.settle(alpha).tip;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
     ctx.moveTo(inset.x, toY(linear));
@@ -249,7 +106,7 @@ export function createPazyStep() {
     drawDatum(ctx, stage, ink);
     drawGhosts(ctx, ink);
     drawLoad(ctx, ink);
-    slopesFrom(q);
+    model.slopesInto(psi, q);
     wing.draw(ctx, ink, psi, theta);
     drawInset(ctx, ink);
   }
@@ -266,13 +123,13 @@ export function createPazyStep() {
       min: 0,
       max: 8,
       step: 0.25,
-      value: () => (targetAlpha(clock) * 180) / Math.PI,
-      set(v) { held = (v * Math.PI) / 180; },
-      release() { held = null; },
+      value: () => (model.targetAlpha(model.clock) * 180) / Math.PI,
+      set(v) { model.hold((v * Math.PI) / 180); },
+      release() { model.release(); },
       auto: {
         name: 'the steps of the paper',
         status() {
-          const { now, next, left } = caseAt(clock, HOLD, SCHEDULE);
+          const { now, next, left } = caseAt(model.clock, HOLD, SCHEDULE);
           return 'Auto runs the steps of the paper: 1, 2, 4, 7 and 8 degrees, 7 seconds each. '
             + 'Now a step to ' + now + '°; next ' + next + '° in ' + left + ' s.';
         },
@@ -285,14 +142,14 @@ export function createPazyStep() {
 
     /** A few numbers of the state, for a test. */
     probe() {
-      slopesFrom(q);
+      model.slopesInto(psi, q);
       wing.trace(psi);
       return {
-        alpha: (alphaNow * 180) / Math.PI,
+        alpha: (model.alphaNow * 180) / Math.PI,
         tipRise: q[0] + q[1],
-        tipForce: tipForce(alphaNow, q, qd) / (LOAD * ALPHA_8),
-        linearForce: alphaNow / ALPHA_8,
-        steadyForce: settle(targetAlpha(clock)).tip / (LOAD * ALPHA_8),
+        tipForce: model.tipForce(model.alphaNow, q, qd) / (LOAD * ALPHA_8),
+        linearForce: model.alphaNow / ALPHA_8,
+        steadyForce: model.settle(model.targetAlpha(model.clock)).tip / (LOAD * ALPHA_8),
         datum: stage.y,
         span,
       };
@@ -301,12 +158,7 @@ export function createPazyStep() {
     /* Put the model back at its start. The engine calls it before
        it draws a fixed frame after a resize. */
     reset() {
-      q[0] = 0; q[1] = 0; qd[0] = 0; qd[1] = 0;
-      alphaNow = 0;
-      clock = 0;
-      history = [];
-      lastLog = -99;
-      steadyFor = -1;
+      model.reset();
     },
 
     layout(w, h, fit = {}) {
@@ -334,7 +186,7 @@ export function createPazyStep() {
     },
 
     frame(ctx, dt, t, ink) {
-      advance(t);
+      model.advance(t);
       paint(ctx, ink);
     },
 
@@ -343,13 +195,8 @@ export function createPazyStep() {
       /* Start from the trim before the log, so the log and the ghosts have
          a past. */
       const from = Math.max(0, at - LOG_SECONDS - 1.5);
-      const trim = settle(targetAlpha(from));
-      q[0] = trim.q[0]; q[1] = trim.q[1]; qd[0] = 0; qd[1] = 0;
-      alphaNow = targetAlpha(from);
-      clock = from;
-      history = [];
-      lastLog = -99;
-      while (clock < at) advance(Math.min(clock + 0.25, at));
+      model.startAtTrim(from);
+      while (model.clock < at) model.advance(Math.min(model.clock + 0.25, at));
       paint(ctx, ink);
       return at;
     },
