@@ -25,6 +25,16 @@
   gap: 1.4rem;
 }
 
+/* The portrait, at the head of the sidebar. */
+.portrait {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
 .fact .fact-label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -50,4 +60,7 @@
     padding-top: 1.6rem;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
+
+  /* The portrait keeps its own row, at a size the column can hold. */
+  .portrait { grid-column: 1 / -1; max-width: 200px; }
 }
