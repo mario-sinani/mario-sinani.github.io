@@ -127,7 +127,8 @@ export function createEventTrackingModel(view, shore, station) {
   }
 
   return {
-    plan,
+    /** The time the plan in memory still has, in seconds. */
+    planLeft(t) { return Math.max(horizon() - (t - plan.at), 0.05); },
     /** Where the craft is now, across the coast. */
     get y() { return y; },
     /** Put the craft on a line, when the geometry of the scene changes. */

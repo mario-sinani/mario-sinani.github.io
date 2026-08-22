@@ -28,7 +28,6 @@ export function createEventTracking() {
   /* The station of the craft along the coast comes from the layout; where
      it flies across the coast comes from the model. */
   const model = createEventTrackingModel(view, shore, craft);
-  const plan = model.plan;
   let stage = null;
 
   function traceShore(ctx, t, drop) {
@@ -96,7 +95,7 @@ export function createEventTracking() {
   /* The rest of the plan in memory. Where the coastline turns, this line
      leaves the shore, and that triggers the next plan. */
   function drawPlan(ctx, t, ink) {
-    const left = Math.max(model.horizon() - (t - plan.at), 0.05);
+    const left = model.planLeft(t);
     ctx.beginPath();
     ctx.setLineDash([4, 4]);
     for (let i = 0; i <= 12; i++) {
