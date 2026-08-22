@@ -45,7 +45,6 @@ export function createSeries({ seconds = 0, keep = 0, timeOf = (item) => (typeof
     },
     at(i) { return items[i]; },
     get count() { return items.length; },
-    get first() { return items[0]; },
     get last() { return items[items.length - 1]; },
   };
 }

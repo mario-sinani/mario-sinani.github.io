@@ -138,9 +138,7 @@ export function createEventTrackingModel(view, shore, station) {
     get lastTime() { return lastTime; },
     horizon,
     shoreAt,
-    target,
     predicted,
-    predictedTarget,
     follow,
     shiftPast,
     /** A few numbers of the state, for a test. */

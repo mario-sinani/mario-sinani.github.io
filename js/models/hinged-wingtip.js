@@ -118,7 +118,6 @@ export function createHingedWingtipModel() {
     get clock() { return clock; },
     get alphaNow() { return alphaNow; },
     get q() { return q; },
-    get qd() { return qd; },
     get Theta() { return Theta; },
     flare,
     fold,

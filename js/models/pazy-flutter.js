@@ -152,11 +152,8 @@ export function createPazyFlutterModel(secondOverFirst) {
     get clock() { return clock; },
     get q1() { return q1; },
     get q2() { return q2; },
-    get q1d() { return q1d; },
     get q2d() { return q2d; },
     get omega2() { return omega2; },
-    scheduled,
-    perturb,
     advance,
     /** A few numbers of the state, for a test. */
     probe() {
@@ -166,6 +163,5 @@ export function createPazyFlutterModel(secondOverFirst) {
     hold(v) { held = v; },
     release() { held = null; },
     heldValue() { return held; },
-    setClock(t) { clock = t; },
   };
 }

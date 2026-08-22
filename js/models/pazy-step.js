@@ -157,7 +157,6 @@ export function createPazyStepModel(n) {
   }
 
   return {
-    n,
     LOAD,
     get alphaNow() { return alphaNow; },
     get clock() { return clock; },
@@ -173,7 +172,6 @@ export function createPazyStepModel(n) {
       for (let i = 0; i <= n; i++) out[i] = qd[0] * shape[0][i] + qd[1] * shape[1][i];
     },
     load,
-    tipForce,
     settle,
     targetAlpha,
     advance,
