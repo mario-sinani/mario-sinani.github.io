@@ -19,11 +19,10 @@
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
+import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
-const ROOTS = [1.8751040687, 4.6940911330];
-const SIGMA = [0.734096, 1.018467];
 const TIP_RAW = [2.0, -2.0];
 
 /* The largest real part of the eigenvalues against the angle, in 1/s, from
@@ -62,17 +61,6 @@ const FAN = [1, 2, 3, 4, 5, 6, 7, 8];
 const RISE = 0.10;
 const STEP = 1 / 240;
 
-function rawShape(m, xi) {
-  const t = ROOTS[m] * xi;
-  return Math.cosh(t) - Math.cos(t) - SIGMA[m] * (Math.sinh(t) - Math.sin(t));
-}
-
-function rawSlope(m, xi) {
-  const b = ROOTS[m];
-  const t = b * xi;
-  return b * (Math.sinh(t) + Math.sin(t) - SIGMA[m] * (Math.cosh(t) - Math.cos(t)));
-}
-
 /** The rise of the tip at the trim, as a fraction of the span, from the
     flutter chart the paper reproduces. */
 function trimTip(alphaDeg) {
@@ -104,7 +92,7 @@ export function createPazyFlutter() {
   const omega1 = omega2 * (ROOTS[0] * ROOTS[0]) / (ROOTS[1] * ROOTS[1]);
   const slope = [new Float64Array(n + 1), new Float64Array(n + 1)];
   for (let m = 0; m < 2; m++) {
-    for (let i = 0; i <= n; i++) slope[m][i] = rawSlope(m, i / n) / TIP_RAW[m];
+    for (let i = 0; i <= n; i++) slope[m][i] = modeSlope(m, i / n) / TIP_RAW[m];
   }
   const psi = new Float64Array(n + 1);
   const theta = new Float64Array(n + 1);

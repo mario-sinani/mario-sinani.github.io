@@ -20,6 +20,7 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
+import { firstMode, firstSlope } from '../beam-modes-shape.js';
 
 const TWO_PI = Math.PI * 2;
 const INNER = 12;                 // metres
@@ -27,8 +28,6 @@ const OUTER = 4;
 const SEMISPAN = INNER + OUTER;
 const CHORD = 1;
 const FLARE = (10 * Math.PI) / 180;
-const FIRST_ROOT = 1.8751040687;
-const FIRST_SIGMA = 0.734096;
 const TIP_SLOPE = 1.3765;         // the slope of the first mode at its tip, per unit of tip deflection and length
 const STATIONS = 40;
 
@@ -57,16 +56,6 @@ const GHOSTS = [0.5, 0.25];       // seconds ago
    fraction of the height. */
 const RISE = 0.10;
 const STEP = 1 / 240;
-
-function firstMode(xi) {
-  const t = FIRST_ROOT * xi;
-  return (Math.cosh(t) - Math.cos(t) - FIRST_SIGMA * (Math.sinh(t) - Math.sin(t))) / 2;
-}
-
-function firstSlope(xi) {
-  const t = FIRST_ROOT * xi;
-  return (FIRST_ROOT * (Math.sinh(t) + Math.sin(t) - FIRST_SIGMA * (Math.cosh(t) - Math.cos(t)))) / 2;
-}
 
 export function createHingedWingtip() {
   const n = STATIONS;

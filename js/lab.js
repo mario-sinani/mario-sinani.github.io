@@ -10,15 +10,7 @@
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
 import { initSite } from './site.js';
-
-const SCENES = {
-  'pazy-step': () => import('./scenes/pazy-step.js').then((m) => m.createPazyStep()),
-  'pazy-flutter': () => import('./scenes/pazy-flutter.js').then((m) => m.createPazyFlutter()),
-  'hinged-wingtip': () => import('./scenes/hinged-wingtip.js').then((m) => m.createHingedWingtip()),
-  'beam-modes': () => import('./scenes/beam-modes.js').then((m) => m.createBeamModes()),
-  'event-tracking': () => import('./scenes/event-tracking.js').then((m) => m.createEventTracking()),
-  'image-servo': () => import('./scenes/image-servo.js').then((m) => m.createImageServo()),
-};
+import { SCENES } from './scenes/registry.js';
 
 /* How often the slider and the status follow the scene in Auto. */
 const FOLLOW_MS = 150;

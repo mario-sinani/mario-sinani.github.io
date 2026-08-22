@@ -10,11 +10,7 @@ import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';
 import { initSite } from './site.js';
 import { initFieldPause } from './field-pause.js';
-
-const FIELDS = {
-  'vortex-street': () => import('./scenes/vortex-street.js').then((m) => m.createVortexStreet()),
-  'lifting-cylinder': () => import('./scenes/lifting-cylinder.js').then((m) => m.createLiftingCylinder()),
-};
+import { FIELDS } from './scenes/registry.js';
 
 const canvas = document.getElementById('flowfield');
 let field = null;

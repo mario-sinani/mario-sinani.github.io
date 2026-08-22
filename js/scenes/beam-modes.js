@@ -21,10 +21,9 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
+import { firstMode, firstSlope } from '../beam-modes-shape.js';
 
 const TWO_PI = Math.PI * 2;
-const FIRST_ROOT = 1.8751040687;
-const FIRST_SIGMA = 0.734096;
 const BEND_HZ = 0.28;             // the first bending mode, on the screen
 const RATIO = 6;                  // the axial frequency over the bending frequency; 58 and 14 in the paper
 /* The quadratic coupling. It is small enough that the axial force never
@@ -43,16 +42,6 @@ const BOUND_GAP = 1.05;           // the paper finds its bounds 5 per cent over 
 const BOUND_RUNS = 16;
 const BOUND_SECONDS = 60;
 const STEP = 1 / 240;
-
-function firstMode(xi) {
-  const t = FIRST_ROOT * xi;
-  return (Math.cosh(t) - Math.cos(t) - FIRST_SIGMA * (Math.sinh(t) - Math.sin(t))) / 2;
-}
-
-function firstSlope(xi) {
-  const t = FIRST_ROOT * xi;
-  return (FIRST_ROOT * (Math.sinh(t) + Math.sin(t) - FIRST_SIGMA * (Math.cosh(t) - Math.cos(t)))) / 2;
-}
 
 /** The first axial mode of a clamped-free rod. Its largest value is one, at
     the tip. */

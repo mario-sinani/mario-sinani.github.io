@@ -16,11 +16,10 @@
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
+import { ROOTS, shape as modeShape, slope as modeSlope } from '../beam-modes-shape.js';
 
 const TWO_PI = Math.PI * 2;
 const STATIONS = 48;
-const ROOTS = [1.8751040687, 4.6940911330];
-const SIGMA = [0.734096, 1.018467];
 const TIP_RAW = [2.0, -2.0];
 /* The tip-normalised modes: the integral of the square along the span is
    0.25, and 0.3915 for the first. */
@@ -47,17 +46,6 @@ const STEP = 1 / 240;
 
 const ALPHA_8 = (8 * Math.PI) / 180;
 
-function rawShape(m, xi) {
-  const t = ROOTS[m] * xi;
-  return Math.cosh(t) - Math.cos(t) - SIGMA[m] * (Math.sinh(t) - Math.sin(t));
-}
-
-function rawSlope(m, xi) {
-  const b = ROOTS[m];
-  const t = b * xi;
-  return b * (Math.sinh(t) + Math.sin(t) - SIGMA[m] * (Math.cosh(t) - Math.cos(t)));
-}
-
 export function createPazyStep() {
   const n = STATIONS;
   const wing = createPazyWing(n);
@@ -73,8 +61,8 @@ export function createPazyStep() {
   const slope = [new Float64Array(n + 1), new Float64Array(n + 1)];
   for (let m = 0; m < 2; m++) {
     for (let i = 0; i <= n; i++) {
-      shape[m][i] = rawShape(m, i / n) / TIP_RAW[m];
-      slope[m][i] = rawSlope(m, i / n) / TIP_RAW[m];
+      shape[m][i] = modeShape(m, i / n) / TIP_RAW[m];
+      slope[m][i] = modeSlope(m, i / n) / TIP_RAW[m];
     }
   }
 
