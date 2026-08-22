@@ -124,5 +124,42 @@ async function scene(file, factory, hold) {
      loud.error.toFixed(1) + ' px');
 }
 
+
+/* Every scene must answer the whole contract: the engine calls layout,
+   reset, still and frame, and the lab page calls the members of lab and
+   probe. A member that reads a name which no longer exists fails here. */
+{
+  const { SCENES } = await import(new URL('../js/scenes/registry.js', import.meta.url));
+  const { FIELDS } = await import(new URL('../js/scenes/registry.js', import.meta.url));
+  for (const [name, load] of Object.entries({ ...SCENES, ...FIELDS })) {
+    const s = await load();
+    const { ctx } = recordingContext();
+    let fault = null;
+    try {
+      s.layout(1000, 560, { band: 0.42, scale: 1.3 });
+      if (s.reset) s.reset();
+      s.still(ctx, INK, 5);
+      s.frame(ctx, DT, 5 + DT, INK);
+      if (s.probe) s.probe();
+      if (s.lab) {
+        const middle = (s.lab.min + s.lab.max) / 2;
+        s.lab.value();
+        s.lab.set(middle);
+        s.frame(ctx, DT, 5 + 2 * DT, INK);
+        if (s.lab.hold) s.lab.hold(middle);
+        s.lab.release();
+        if (s.lab.auto) s.lab.auto.status();
+        s.lab.value();
+      }
+      s.layout(700, 400, { preview: true });
+      if (s.reset) s.reset();
+      s.still(ctx, INK, 3);
+    } catch (error) {
+      fault = error.message;
+    }
+    ok('contract: ' + name, fault === null, fault || 'layout, reset, still, frame, lab, probe');
+  }
+}
+
 console.log(failed ? `\n${failed} test(s) failed` : '\nevery test passed');
 process.exit(failed ? 1 : 0);
