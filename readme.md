@@ -30,6 +30,7 @@ Personal website of Mario A. Sinani.
 ```
 python3 tools/check.py        # pages, links, classes, sitemap, imports
 node tools/test-scenes.mjs    # the models against the numbers of the papers
+node tools/test-engine.mjs    # the engine: the loop, the pause and the fixed frame
 node tools/trace.mjs          # each scene against its recorded fingerprint
 node tools/trace.mjs --write  # record the fingerprints again after a change
 ```

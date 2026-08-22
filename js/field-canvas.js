@@ -1,7 +1,9 @@
-/* Field canvas: the engine for one moving background. It sizes the canvas
-   to its parent, fades the last frame toward the page background, runs
-   the loop, and draws one fixed frame with reduced motion or reduced
-   data.
+/* Field canvas: the engine that puts a scene on a canvas.
+
+   It joins three parts: the surface, which holds the bitmap and the
+   palette (canvas-surface.js); the loop, which runs while the canvas is
+   on the screen (frame-loop.js); and the scene, which draws. It draws one
+   fixed frame with reduced motion or reduced data.
 
    A scene gives the drawing:
 
@@ -24,12 +26,13 @@
    tab is in front. options.still asks for one fixed frame at a time, and
    the loop then never runs. */
 
-import { resolveInk } from './ink.js';
+import { createSurface } from './canvas-surface.js';
+import { createLoop } from './frame-loop.js';
 
 export function initFieldCanvas(canvas, isDark, scene, options = {}) {
   if (!canvas || !scene) return null;
 
-  const ctx = canvas.getContext('2d');
+  const surface = createSurface(canvas, isDark);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* Reduced data: draw one fixed frame and do not run. */
   const reducedData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
@@ -37,97 +40,51 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
   const stillAt = typeof options.still === 'number' ? options.still : null;
   const fit = { band: options.band, scale: options.scale, preview: Boolean(options.preview) };
   const fixed = reducedMotion || reducedData || stillAt !== null;
-  let ink = resolveInk(false, '#ffffff');
-  let width = 0;
-  let height = 0;
   let clock = stillAt === null ? 0 : stillAt;
   let lastFrameTime = 0;
-  let handle = 0;
-  let onScreen = true;
-  let userPaused = false;
 
-  function readInk() {
-    const ground = getComputedStyle(document.documentElement)
-      .getPropertyValue('--paper').trim();
-    ink = resolveInk(isDark(), ground);
-  }
-
-  function wash(alpha) {
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = ink.ground;
-    ctx.fillRect(0, 0, width, height);
-    ctx.globalAlpha = 1;
-  }
-
-  function resize() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    width = Math.max(rect.width, 1);
-    height = Math.max(rect.height, 1);
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    readInk();
-    scene.layout(width, height, fit);
-    /* The geometry changed, so the model starts again and the fixed frame
-       below builds the past it needs. */
-    if (scene.reset) scene.reset();
-    wash(1);
-    /* One fixed frame at once, so the box is never empty. The loop
-       continues from the time of that frame, and the past the scene built
-       stays in the past. */
-    const shown = scene.still(ctx, ink, clock);
-    if (typeof shown === 'number' && shown > clock) clock = shown;
-  }
-
-  function frame(time) {
+  function step(time) {
+    /* The limit of 0.05 s holds the first step after a pause, a resize or
+       a tab that comes back, so the scene does not jump. */
     const dt = Math.min((time - lastFrameTime) / 1000, 0.05) || 0.016;
     lastFrameTime = time;
     clock += dt;
-    wash(scene.fade);
-    ctx.lineCap = 'butt';
-    scene.frame(ctx, dt, clock, ink);
-    handle = requestAnimationFrame(frame);
+    surface.wash(scene.fade);
+    surface.ctx.lineCap = 'butt';
+    scene.frame(surface.ctx, dt, clock, surface.ink);
   }
 
-  /* A second call in the same state does nothing. A start sets the frame
-     time to zero, so the first step after a pause gets the limit of 0.05 s
-     and the scene does not jump. */
-  function start() {
-    if (handle || fixed || userPaused) return;
-    lastFrameTime = 0;
-    handle = requestAnimationFrame(frame);
-  }
+  const loop = createLoop(canvas, step);
+  if (fixed) loop.freeze();
 
-  function stop() {
-    if (!handle) return;
-    cancelAnimationFrame(handle);
-    handle = 0;
-  }
-
-  function sync() {
-    if (onScreen && !document.hidden) start();
-    else stop();
+  function resize() {
+    surface.fit();
+    scene.layout(surface.width, surface.height, fit);
+    /* The geometry changed, so the model starts again and the fixed frame
+       below builds the past it needs. */
+    if (scene.reset) scene.reset();
+    surface.wash(1);
+    /* One fixed frame at once, so the box is never empty. The loop
+       continues from the time of that frame, and the past the scene built
+       stays in the past. */
+    const shown = scene.still(surface.ctx, surface.ink, clock);
+    if (typeof shown === 'number' && shown > clock) clock = shown;
   }
 
   /* Draw the state again with no motion. The theme button and the lab
      controls use it while the loop is off. */
   function repaint() {
-    readInk();
-    wash(1);
-    if (!handle) scene.still(ctx, ink, clock);
+    surface.readInk();
+    surface.wash(1);
+    if (!loop.running) scene.still(surface.ctx, surface.ink, clock);
   }
 
   /* The pause control. A pause draws one fixed frame, so the picture does
      not depend on the moment of the click. */
   function setPaused(paused) {
-    userPaused = paused;
-    if (paused) {
-      stop();
-      wash(1);
-      scene.still(ctx, ink, clock);
-    } else {
-      sync();
+    if (loop.setPaused(paused)) {
+      surface.wash(1);
+      scene.still(surface.ctx, surface.ink, clock);
     }
   }
 
@@ -144,17 +101,7 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
 
   resize();
   window.addEventListener('resize', onResize);
-  document.addEventListener('visibilitychange', sync);
-
-  /* Without IntersectionObserver the field is always on the screen. */
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver((entries) => {
-      onScreen = entries[entries.length - 1].isIntersecting;
-      sync();
-    }).observe(canvas);
-  }
-
-  sync();
+  loop.sync();
 
   return { repaint, setPaused };
 }
