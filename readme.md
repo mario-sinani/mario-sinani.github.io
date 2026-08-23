@@ -2,6 +2,17 @@
 
 Personal website of Mario A. Sinani.
 
+## The pages
+
+- [Home](https://mariosinani.com/) — the person, the themes of the work, and the recent updates
+- [About](https://mariosinani.com/about/) — the biography, the interests, and the way to make contact
+- [Publications](https://mariosinani.com/publications/) — each paper with its abstract, its DOI and its BibTeX
+- [Lab](https://mariosinani.com/lab/) — six live models from the papers; each one runs in the browser and takes a control
+- [Research](https://mariosinani.com/research/) — the themes of the work, and the papers that belong to each theme
+- [Experience](https://mariosinani.com/experience/) — the positions, as a timeline
+- [Education](https://mariosinani.com/education/) — the degrees, as a timeline
+- [Feed](https://mariosinani.com/atom.xml) — the updates, in Atom
+
 ## Structure
 
 ```
