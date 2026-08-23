@@ -9,9 +9,9 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
-import { firstMode, firstSlope } from '../beam-modes-shape.js';
+import { firstSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
-import { createHingedWingtipModel, INNER, OUTER, SEMISPAN, CHORD, FLARE, TIP_SLOPE,
+import { createHingedWingtipModel, INNER, OUTER, SEMISPAN, CHORD,
   CASES, HOLD, TRACE_SECONDS, TRACE_STEP } from '../models/hinged-wingtip.js';
 
 const TWO_PI = Math.PI * 2;

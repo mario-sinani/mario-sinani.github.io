@@ -13,8 +13,9 @@
    picture, so the coast runs across the frame as in the view from above. */
 
 import { withAlpha } from '../ink.js';
-import { stageFor, drawDatum } from './stage.js';
-import { createImageServoModel, DESIRED_BAND, HORIZON, ALONG, NOISE, PLOT_SECONDS, SAMPLES } from '../models/image-servo.js';
+import { stageFor } from './stage.js';
+import { createImageServoModel, HORIZON,
+  NOISE, PLOT_SECONDS } from '../models/image-servo.js';
 
 const TWO_PI = 6.2832;
 const FRAME_RATIO = 720 / 480;  // the camera of the thesis

@@ -10,7 +10,8 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
-import { createEventTrackingModel, DRIFT, HORIZON, TRACK_SECONDS } from '../models/event-tracking.js';
+import { createEventTrackingModel, DRIFT,
+  TRACK_SECONDS } from '../models/event-tracking.js';
 
 const TWO_PI = 6.2832;
 const CONTOURS = 6;             // depth lines off the shore
