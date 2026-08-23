@@ -21,6 +21,9 @@
                              past draws a later time and gives it back,
                              and the loop continues from it.
 
+   A scene draws; a model in js/models holds the state it draws. A scene
+   with no state of its own needs no model.
+
    The engine passes the palette (see ink.js), so a scene does not read
    the CSS. The loop runs only while the canvas is on the screen and the
    tab is in front. options.still asks for one fixed frame at a time, and

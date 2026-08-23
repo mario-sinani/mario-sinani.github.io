@@ -3,7 +3,11 @@
 
    The cylinder is the most simple body with a circulation and a lift. The
    circulation makes the streaks above the body move more quickly than the
-   streaks below. */
+   streaks below.
+
+   This scene keeps no state of its own: the field is the same at every
+   moment, and the streaks carry the motion. It therefore has no model
+   beside it, unlike the scenes that integrate something. */
 
 import { createStreaklines } from '../streaklines.js';
 import { addVortex, addDoublet } from '../potential-flow.js';

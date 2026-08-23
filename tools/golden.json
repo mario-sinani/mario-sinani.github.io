@@ -2,6 +2,17 @@
   "pazy-step": {
     "calls": 63427,
     "drawing": "2034304d3c8122fc",
+    "shape": {
+      "lineTo": 53599,
+      "moveTo": 4186,
+      "set": 2366,
+      "beginPath": 1183,
+      "stroke": 1092,
+      "setLineDash": 364,
+      "closePath": 364,
+      "fill": 182,
+      "arc": 91
+    },
     "probe": {
       "alpha": 8,
       "tipRise": 0.45,
@@ -16,6 +27,18 @@
   "pazy-flutter": {
     "calls": 111839,
     "drawing": "73b418f1503dde65",
+    "shape": {
+      "lineTo": 97461,
+      "set": 5096,
+      "moveTo": 3367,
+      "beginPath": 2548,
+      "stroke": 2366,
+      "setLineDash": 364,
+      "fill": 273,
+      "arc": 182,
+      "closePath": 91,
+      "fillRect": 91
+    },
     "probe": {
       "alpha": 4,
       "q1": 0.233,
@@ -28,6 +51,17 @@
   "hinged-wingtip": {
     "calls": 24430,
     "drawing": "a043b038143059d9",
+    "shape": {
+      "lineTo": 11123,
+      "moveTo": 4298,
+      "set": 3731,
+      "beginPath": 1638,
+      "stroke": 1547,
+      "arc": 1183,
+      "setLineDash": 364,
+      "fill": 364,
+      "rect": 182
+    },
     "probe": {
       "alpha": 10,
       "fold": 46.466,
@@ -40,6 +74,14 @@
   "beam-modes": {
     "calls": 128583,
     "drawing": "7b8d7cfc0c7ce971",
+    "shape": {
+      "lineTo": 115934,
+      "set": 4368,
+      "moveTo": 3549,
+      "beginPath": 2184,
+      "stroke": 2184,
+      "setLineDash": 364
+    },
     "probe": {
       "amplitude": 0.4,
       "share": 0.764,
@@ -52,6 +94,24 @@
   "event-tracking": {
     "calls": 207682,
     "drawing": "26a7f05395be7271",
+    "shape": {
+      "lineTo": 186253,
+      "moveTo": 6721,
+      "set": 4914,
+      "beginPath": 2548,
+      "arc": 2514,
+      "stroke": 2002,
+      "fill": 637,
+      "setLineDash": 546,
+      "fillRect": 455,
+      "rect": 364,
+      "closePath": 182,
+      "grad.addColorStop": 182,
+      "createLinearGradient": 91,
+      "save": 91,
+      "clip": 91,
+      "restore": 91
+    },
     "probe": {
       "events": 15,
       "horizon": 1.2,
@@ -63,6 +123,22 @@
   "image-servo": {
     "calls": 50491,
     "drawing": "f900f9c88d656293",
+    "shape": {
+      "lineTo": 30424,
+      "set": 6439,
+      "moveTo": 5005,
+      "beginPath": 3447,
+      "stroke": 3083,
+      "rect": 455,
+      "setLineDash": 364,
+      "fillRect": 364,
+      "save": 182,
+      "clip": 182,
+      "fill": 182,
+      "restore": 182,
+      "closePath": 91,
+      "arc": 91
+    },
     "probe": {
       "events": 23,
       "noise": 1.5,
@@ -74,12 +150,27 @@
   "vortex-street": {
     "calls": 688837,
     "drawing": "bc30f65f7ecc3aae",
+    "shape": {
+      "lineTo": 671267,
+      "set": 7028,
+      "beginPath": 3514,
+      "stroke": 3514,
+      "moveTo": 2730,
+      "arc": 784
+    },
     "probe": null,
     "status": null
   },
   "lifting-cylinder": {
     "calls": 68602,
     "drawing": "1cc8bb737844bf2e",
+    "shape": {
+      "set": 20026,
+      "lineTo": 18537,
+      "beginPath": 10013,
+      "moveTo": 10013,
+      "stroke": 10013
+    },
     "probe": null,
     "status": null
   }

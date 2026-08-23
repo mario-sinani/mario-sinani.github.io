@@ -3,7 +3,12 @@
 
    Run it with --write to record the fingerprints in golden.json, and
    with no argument to compare the code against that record. A refactor
-   that changes no behaviour gives the same fingerprint. */
+   that changes no behaviour gives the same fingerprint.
+
+   A fingerprint holds the hash of the drawing, the count of each kind of
+   call, the numbers of probe() and the line of the lab. A change of
+   behaviour therefore shows in the file as more arcs or fewer lines, and
+   not as one hash that says nothing. */
 
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -41,9 +46,17 @@ async function fingerprint(file, factory, still) {
   }
   const probe = scene.probe ? scene.probe() : null;
   const status = scene.lab ? scene.lab.status(true, scene.lab.value()) : null;
+  /* The count of each kind of call. A hash says only that a drawing
+     changed; these numbers say what changed in it. */
+  const shape = {};
+  for (const call of calls) {
+    const name = call.split(' ')[0];
+    shape[name] = (shape[name] || 0) + 1;
+  }
   return {
     calls: calls.length,
     drawing: createHash('sha256').update(calls.join('\n')).digest('hex').slice(0, 16),
+    shape: Object.fromEntries(Object.entries(shape).sort((a, b) => b[1] - a[1])),
     probe: probe && JSON.parse(JSON.stringify(probe, (k, v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v))),
     status,
   };
@@ -67,7 +80,15 @@ if (process.argv.includes('--write')) {
     if (!same) bad += 1;
     console.log('%s %s  %d calls  %s', same ? 'same    ' : 'CHANGED ', name.padEnd(18), f.calls, f.drawing);
     if (!same && b) {
-      if (b.drawing !== f.drawing) console.log('         drawing %s -> %s (%d -> %d calls)', b.drawing, f.drawing, b.calls, f.calls);
+      if (b.drawing !== f.drawing) {
+        console.log('         drawing %s -> %s (%d -> %d calls)', b.drawing, f.drawing, b.calls, f.calls);
+        const kinds = new Set([...Object.keys(b.shape || {}), ...Object.keys(f.shape || {})]);
+        for (const kind of kinds) {
+          const was = (b.shape || {})[kind] || 0;
+          const now = (f.shape || {})[kind] || 0;
+          if (was !== now) console.log('         %s %d -> %d', kind.padEnd(18), was, now);
+        }
+      }
       if (JSON.stringify(b.probe) !== JSON.stringify(f.probe)) console.log('         probe %s -> %s', JSON.stringify(b.probe), JSON.stringify(f.probe));
       if (b.status !== f.status) console.log('         status changed');
     }
