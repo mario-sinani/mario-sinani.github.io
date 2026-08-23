@@ -1,4 +1,4 @@
-# mariosinani.com
+# [mariosinani.com](https://mariosinani.com)
 
 Personal website of Mario A. Sinani.
 
