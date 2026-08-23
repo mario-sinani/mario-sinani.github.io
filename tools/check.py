@@ -8,6 +8,7 @@ It prints OK, or one line for each fault, and gives a status of 1 when
 it finds one."""
 
 import os, re, sys, glob, json
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from urllib.parse import urlparse
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -18,12 +19,14 @@ def err(m): bad.append(m)
 pages = sorted(p for p in glob.glob("**/*.html", recursive=True) if not p.startswith("tools/"))
 css = "\n".join(open(p, encoding="utf-8").read() for p in glob.glob("css/*.css"))
 defined = set(re.findall(r'\.([A-Za-z][\w-]*)', css))
-# A class can be a hook for a script and carry no style of its own.
+# A class can be a hook for a script and carry no style of its own. Only
+# the three forms below make a hook, so a name in another string does not
+# hide an unknown class.
 for module in glob.glob("js/**/*.js", recursive=True):
     src = open(module, encoding="utf-8").read()
-    defined.update(re.findall(r"[.'\"]([a-z][\w-]*)['\"]?\s*\)", src))
-    defined.update(re.findall(r"classList\.\w+\('([\w-]+)'", src))
+    defined.update(re.findall(r"classList\.\w+\('([\w-]+)'\)", src))
     defined.update(re.findall(r"querySelector(?:All)?\('\.([\w-]+)", src))
+    defined.update(re.findall(r"className = '([\w-]+)'", src))
 titles, descs = {}, {}
 
 for p in pages:
@@ -75,6 +78,33 @@ for t, ps in titles.items():
     if len(ps) > 1: err(f"duplicate title {t!r}: {ps}")
 for d, ps in descs.items():
     if len(ps) > 1: err(f"duplicate description: {ps}")
+
+# the preload list of a page is the module graph of that page
+import preloads as preload_rule
+for p in pages:
+    text = open(p, encoding="utf-8").read()
+    want, start = preload_rule.needed(p, text)
+    if want is None:
+        continue
+    have = set()
+    for href in re.findall(r'modulepreload" href="([^"]+)"', text):
+        base = os.path.dirname(p) or "."
+        have.add(os.path.relpath(os.path.normpath(os.path.join("." if href.startswith("/") else base, href.lstrip("/")))))
+    for extra in sorted(have - want):
+        err(f"{p}: preloads {extra}, which it never loads")
+    for gap in sorted(want - have):
+        err(f"{p}: loads {gap}, which it does not preload")
+
+# every scene a page names must be in the registry
+registry = open("js/scenes/registry.js", encoding="utf-8").read()
+known = set(re.findall(r"'([\w-]+)': \(\) => import", registry))
+for p in pages:
+    text = open(p, encoding="utf-8").read()
+    for name in set(re.findall(r'data-(?:scene|field)="([\w-]+)"', text)):
+        if name not in known:
+            err(f"{p}: no scene by the name {name}")
+        if not os.path.isfile(f"js/scenes/{name}.js"):
+            err(f"{p}: the scene {name} has no file")
 
 # sitemap matches the page set
 smap = set(re.findall(r'<loc>https://mariosinani\.com(/[^<]*)</loc>', open("sitemap.xml").read()))
