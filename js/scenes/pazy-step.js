@@ -8,7 +8,7 @@
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
-import { stageFor, drawDatum } from './stage.js';
+import { stageForFit, drawDatum } from './stage.js';
 import { caseAt } from './schedule.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createPazyStepModel, SCHEDULE, HOLD, LOG_SECONDS, ALPHA_8 } from '../models/pazy-step.js';
@@ -143,10 +143,8 @@ export function createPazyStep() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box, so the wing sits lower and in
-         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
-      stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
+      stage = stageForFit(w, h, fit, { preview: 0.30, band: 0.14, rise: RISE });
       const scale = fit.scale || 1;
       // The tip rises to half the span, so the room above the datum limits
       // the span.

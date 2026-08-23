@@ -8,7 +8,7 @@
    against time (Fig. 18). */
 
 import { withAlpha } from '../ink.js';
-import { stageFor, drawDatum } from './stage.js';
+import { stageForFit, drawDatum } from './stage.js';
 import { firstSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
@@ -303,10 +303,8 @@ export function createHingedWingtip() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box, so the wing sits lower and in
-         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
-      stage = stageFor(w, h, preview ? 0.30 : (fit.band ?? 0.14) + RISE);
+      stage = stageForFit(w, h, fit, { preview: 0.30, band: 0.14, rise: RISE });
       const sc = fit.scale || 1;
       // The tip rises to 0.45 of the semispan, so the room above the datum
       // limits the scale.

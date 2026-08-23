@@ -9,7 +9,7 @@
    with its eight rotors, and the chart of the image error. */
 
 import { withAlpha } from '../ink.js';
-import { stageFor, drawDatum } from './stage.js';
+import { stageForFit, drawDatum } from './stage.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createEventTrackingModel, DRIFT,
   TRACK_SECONDS } from '../models/event-tracking.js';
@@ -18,6 +18,18 @@ const TWO_PI = 6.2832;
 const CONTOURS = 6;             // depth lines off the shore
 const STEP = 6;                 // px between samples along a curve
 const ROTORS = 8;               // an octorotor, as on the coastline in the paper
+const ROTOR_REACH = 0.4;        // the body centre to a motor, in spans
+const ROTOR_DISC = 0.12;       // the radius of a rotor, in spans
+const BODY_PLATE = 0.15;       // the radius of the body plate, in spans
+const ARM_START = 0.9;         // where an arm leaves the plate, in plates
+const BLADE_SPAN = 0.92;       // the half length of a blade, in discs
+const BLADE_RATE = 7;          // radians a second
+const BLADE_STAGGER = 0.9;     // radians between one rotor and the next
+const MOTOR_DOT = 2.4;         // px
+const CAMERA_SIDE = 5;         // px
+const NOSE_AHEAD = 1.55;       // the tip of the nose, in plates
+const NOSE_BACK = 1.05;        // its base, in plates
+const NOSE_HALF = 0.32;        // its half width, in plates
 const FRAME_RATIO = 672 / 376;  // the camera of the paper
 const DESIRED_BAND = 40 / 376;  // the desired box: 40 pixels of 376 across the frame
 
@@ -180,18 +192,22 @@ export function createEventTracking() {
   /** The craft from above: a body plate with the camera under it, eight
       arms with a motor at each end, a disc and two blades for each rotor,
       and a mark for the nose. */
-  function drawCraft(ctx, t, ink) {
-    const S = craft.span;
-    const reach = S * 0.4;        // the body centre to a motor
-    const disc = S * 0.12;        // the radius of a rotor
-    const body = S * 0.15;        // the radius of the body plate
+  /* The eight arms of the craft, with a motor at the end of each. */
+  function armsOf() {
     const arms = [];
     for (let k = 0; k < ROTORS; k++) {
       const a = (TWO_PI * (k + 0.5)) / ROTORS;
-      arms.push({ a, x: craft.x + Math.cos(a) * reach, y: model.y + Math.sin(a) * reach });
+      arms.push({
+        a,
+        x: craft.x + Math.cos(a) * craft.span * ROTOR_REACH,
+        y: model.y + Math.sin(a) * craft.span * ROTOR_REACH,
+      });
     }
+    return arms;
+  }
 
-    // The discs of the rotors, under everything else.
+  /** The disc of each rotor, under everything else. */
+  function drawDiscs(ctx, ink, arms, disc) {
     ctx.beginPath();
     for (const m of arms) {
       ctx.moveTo(m.x + disc, m.y);
@@ -202,41 +218,48 @@ export function createEventTracking() {
     ctx.lineWidth = 1;
     ctx.strokeStyle = withAlpha(ink.accent, 0.55);
     ctx.stroke();
+  }
 
-    // The arms, from the body to the motors.
+  /** The arms, from the plate to the motors, and the motors themselves. */
+  function drawArms(ctx, ink, arms, body) {
     ctx.beginPath();
     for (const m of arms) {
-      ctx.moveTo(craft.x + Math.cos(m.a) * body * 0.9, model.y + Math.sin(m.a) * body * 0.9);
+      ctx.moveTo(craft.x + Math.cos(m.a) * body * ARM_START, model.y + Math.sin(m.a) * body * ARM_START);
       ctx.lineTo(m.x, m.y);
     }
     ctx.lineWidth = 2.2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = ink.body;
     ctx.stroke();
+  }
 
-    // The blades: two for each rotor, turning at their own angle.
+  /** Two blades for each rotor, turning at their own angle. */
+  function drawBlades(ctx, t, ink, arms, disc) {
     ctx.beginPath();
     arms.forEach((m, k) => {
-      const spin = t * 7 + k * 0.9;
-      const bx = Math.cos(spin) * disc * 0.92;
-      const by = Math.sin(spin) * disc * 0.92;
+      const spin = t * BLADE_RATE + k * BLADE_STAGGER;
+      const bx = Math.cos(spin) * disc * BLADE_SPAN;
+      const by = Math.sin(spin) * disc * BLADE_SPAN;
       ctx.moveTo(m.x - bx, m.y - by);
       ctx.lineTo(m.x + bx, m.y + by);
     });
     ctx.lineWidth = 1.6;
     ctx.strokeStyle = withAlpha(ink.accent, 0.9);
     ctx.stroke();
+  }
 
-    // The motors.
+  function drawMotors(ctx, ink, arms) {
     ctx.beginPath();
     for (const m of arms) {
-      ctx.moveTo(m.x + 2.4, m.y);
-      ctx.arc(m.x, m.y, 2.4, 0, TWO_PI);
+      ctx.moveTo(m.x + MOTOR_DOT, m.y);
+      ctx.arc(m.x, m.y, MOTOR_DOT, 0, TWO_PI);
     }
     ctx.fillStyle = ink.body;
     ctx.fill();
+  }
 
-    // The body plate, and the camera under its centre.
+  /** The body plate with the camera under it, and the nose ahead. */
+  function drawBody(ctx, ink, body) {
     ctx.beginPath();
     ctx.arc(craft.x, model.y, body, 0, TWO_PI);
     ctx.fillStyle = ink.ground;
@@ -245,16 +268,28 @@ export function createEventTracking() {
     ctx.strokeStyle = ink.body;
     ctx.stroke();
     ctx.fillStyle = ink.accent;
-    ctx.fillRect(craft.x - 2.5, model.y - 2.5, 5, 5);
+    ctx.fillRect(craft.x - CAMERA_SIDE / 2, model.y - CAMERA_SIDE / 2, CAMERA_SIDE, CAMERA_SIDE);
 
-    // The nose: the direction of flight.
     ctx.beginPath();
-    ctx.moveTo(craft.x + body * 1.55, model.y);
-    ctx.lineTo(craft.x + body * 1.05, model.y - body * 0.32);
-    ctx.lineTo(craft.x + body * 1.05, model.y + body * 0.32);
+    ctx.moveTo(craft.x + body * NOSE_AHEAD, model.y);
+    ctx.lineTo(craft.x + body * NOSE_BACK, model.y - body * NOSE_HALF);
+    ctx.lineTo(craft.x + body * NOSE_BACK, model.y + body * NOSE_HALF);
     ctx.closePath();
     ctx.fillStyle = ink.accent;
     ctx.fill();
+  }
+
+  /** The craft from above: the discs, the arms, the blades, the motors,
+      the plate with its camera, and the nose. */
+  function drawCraft(ctx, t, ink) {
+    const arms = armsOf();
+    const disc = craft.span * ROTOR_DISC;
+    const body = craft.span * BODY_PLATE;
+    drawDiscs(ctx, ink, arms, disc);
+    drawArms(ctx, ink, arms, body);
+    drawBlades(ctx, t, ink, arms, disc);
+    drawMotors(ctx, ink, arms);
+    drawBody(ctx, ink, body);
   }
 
   /* The image error against time, with a mark at each event, as in the
@@ -342,10 +377,8 @@ export function createEventTracking() {
     layout(w, h, fit = {}) {
       view.w = w;
       view.h = h;
-      /* A preview shows the top of the box, so the craft flies in the
-         middle of it. */
       const preview = Boolean(fit.preview);
-      stage = stageFor(w, h, preview ? 0.17 : fit.band);
+      stage = stageForFit(w, h, fit, { preview: 0.17 });
       craft.standoff = h * 0.05;
       craft.span = Math.min(w * 0.05, 50) * (fit.scale || 1);
       // The datum is the line the craft must fly, a standoff off the coast.

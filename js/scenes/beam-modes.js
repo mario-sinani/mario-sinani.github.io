@@ -9,7 +9,7 @@
    than in the paper, so the eye can follow both. */
 
 import { withAlpha } from '../ink.js';
-import { stageFor, drawDatum } from './stage.js';
+import { stageForFit, drawDatum } from './stage.js';
 import { firstSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
 import { createBeamModel, axialMode, AMPLITUDES, HOLD, STROBES } from '../models/beam-modes.js';
@@ -208,10 +208,8 @@ export function createBeamModes() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box, so the beam sits lower and in
-         the middle, and takes the width. */
       const preview = Boolean(fit.preview);
-      stage = stageFor(w, h, fit.band ?? (preview ? 0.19 : undefined));
+      stage = stageForFit(w, h, fit, { preview: 0.19 });
       beam.length = preview
         ? Math.min(stage.width * 0.86, (stage.y - 10) / 0.42)
         : Math.min(stage.width * 0.58, 660, (stage.y - 16) / 0.42);

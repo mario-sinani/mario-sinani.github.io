@@ -13,7 +13,7 @@
    picture, so the coast runs across the frame as in the view from above. */
 
 import { withAlpha } from '../ink.js';
-import { stageFor } from './stage.js';
+import { stageForFit } from './stage.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createImageServoModel, HORIZON,
   NOISE, PLOT_SECONDS } from '../models/image-servo.js';
@@ -251,10 +251,8 @@ export function createImageServo() {
     },
 
     layout(w, h, fit = {}) {
-      /* A preview shows the top of the box, so the frame sits in the middle
-         of it. */
       const preview = Boolean(fit.preview);
-      stage = stageFor(w, h, preview ? 0.5 * (184 / 480) : fit.band);
+      stage = stageForFit(w, h, fit, { preview: 0.5 * (184 / 480) });
       const room = w > 760;
       // The frame keeps the ratio of the camera. The room above the datum
       // and the width of the stage limit it, and most of it stands above
