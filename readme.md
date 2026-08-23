@@ -1,4 +1,4 @@
-# [mariosinani.com](https://mariosinani.com)
+[![The top of mariosinani.com: the navigation, the name and the flow field of the hero](assets/readme-hero.gif)](https://mariosinani.com)
 
 Personal website of Mario A. Sinani.
 
