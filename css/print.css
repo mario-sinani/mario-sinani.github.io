@@ -96,7 +96,7 @@ p a[href^="http"]::after { content: none; }
 .related-go { display: none; }
 
 /* Keep a block on one sheet if the sheet has the room. */
-.pub, .timeline-item, .edu-card, .topic, .fact {
+.pub, .timeline-item, .topic, .fact {
   break-inside: avoid;
 }
 

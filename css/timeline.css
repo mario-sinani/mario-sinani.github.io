@@ -1,5 +1,7 @@
-/* Experience: a vertical timeline. A 1px spine runs down the list, with the
-   dates on its left and the organisation on its right. */
+/* Timeline: a vertical list in order of date. A 1px spine runs down it,
+   with the dates on its left and the organisation on its right. The
+   experience page and the education page both use it, on the home page
+   and on their own pages. */
 
 .timeline {
   display: grid;

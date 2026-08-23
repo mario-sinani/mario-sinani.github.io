@@ -115,7 +115,6 @@
 .snapshot .fact-value a,
 .footer-email,
 .page-note a,
-.edu-card p a,
 .model-note p a {
   color: var(--accent-strong);
   text-decoration: none;
@@ -127,7 +126,6 @@
 .snapshot .fact-value a:hover, .snapshot .fact-value a:focus-visible,
 .footer-email:hover, .footer-email:focus-visible,
 .page-note a:hover, .page-note a:focus-visible,
-.edu-card p a:hover, .edu-card p a:focus-visible,
 .model-note p a:hover, .model-note p a:focus-visible {
   border-bottom-color: var(--accent-strong);
 }

@@ -133,14 +133,6 @@
   color: var(--muted);
 }
 
-/* A description below the degree in a card. */
-.edu-card p {
-  margin-top: 0.9rem;
-  font-size: 0.94rem;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
 /* The links to the other pages, at the end of each page. */
 .cross-nav {
   max-width: var(--w-content);
