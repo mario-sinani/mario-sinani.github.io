@@ -20,6 +20,7 @@ import { createImageServoModel, HORIZON,
 
 const TWO_PI = 6.2832;
 const FRAME_RATIO = 720 / 480;  // the camera of the thesis
+const PLOT_GAP = 28;            // px between the frame and the chart
 const GRID_X = 6;
 const GRID_Y = 4;
 
@@ -254,16 +255,26 @@ export function createImageServo() {
       const preview = Boolean(fit.preview);
       stage = stageForFit(w, h, fit, { preview: 0.5 * (184 / 480) });
       const room = w > 760;
-      // The frame keeps the ratio of the camera. The room above the datum
-      // and the width of the stage limit it, and most of it stands above
-      // the datum, so on a hero it stays clear of the text.
-      const widthLimit = room ? stage.width * 0.5 : stage.width * 0.56;
-      frame.h = Math.min(h * 0.42, (stage.y - 12) / 0.62, widthLimit / FRAME_RATIO);
-      frame.w = frame.h * FRAME_RATIO;
-      frame.x = preview ? stage.left + (stage.width - frame.w) / 2 : stage.left;
-      frame.y = stage.y - frame.h * 0.62;
-
       plot.w = room ? Math.min(stage.width * 0.17, 170) : 0;
+      /* The page of the model shows the scene alone, so the frame takes the
+         room it can: the height of the box, and the width the chart leaves.
+         A hero holds the frame above the text of the panel, so there it
+         keeps to the band and most of it stands above the datum. */
+      const alone = (fit.scale || 1) > 1 && !preview;
+      if (alone) {
+        const beside = stage.width - plot.w - PLOT_GAP;
+        frame.h = Math.min(h * 0.78, beside / FRAME_RATIO);
+        frame.w = frame.h * FRAME_RATIO;
+        frame.x = stage.left;
+        frame.y = (h - frame.h) / 2;
+      } else {
+        const widthLimit = room ? stage.width * 0.5 : stage.width * 0.56;
+        frame.h = Math.min(h * 0.42, (stage.y - 12) / 0.62, widthLimit / FRAME_RATIO);
+        frame.w = frame.h * FRAME_RATIO;
+        frame.x = preview ? stage.left + (stage.width - frame.w) / 2 : stage.left;
+        frame.y = stage.y - frame.h * 0.62;
+      }
+
       plot.h = frame.h * 0.62;
       plot.x = stage.right - plot.w;
       plot.y = frame.y + (frame.h - plot.h) / 2;
