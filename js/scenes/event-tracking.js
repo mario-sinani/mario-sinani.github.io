@@ -10,6 +10,7 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
+import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createEventTrackingModel, DRIFT,
   TRACK_SECONDS } from '../models/event-tracking.js';
 
@@ -264,27 +265,17 @@ export function createEventTracking() {
     if (plot.w <= 0 || plot.h <= 0 || track.count < 2) return;
     const midY = plot.y + plot.h / 2;
     const scale = craft.standoff * 0.7;
-    const toX = (when) => plot.x + plot.w * (1 - (t - when) / TRACK_SECONDS);
+    const toX = timeToX(plot, TRACK_SECONDS, t);
     const toY = (e) => midY + Math.max(-1, Math.min(1, e / scale)) * (plot.h / 2) * 0.9;
 
-    ctx.beginPath();
-    ctx.moveTo(plot.x, midY);
-    ctx.lineTo(plot.x + plot.w, midY);
-    ctx.moveTo(plot.x, plot.y);
-    ctx.lineTo(plot.x, plot.y + plot.h);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
+    drawAxes(ctx, ink, plot, midY);
 
-    ctx.beginPath();
-    track.each((p, i) => {
-      const px = toX(p.t);
-      const py = toY(p.e);
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    drawLine(ctx, track, {
+      x: (p) => toX(p.t),
+      y: (p) => toY(p.e),
+      width: 1.3,
+      style: ink.body,
     });
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     ctx.beginPath();
     stamps.each((at) => {
@@ -298,10 +289,7 @@ export function createEventTracking() {
     ctx.stroke();
 
     const last = track.last;
-    ctx.beginPath();
-    ctx.arc(toX(last.t), toY(last.e), 2.4, 0, TWO_PI);
-    ctx.fillStyle = ink.accent;
-    ctx.fill();
+    drawHead(ctx, ink.accent, toX(last.t), toY(last.e), 2.4);
   }
 
   function paint(ctx, t, ink) {

@@ -12,6 +12,7 @@ import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
 import { ROOTS, slope as modeSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
+import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createPazyFlutterModel, trimTip, inBand, growthAt, GROWTH,
   CASES, HOLD, STROBES, LOG_SECONDS, FLUTTER_BAND, ALPHA_MIN, ALPHA_MAX, LIMIT_SPEED } from '../models/pazy-flutter.js';
 
@@ -52,33 +53,20 @@ export function createPazyFlutter() {
     if (trace.h <= 0 || history.count < 2) return;
     const midY = trace.y + trace.h / 2;
     const scale = LIMIT_SPEED * 1.15;
-    const toX = (when) => trace.x + trace.w * (1 - (model.clock - when) / LOG_SECONDS);
+    const toX = timeToX(trace, LOG_SECONDS, model.clock);
     const toY = (v) => midY - Math.max(-1, Math.min(1, v / scale)) * (trace.h / 2) * 0.92;
 
-    ctx.beginPath();
-    ctx.moveTo(trace.x, midY);
-    ctx.lineTo(trace.x + trace.w, midY);
-    ctx.moveTo(trace.x, trace.y);
-    ctx.lineTo(trace.x, trace.y + trace.h);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
+    drawAxes(ctx, ink, trace, midY);
 
-    ctx.beginPath();
-    history.each((h, i) => {
-      const px = toX(h.t);
-      const py = toY(h.v);
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    drawLine(ctx, history, {
+      x: (h) => toX(h.t),
+      y: (h) => toY(h.v),
+      width: 1.2,
+      style: ink.body,
     });
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     const last = history.last;
-    ctx.beginPath();
-    ctx.arc(toX(last.t), toY(last.v), 2.6, 0, TWO_PI);
-    ctx.fillStyle = ink.accent;
-    ctx.fill();
+    drawHead(ctx, ink.accent, toX(last.t), toY(last.v));
   }
 
   function slopesFrom(a, b) {
@@ -135,13 +123,12 @@ export function createPazyFlutter() {
     ctx.strokeStyle = ink.faint;
     ctx.stroke();
 
-    ctx.beginPath();
-    GROWTH.forEach(([a, g], i) => {
-      if (i === 0) ctx.moveTo(toX(a), toY(g)); else ctx.lineTo(toX(a), toY(g));
+    drawLine(ctx, GROWTH, {
+      x: ([a]) => toX(a),
+      y: ([, g]) => toY(g),
+      width: 1.3,
+      style: ink.body,
     });
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     const mx = toX(model.alpha);
     const my = toY(growthAt(model.alpha));

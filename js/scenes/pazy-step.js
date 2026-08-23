@@ -10,6 +10,7 @@ import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';
 import { stageFor, drawDatum } from './stage.js';
 import { caseAt } from './schedule.js';
+import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createPazyStepModel, SCHEDULE, HOLD, LOG_SECONDS, ALPHA_8 } from '../models/pazy-step.js';
 
 const TWO_PI = Math.PI * 2;
@@ -56,17 +57,10 @@ export function createPazyStep() {
     const history = model.history;
     if (inset.w <= 0 || history.count < 2) return;
     const unit = LOAD * ALPHA_8;
-    const toX = (when) => inset.x + inset.w * (1 - (model.clock - when) / LOG_SECONDS);
+    const toX = timeToX(inset, LOG_SECONDS, model.clock);
     const toY = (f) => inset.y + inset.h * (1 - (f / unit + 0.25) / 1.4);
 
-    ctx.beginPath();
-    ctx.moveTo(inset.x, toY(0));
-    ctx.lineTo(inset.x + inset.w, toY(0));
-    ctx.moveTo(inset.x, inset.y);
-    ctx.lineTo(inset.x, inset.y + inset.h);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
+    drawAxes(ctx, ink, inset, toY(0));
 
     const alpha = model.targetAlpha(model.clock);
     const linear = LOAD * alpha;
@@ -85,21 +79,15 @@ export function createPazyStep() {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.beginPath();
-    history.each((h, i) => {
-      const px = toX(h.t);
-      const py = toY(h.force);
-      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    drawLine(ctx, history, {
+      x: (h) => toX(h.t),
+      y: (h) => toY(h.force),
+      width: 1.3,
+      style: ink.body,
     });
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     const last = history.last;
-    ctx.beginPath();
-    ctx.arc(toX(last.t), toY(last.force), 2.6, 0, TWO_PI);
-    ctx.fillStyle = ink.accent;
-    ctx.fill();
+    drawHead(ctx, ink.accent, toX(last.t), toY(last.force));
   }
 
   function paint(ctx, ink) {

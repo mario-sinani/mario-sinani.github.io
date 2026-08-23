@@ -14,6 +14,7 @@
 
 import { withAlpha } from '../ink.js';
 import { stageFor } from './stage.js';
+import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createImageServoModel, HORIZON,
   NOISE, PLOT_SECONDS } from '../models/image-servo.js';
 
@@ -169,27 +170,19 @@ export function createImageServo() {
     if (plot.w <= 0 || errorLog.count < 2) return;
     const baseY = plot.y + plot.h;
     const scale = frame.h * 0.3;
-    const toX = (when) => plot.x + plot.w * (1 - (t - when) / PLOT_SECONDS);
+    const toX = timeToX(plot, PLOT_SECONDS, t);
     const toY = (e) => baseY - Math.min(e / scale, 1) * plot.h;
 
-    ctx.beginPath();
-    ctx.moveTo(plot.x, baseY);
-    ctx.lineTo(plot.x + plot.w, baseY);
-    ctx.moveTo(plot.x, plot.y);
-    ctx.lineTo(plot.x, baseY);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
+    drawAxes(ctx, ink, plot, baseY);
 
     const liveE = model.errorNorm(t);
-    ctx.beginPath();
-    errorLog.each((p, i) => {
-      if (i === 0) ctx.moveTo(toX(p.t), toY(p.e)); else ctx.lineTo(toX(p.t), toY(p.e));
+    drawLine(ctx, errorLog, {
+      x: (p) => toX(p.t),
+      y: (p) => toY(p.e),
+      width: 1.3,
+      style: ink.body,
+      live: { x: toX(t), y: toY(liveE) },
     });
-    ctx.lineTo(toX(t), toY(liveE));
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     triggers.each((at) => {
       const px = toX(at);
@@ -203,10 +196,7 @@ export function createImageServo() {
       ctx.stroke();
     });
 
-    ctx.beginPath();
-    ctx.arc(toX(t), toY(liveE), 2.4, 0, TWO_PI);
-    ctx.fillStyle = ink.accent;
-    ctx.fill();
+    drawHead(ctx, ink.accent, toX(t), toY(liveE), 2.4);
   }
 
   function paint(ctx, t, ink) {

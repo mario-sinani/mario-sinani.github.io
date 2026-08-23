@@ -11,6 +11,7 @@ import { withAlpha } from '../ink.js';
 import { stageFor, drawDatum } from './stage.js';
 import { firstSlope } from '../beam-modes-shape.js';
 import { caseAt } from './schedule.js';
+import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
 import { createHingedWingtipModel, INNER, OUTER, SEMISPAN, CHORD,
   CASES, HOLD, TRACE_SECONDS, TRACE_STEP } from '../models/hinged-wingtip.js';
 
@@ -226,26 +227,18 @@ export function createHingedWingtip() {
     if (trace.w <= 0 || history.count < 3) return;
     const lo = (-30 * Math.PI) / 180;
     const hi = (70 * Math.PI) / 180;
-    const toX = (when) => trace.x + trace.w * (1 - (model.clock - when) / TRACE_SECONDS);
+    const toX = timeToX(trace, TRACE_SECONDS, model.clock);
     const toY = (f) => trace.y + trace.h * (1 - (f - lo) / (hi - lo));
 
-    ctx.beginPath();
-    ctx.moveTo(trace.x, toY(0));
-    ctx.lineTo(trace.x + trace.w, toY(0));
-    ctx.moveTo(trace.x, trace.y);
-    ctx.lineTo(trace.x, trace.y + trace.h);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = ink.faint;
-    ctx.stroke();
+    drawAxes(ctx, ink, trace, toY(0));
 
-    ctx.beginPath();
-    history.each((s, i) => {
-      if (i === 0) ctx.moveTo(toX(s.t), toY(s.fold)); else ctx.lineTo(toX(s.t), toY(s.fold));
+    drawLine(ctx, history, {
+      x: (s) => toX(s.t),
+      y: (s) => toY(s.fold),
+      width: 1.3,
+      style: ink.body,
+      live: { x: toX(model.clock), y: toY(model.fold()) },
     });
-    ctx.lineTo(toX(model.clock), toY(model.fold()));
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = ink.body;
-    ctx.stroke();
 
     ctx.beginPath();
     history.each((s) => {
@@ -257,10 +250,7 @@ export function createHingedWingtip() {
     ctx.strokeStyle = ink.accent;
     ctx.stroke();
 
-    ctx.beginPath();
-    ctx.arc(toX(model.clock), toY(model.fold()), 2.6, 0, TWO_PI);
-    ctx.fillStyle = ink.accent;
-    ctx.fill();
+    drawHead(ctx, ink.accent, toX(model.clock), toY(model.fold()));
   }
 
   function paint(ctx, ink) {
