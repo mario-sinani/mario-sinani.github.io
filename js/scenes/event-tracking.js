@@ -124,11 +124,9 @@ export function createEventTracking() {
     ctx.setLineDash([]);
   }
 
-  /* The frame of the camera on the ground, the contour in it, its bounding
-     box with the four corners, and the desired box in the middle. */
-  function drawCamera(ctx, t, ink) {
-    const left = craft.x - frame.w / 2;
-    const top = model.y - frame.h / 2;
+  /* The frame of the camera on the ground, with the marks of a
+     viewfinder at its corners. */
+  function drawFrame(ctx, ink, left, top) {
     ctx.beginPath();
     ctx.rect(left, top, frame.w, frame.h);
     ctx.lineWidth = 1;
@@ -146,8 +144,10 @@ export function createEventTracking() {
     ctx.lineWidth = 1.3;
     ctx.strokeStyle = ink.line;
     ctx.stroke();
+  }
 
-    // The desired box: a band across the middle of the frame.
+  /** The desired box: a band across the middle of the frame. */
+  function drawDesired(ctx, ink, left) {
     const band = frame.h * DESIRED_BAND;
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
@@ -156,8 +156,11 @@ export function createEventTracking() {
     ctx.strokeStyle = withAlpha(ink.line, 0.6);
     ctx.stroke();
     ctx.setLineDash([]);
+  }
 
-    // The contour in the frame, and its bounding box.
+  /** The contour the network sees, its bounding box, and the four corners
+      that are the features. */
+  function drawDetection(ctx, t, ink, left, top) {
     ctx.save();
     ctx.beginPath();
     ctx.rect(left, top, frame.w, frame.h);
@@ -187,6 +190,15 @@ export function createEventTracking() {
     for (const [x, y] of [[left, lo], [left + frame.w, lo], [left, hi], [left + frame.w, hi]]) {
       ctx.fillRect(x - 2, y - 2, 4, 4);
     }
+  }
+
+  /* What the camera sees: the frame, the desired box, and the detection. */
+  function drawCamera(ctx, t, ink) {
+    const left = craft.x - frame.w / 2;
+    const top = model.y - frame.h / 2;
+    drawFrame(ctx, ink, left, top);
+    drawDesired(ctx, ink, left);
+    drawDetection(ctx, t, ink, left, top);
   }
 
   /** The craft from above: a body plate with the camera under it, eight
