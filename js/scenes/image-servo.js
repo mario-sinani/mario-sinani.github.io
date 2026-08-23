@@ -15,12 +15,15 @@
 import { withAlpha } from '../ink.js';
 import { stageForFit } from './stage.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
+import { crestsAt, ripple } from './swell.js';
 import { createImageServoModel, HORIZON,
   NOISE, PLOT_SECONDS } from '../models/image-servo.js';
 
 const TWO_PI = 6.2832;
 const FRAME_RATIO = 720 / 480;  // the camera of the thesis
 const PLOT_GAP = 28;            // px between the frame and the chart
+const WAVE_SECONDS = 7;         // seconds for a crest to reach the coast
+const WAVE_REACH = 0.6;         // how far out a crest starts, in frames
 const GRID_X = 6;
 const GRID_Y = 4;
 
@@ -30,6 +33,9 @@ export function createImageServo() {
   const coast = { a1: 0, a2: 0, k1: 0, k2: 0 };
   const model = createImageServoModel(frame, coast);
   let stage = null;
+  /* The time the swell uses. The drawing keeps it, because the sea is not
+     part of the model of the control. */
+  let swellClock = 0;
 
   /* One solution gives one velocity command: a proportional law on the
      lateral position of the box and on the tilt, where the thesis solves
@@ -94,12 +100,38 @@ export function createImageServo() {
     ctx.fillStyle = withAlpha(ink.wash, 0.07);
     ctx.fill();
 
+    drawSwell(ctx, d, ink);
+
     ctx.beginPath();
     d.pts.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
     ctx.lineWidth = 1.6;
     ctx.strokeStyle = ink.body;
     ctx.stroke();
     ctx.restore();
+  }
+
+  /* The swell: crests that keep the shape of the coast and move in toward
+     it. Each crest fades in far out and fades away as it breaks, so the
+     line of the coast stays the only hard edge. */
+  function drawSwell(ctx, d, ink) {
+    const reach = frame.h * WAVE_REACH;
+    /* A crest of the deep water is straight. The mean of the coast in the
+       frame gives that straight line, and a crest turns from it to the
+       shape of the coast as it comes in. */
+    const mean = d.pts.reduce((sum, p) => sum + p.y, 0) / d.pts.length;
+    const wavelength = frame.w * 0.7;
+    for (const crest of crestsAt(swellClock, WAVE_SECONDS, reach)) {
+      if (crest.fade <= 0.02) continue;
+      ctx.beginPath();
+      d.pts.forEach((p, i) => {
+        const shape = p.y + (mean - p.y) * crest.deep;
+        const y = shape + crest.drop + ripple(crest, p.x - frame.x, swellClock, reach, wavelength);
+        if (i === 0) ctx.moveTo(p.x, y); else ctx.lineTo(p.x, y);
+      });
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = withAlpha(ink.wash, 0.34 * crest.fade);
+      ctx.stroke();
+    }
   }
 
   /* The desired box in the middle, with a cross at each corner. */
@@ -201,6 +233,7 @@ export function createImageServo() {
   }
 
   function paint(ctx, t, ink) {
+    swellClock = t;
     const d = model.detect();
     drawCoast(ctx, d, ink);
     drawFrame(ctx, ink);

@@ -125,6 +125,40 @@ async function scene(file, factory, hold) {
 }
 
 
+/* The swell: a crest comes in toward the coast, slows and bunches as the
+   water shallows, turns from straight to the shape of the coast, and
+   fades as it breaks. */
+{
+  const { crestsAt, CRESTS } = await import(new URL('../js/scenes/swell.js', import.meta.url));
+  const at = (clock) => crestsAt(clock, 10, 100);
+
+  const now = at(0)[1];
+  const soon = at(1)[1];
+  ok('swell: a crest moves in toward the coast', soon.drop < now.drop,
+     now.drop.toFixed(1) + ' px -> ' + soon.drop.toFixed(1) + ' px');
+
+  const crests = at(0).slice().sort((a, b) => a.drop - b.drop);
+  const gaps = crests.slice(1).map((c, i) => c.drop - crests[i].drop);
+  ok('swell: the crests bunch as the water shallows',
+     gaps.every((g, i) => i === 0 || g > gaps[i - 1]), gaps.map((g) => g.toFixed(0)).join(' < '));
+
+  /* The crest with the smallest phase is the one at the shore. */
+  const byPhase = at(0).slice().sort((a, b) => a.phase - b.phase);
+  const near = byPhase[0];
+  const far = byPhase[byPhase.length - 1];
+  const speed = (c, dt) => (c.drop - crestsAt(dt, 10, 100)[c.seed].drop) / dt;
+  ok('swell: a crest slows in shallow water', speed(near, 0.2) < speed(far, 0.2),
+     speed(near, 0.2).toFixed(1) + ' px/s < ' + speed(far, 0.2).toFixed(1) + ' px/s');
+
+  ok('swell: it is straight far out and follows the coast at the shore',
+     far.deep > 0.8 && near.deep < 0.2, far.deep.toFixed(2) + ' -> ' + near.deep.toFixed(2));
+
+  const edges = at(0).map((c) => c.fade);
+  ok('swell: a crest fades in far out and away as it breaks',
+     Math.min(...edges) < 0.2 && Math.max(...edges) > 0.9,
+     Math.min(...edges).toFixed(2) + ' to ' + Math.max(...edges).toFixed(2));
+}
+
 /* Every scene must answer the whole contract: the engine calls layout,
    reset, still and frame, and the lab page calls the members of lab and
    probe. A member that reads a name which no longer exists fails here. */

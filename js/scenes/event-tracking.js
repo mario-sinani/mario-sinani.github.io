@@ -11,11 +11,12 @@
 import { withAlpha } from '../ink.js';
 import { stageForFit, drawDatum } from './stage.js';
 import { timeToX, drawAxes, drawLine, drawHead } from './chart.js';
+import { crestsAt, ripple, CRESTS } from './swell.js';
 import { createEventTrackingModel, DRIFT,
   TRACK_SECONDS } from '../models/event-tracking.js';
 
 const TWO_PI = 6.2832;
-const CONTOURS = 6;             // depth lines off the shore
+const WAVE_SECONDS = 9;         // seconds for a crest to reach the shore
 const STEP = 6;                 // px between samples along a curve
 const ROTORS = 8;               // an octorotor, as on the coastline in the paper
 const ROTOR_REACH = 0.4;        // the body centre to a motor, in spans
@@ -55,7 +56,7 @@ export function createEventTracking() {
   /* The sea: a wash off the shore, and the depth contours, each one further
      out and more faint. */
   function drawSea(ctx, t, ink) {
-    const deep = CONTOURS * shore.spacing + view.h * 0.1;
+    const deep = CRESTS * shore.spacing + view.h * 0.1;
     traceShore(ctx, t, 0);
     ctx.lineTo(view.w + STEP, shore.y + shore.a1 + deep);
     ctx.lineTo(-STEP, shore.y + shore.a1 + deep);
@@ -66,10 +67,23 @@ export function createEventTracking() {
     wash.addColorStop(1, withAlpha(ink.wash, 0));
     ctx.fillStyle = wash;
     ctx.fill();
-    for (let i = CONTOURS; i >= 1; i--) {
-      traceShore(ctx, t, i * shore.spacing);
+    /* The swell comes in from the deep water: a crest starts straight,
+       turns to the shape of the coast as it shoals, slows, and fades as it
+       breaks. */
+    const reach = CRESTS * shore.spacing;
+    const wavelength = Math.max(view.w * 0.6, 320);
+    for (const crest of crestsAt(t, WAVE_SECONDS, reach)) {
+      if (crest.fade <= 0.02) continue;
+      ctx.beginPath();
+      for (let x = -STEP; x <= view.w + STEP; x += STEP) {
+        const shape = model.shoreAt(x, t);
+        const straight = shore.y;
+        const y = shape + (straight - shape) * crest.deep
+          + crest.drop + ripple(crest, x, t, reach, wavelength);
+        if (x === -STEP) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
       ctx.lineWidth = 1;
-      ctx.strokeStyle = withAlpha(ink.line, 0.26 * (1 - (i - 1) / CONTOURS));
+      ctx.strokeStyle = withAlpha(ink.line, 0.3 * crest.fade);
       ctx.stroke();
     }
   }
@@ -399,7 +413,9 @@ export function createEventTracking() {
       shore.a2 = h * 0.011;
       shore.k1 = TWO_PI / Math.max(w * 0.55, 260);
       shore.k2 = TWO_PI / Math.max(w * 0.21, 110);
-      shore.spacing = Math.max(h * 0.0075, 5);
+      // The crests of the swell stand this far apart, so the sea reads as
+      // water and not as a band of lines at the shore.
+      shore.spacing = Math.max(h * 0.022, 12);
       craft.x = stage.left + stage.width * (preview ? 0.5 : 0.34);
       model.placeAt(stage.y);
       frame.h = craft.standoff * 2.6;
