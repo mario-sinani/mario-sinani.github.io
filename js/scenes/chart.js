@@ -1,4 +1,4 @@
-/* Chart: the parts that the small charts of the scenes have in common —
+/* Chart: the parts that the small charts of the scenes have in common:
    the two axes, the line through the samples, and the head of that line.
    Each scene keeps its own scales and its own marks. */
 
