@@ -238,8 +238,8 @@
   max-width: 44rem;
 }
 
-/* The page of one model. The stage is taller than the one of a paper page,
-   because the height sets the size of the subject in each scene. */
+/* The page of one model. The stage is taller than the stage of a paper
+   page: the height sets the size of the subject. */
 .lab-model .instrument-stage { height: clamp(320px, 44vw, 560px); }
 
 /* The notes below the model. Each note is one subject, and a line divides

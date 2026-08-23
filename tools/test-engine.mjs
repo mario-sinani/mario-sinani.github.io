@@ -1,9 +1,8 @@
 /* The tests of the engine: the surface, the loop and the field.
 
-   The browser gives the engine its canvas, its clock and its
-   observers. Here they come from stubs, so the loop can be driven step by
-   step and the rules can be checked: one fixed frame at once, no motion
-   while paused or hidden, and no loop at all for a fixed frame. */
+   Stubs give the canvas, the clock and the observers, so the loop runs
+   step by step. The tests check one fixed frame at once, no motion while
+   paused or hidden, and no loop for a fixed frame. */
 
 import { recordingContext } from './canvas-stub.mjs';
 

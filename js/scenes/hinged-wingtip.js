@@ -3,9 +3,9 @@
    Nonlinear Multibody Modeling of Flared Hinged Wings".
 
    The model is in js/models/hinged-wingtip.js. The scene draws the inner
-   wing, the tip about its hinge, the arrows of the lift and the weight, the
-   plan view with the flare (Fig. 17), and the trace of the fold angle
-   against time (Fig. 18). */
+   wing, the tip about its hinge, and the arrows of the lift and the weight.
+   The plan view gives the flare (Fig. 17), and the trace gives the fold
+   angle against time (Fig. 18). */
 
 import { withAlpha } from '../ink.js';
 import { stageForFit, drawDatum } from './stage.js';

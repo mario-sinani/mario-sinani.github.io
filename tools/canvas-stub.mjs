@@ -1,8 +1,5 @@
-/* A canvas context that records what a scene draws.
-
-   The scenes run in the browser, but their drawing is a sequence of
-   calls. This stub records the sequence, so a test can compare the
-   drawing of two versions of the code. */
+/* A canvas context that records the calls of a drawing, so a test can
+   compare two versions of the code. */
 
 const NUMBER = (v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v);
 
@@ -41,8 +38,8 @@ export const INK = {
   faint: 'rgba(15, 25, 38, 0.14)',
 };
 
-/* A generator with a seed, in place of Math.random, so a field that
-   starts its tracers at random draws the same picture in each run. */
+/* A generator with a seed, in place of Math.random. A field that starts
+   its tracers at random then draws the same picture in each run. */
 export function seedRandom(seed = 12345) {
   let state = seed;
   Math.random = () => {

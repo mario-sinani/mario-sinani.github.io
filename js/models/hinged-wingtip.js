@@ -5,8 +5,8 @@
    equation of the tip holds the lift on its incidence, its weight, the
    inertial load of the rising hinge, and the damping of the joint. A fold
    of theta about a hinge flared by beta turns the chord by
-   atan(tan(theta) sin(beta)), so the fold takes incidence off the tip and
-   the tip coasts where its own lift carries it. The constants are
+   atan(tan(theta) sin(beta)). The fold therefore takes incidence off the
+   tip, and the tip stops where its own lift carries it. The constants are
    calibrated to the two cases of the paper. */
 
 import { createSeries } from './series.js';

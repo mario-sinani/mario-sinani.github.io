@@ -4,8 +4,8 @@
    model sets the parameter and runs the cases of the paper; in Hold the
    slider sets it. A line below the control says what the model does, in the
    words of the scene. A canvas with data-preview runs in the frame of the
-   scene with no control, and one with data-still draws a fixed frame at
-   that time. */
+   scene, with no control. A canvas with data-still draws one fixed frame
+   at that time. */
 
 import { effectiveTheme } from './theme.js';
 import { initFieldCanvas } from './field-canvas.js';

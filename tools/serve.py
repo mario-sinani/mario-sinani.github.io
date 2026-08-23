@@ -1,10 +1,10 @@
-"""A server for local work that sends no cache instruction.
+"""A local server that sends no cache instruction.
 
     python3 tools/serve.py
 
-The browser then always reads the file on disk, and a changed
-stylesheet or module shows at once. The plain server of python keeps a
-file in the cache of the browser, which hides a change."""
+The browser then reads each file from the disk. The plain server of
+Python lets the browser keep a file in its cache, which hides a
+change."""
 
 import http.server, os
 

@@ -3,10 +3,14 @@
    Servoing Predictive Control Strategy for the Surveillance of
    Contour-Based Areas using Multirotor Aerial Vehicles".
 
-   The model is in js/models/event-tracking.js. The scene draws the sea and
-   the coastline, the flown path with a mark at each event, the rest of the
-   plan in memory, the frame of the camera with the detected box, the craft
-   with its eight rotors, and the chart of the image error. */
+   The model is in js/models/event-tracking.js. The scene draws:
+
+     the sea with its swell, and the coastline
+     the flown path, with a mark at each event
+     the rest of the plan in memory
+     the frame of the camera, with the detected box
+     the craft, with its eight rotors
+     the chart of the image error against time */
 
 import { withAlpha } from '../ink.js';
 import { stageForFit, drawDatum } from './stage.js';
@@ -67,9 +71,7 @@ export function createEventTracking() {
     wash.addColorStop(1, withAlpha(ink.wash, 0));
     ctx.fillStyle = wash;
     ctx.fill();
-    /* The swell comes in from the deep water: a crest starts straight,
-       turns to the shape of the coast as it shoals, slows, and fades as it
-       breaks. */
+    /* The swell, from the deep water to the shore (see swell.js). */
     const reach = CRESTS * shore.spacing;
     const wavelength = Math.max(view.w * 0.6, 320);
     for (const crest of crestsAt(t, WAVE_SECONDS, reach)) {
@@ -215,9 +217,9 @@ export function createEventTracking() {
     drawDetection(ctx, t, ink, left, top);
   }
 
-  /** The craft from above: a body plate with the camera under it, eight
-      arms with a motor at each end, a disc and two blades for each rotor,
-      and a mark for the nose. */
+  /** The craft from above: the body plate with the camera, eight arms
+      with a motor at each end, a disc and two blades for each rotor, and
+      the nose. */
   /* The eight arms of the craft, with a motor at the end of each. */
   function armsOf() {
     const arms = [];
@@ -413,8 +415,7 @@ export function createEventTracking() {
       shore.a2 = h * 0.011;
       shore.k1 = TWO_PI / Math.max(w * 0.55, 260);
       shore.k2 = TWO_PI / Math.max(w * 0.21, 110);
-      // The crests of the swell stand this far apart, so the sea reads as
-      // water and not as a band of lines at the shore.
+      // The distance between two crests of the swell.
       shore.spacing = Math.max(h * 0.022, 12);
       craft.x = stage.left + stage.width * (preview ? 0.5 : 0.34);
       model.placeAt(stage.y);

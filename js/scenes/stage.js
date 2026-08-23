@@ -9,12 +9,9 @@ const COLUMN_PADDING = 24;    // matches the column's 1.5rem side padding
    band. */
 const BAND = 0.14;
 
-/* The stage of a scene, for the fit the engine gives.
-
-   A preview is a small window on the top of the box, so the subject sits
-   lower in it: the scene gives the band it wants there. A page that shows
-   the scene alone gives its own band in the fit, and a hero uses the band
-   of this module. */
+/* The stage for the fit that the engine gives. A preview shows the top of
+   the box only, so the scene gives the band to use there. A page that
+   shows the scene alone gives its band in the fit. */
 export function stageForFit(w, h, fit, { preview: previewBand, band, rise = 0 }) {
   if (fit.preview) return stageFor(w, h, previewBand);
   if (band !== undefined) return stageFor(w, h, (fit.band ?? band) + rise);

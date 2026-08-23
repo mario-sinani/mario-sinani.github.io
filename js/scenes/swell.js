@@ -1,18 +1,14 @@
-/* The swell: the crests of the sea, as they come in toward a coast.
+/* Swell: the crests of the sea between deep water and a coast.
 
-   A crest starts far out, where the water is deep, and moves in. Three
-   things happen to it on the way, and the scenes draw all three:
+   A crest moves toward the coast. Three effects change it on the way:
 
-     it slows and bunches   in shallow water a wave is slower, so the
-                            crests come closer together near the shore
-     it turns to the coast  refraction bends a crest until it is parallel
-                            to the shore, so a straight crest of the deep
-                            water takes the shape of the coast
-     it breaks              the crest fades as it arrives, and the line of
-                            the coast stays the only hard edge
+     shoaling      the wave speed falls with the depth, so the crests
+                   come closer together near the shore
+     refraction    the crest turns until it is parallel to the coast
+     breaking      the crest fades at the shore
 
-   The scene gives the clock and the room the sea has; this module gives
-   the state of each crest, and the scene draws it in its own geometry. */
+   The module gives the state of each crest. Each scene draws that state
+   in its own geometry. */
 
 const TWO_PI = Math.PI * 2;
 const SHOAL = 1.5;              // the exponent that slows and bunches a crest

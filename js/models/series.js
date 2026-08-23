@@ -1,13 +1,11 @@
-/* A series: the recent samples of a model, in the order they happened.
+/* Series: the recent samples of a model, in the order of their time.
 
-   Every model keeps one or more of these — the log of a force, the path
-   of a craft, the times of the events, the shapes of a strobe. The
-   series holds the samples, drops the ones that are too old or too many,
-   and moves them when the clock goes back. It gives the drawing a way to
-   read them, and no way to change them.
+   The series adds a sample, removes the samples that are too old or in
+   excess of the count, and moves the times when the clock goes back. It
+   gives read access only.
 
-   A series keeps its samples for a time in seconds, or a fixed number of
-   them. A sample is an object with a t, or a plain time. */
+   A series holds its samples for a time in seconds, or holds a count of
+   them. A sample is an object with a property t, or a time. */
 
 export function createSeries({ seconds = 0, keep = 0, timeOf = (item) => (typeof item === 'number' ? item : item.t) } = {}) {
   const items = [];

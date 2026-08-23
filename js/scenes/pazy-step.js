@@ -3,8 +3,8 @@
    Aerodynamic Forces of the Pazy Wing".
 
    The model is in js/models/pazy-step.js. The scene draws the wing, the
-   ghosts of its recent shapes, the arrows of the load, and the inset of the
-   vertical force at the tip with the level of each model. */
+   ghosts of its recent shapes, and the arrows of the load. The inset is the
+   vertical force at the tip, with the level of each model. */
 
 import { withAlpha } from '../ink.js';
 import { createPazyWing, PAZY_ASPECT, OBLIQUE } from '../pazy-wing.js';

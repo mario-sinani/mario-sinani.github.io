@@ -1,9 +1,9 @@
 /* Model: the Karman vortex street behind a circular cylinder.
 
    The scene of the same name draws it. The model sheds one vortex from
-   each side in turn, convects them with the stream and with each other,
-   and gives the velocity of the total field at any point, so the scene
-   can integrate its streamlines through it. The cylinder itself moves
+   each side in turn, and convects them with the stream and with each
+   other. It gives the velocity of the total field at a point, which the
+   scene integrates into streamlines. The cylinder itself moves
    across the stream at the shedding frequency, which is vortex-induced
    vibration.
 

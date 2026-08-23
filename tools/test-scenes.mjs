@@ -1,7 +1,6 @@
-/* The tests of the models: each scene must answer as its paper does.
-
-   The tests drive a scene with its own frame loop and read probe(). No
-   browser runs, because the drawing goes to the stub context. */
+/* The tests of the models: each scene must give the numbers of its
+   paper. The tests drive a scene frame by frame and read probe(). The
+   drawing goes to the stub context, so no browser runs. */
 
 import { recordingContext, INK } from './canvas-stub.mjs';
 

@@ -3,10 +3,10 @@
    Geometrically Exact Beams using Semidefinite Programming".
 
    The model is in js/models/beam-modes.js. The scene draws the beam, the
-   strobe of its recent shapes, the ticks that move with the axial mode, and
-   the bars of the energy with the running average and the bound. The axial
-   motion is drawn larger than it is, and the two frequencies are closer
-   than in the paper, so the eye can follow both. */
+   strobe of its recent shapes, and the ticks of the axial mode. The bars
+   give the energy of each mode, the running average, and the bound. The axial
+   motion is drawn larger than it is, and the ratio of the two frequencies
+   is 6, against 4 to 14 in the paper. */
 
 import { withAlpha } from '../ink.js';
 import { stageForFit, drawDatum } from './stage.js';

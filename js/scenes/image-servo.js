@@ -3,11 +3,14 @@
    Using Event-Triggered Image-Based Visual Servoing Nonlinear Model
    Predictive Control".
 
-   The model is in js/models/image-servo.js. The scene draws the frame of
-   the camera as a viewfinder, the coast with the sea below it, the box of
-   the detection with its four corners, the desired band in the middle, the
-   line from each corner to its desired position and to the one the last
-   solution predicts, and the chart of the error.
+   The model is in js/models/image-servo.js. The scene draws:
+
+     the frame of the camera, with the marks of a viewfinder
+     the coast, with the sea and its swell below it
+     the box of the detection and its four corners
+     the desired band across the middle of the frame
+     the error of each corner, and the corner the last solution predicts
+     the chart of the mean error against time
 
    The thesis has the coast along the vertical axis; the scene turns the
    picture, so the coast runs across the frame as in the view from above. */
@@ -110,14 +113,13 @@ export function createImageServo() {
     ctx.restore();
   }
 
-  /* The swell: crests that keep the shape of the coast and move in toward
-     it. Each crest fades in far out and fades away as it breaks, so the
-     line of the coast stays the only hard edge. */
+  /* The swell in the image. A crest is straight in deep water and takes
+     the shape of the coast as it comes in (see swell.js). */
   function drawSwell(ctx, d, ink) {
     const reach = frame.h * WAVE_REACH;
-    /* A crest of the deep water is straight. The mean of the coast in the
-       frame gives that straight line, and a crest turns from it to the
-       shape of the coast as it comes in. */
+    /* A crest of the deep water is straight, and the mean of the coast in
+       the frame gives that line. A crest turns from it to the shape of the
+       coast as it comes in. */
     const mean = d.pts.reduce((sum, p) => sum + p.y, 0) / d.pts.length;
     const wavelength = frame.w * 0.7;
     for (const crest of crestsAt(swellClock, WAVE_SECONDS, reach)) {
@@ -157,9 +159,9 @@ export function createImageServo() {
     ctx.stroke();
   }
 
-  /* The box of the detection and its corners as the tracking reports them,
-     the line from each corner to its desired position, and where the last
-     solution predicts it at the end of the horizon. */
+  /* The features of the image: the box of the detection with its corners,
+     the error of each corner, and the corner that the last solution
+     predicts at the end of its horizon. */
   function drawFeatures(ctx, t, ink) {
     const have = model.measured(t);
     const want = model.desired();
@@ -290,9 +292,9 @@ export function createImageServo() {
       const room = w > 760;
       plot.w = room ? Math.min(stage.width * 0.17, 170) : 0;
       /* The page of the model shows the scene alone, so the frame takes the
-         room it can: the height of the box, and the width the chart leaves.
-         A hero holds the frame above the text of the panel, so there it
-         keeps to the band and most of it stands above the datum. */
+         height of the box and the width that the chart leaves. A hero holds
+         the frame above the text of the panel. There the frame keeps to the
+         band, and most of it stands above the datum. */
       const alone = (fit.scale || 1) > 1 && !preview;
       if (alone) {
         const beside = stage.width - plot.w - PLOT_GAP;

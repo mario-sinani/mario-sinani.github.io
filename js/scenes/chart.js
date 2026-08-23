@@ -1,10 +1,6 @@
-/* The small charts beside a scene: the force at the tip, the velocity of
-   a tip, the growth rate, the fold angle, the image error.
-
-   Each one is a box with two axes, a line through the samples and a dot
-   at the head of that line. The scene keeps its own scales and its own
-   extra marks; this module draws the parts they all share, in the same
-   order, so the charts of the site look alike. */
+/* Chart: the parts that the small charts of the scenes have in common —
+   the two axes, the line through the samples, and the head of that line.
+   Each scene keeps its own scales and its own marks. */
 
 const TWO_PI = Math.PI * 2;
 
@@ -25,9 +21,9 @@ export function drawAxes(ctx, ink, box, zeroY) {
   ctx.stroke();
 }
 
-/** The line through the samples. A series or an array holds them, x and y
-    put one sample on the screen, and live adds the point of this moment
-    at the head. */
+/** The line through the samples of a series or an array. x and y put one
+    sample on the screen. live adds the point of this moment at the head of
+    the line. */
 export function drawLine(ctx, samples, { x, y, width, style, live }) {
   ctx.beginPath();
   let first = true;

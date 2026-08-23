@@ -1,33 +1,28 @@
 /* Field canvas: the engine that puts a scene on a canvas.
 
-   It joins three parts: the surface, which holds the bitmap and the
-   palette (canvas-surface.js); the loop, which runs while the canvas is
-   on the screen (frame-loop.js); and the scene, which draws. It draws one
-   fixed frame with reduced motion or reduced data.
+   The engine joins three parts: the surface, which holds the bitmap and
+   the palette (canvas-surface.js); the loop, which runs while the canvas
+   is on the screen (frame-loop.js); and the scene, which draws. With
+   reduced motion or reduced data it draws one fixed frame.
 
-   A scene gives the drawing:
+   A scene has these members:
 
      fade                    the fade to the background in each frame
      layout(w, h, fit)       set the positions. fit.band is how far down
                              the box the subject sits, fit.scale its
                              size, fit.preview true in a small window
-     reset()                 put the model back at its start, if it has
-                             one to put back
+     reset()                 put the model at its start, if it has one
      frame(ctx, dt, t, ink)  draw one frame
-     lab                     the control of the lab page: the range, the
-                             value, set, release, autoName, and status
-     probe()                 a few numbers of the state, for a test
      still(ctx, ink, t)      draw one fixed frame. A scene that needs a
                              past draws a later time and gives it back,
-                             and the loop continues from it.
+                             and the loop continues from that time
+     lab                     the control of the lab page: the range, the
+                             value, set, release, autoName and status
+     probe()                 values of the state, for a test
 
-   A scene draws; a model in js/models holds the state it draws. A scene
-   with no state of its own needs no model.
-
-   The engine passes the palette (see ink.js), so a scene does not read
-   the CSS. The loop runs only while the canvas is on the screen and the
-   tab is in front. options.still asks for one fixed frame at a time, and
-   the loop then never runs. */
+   A scene draws; a model in js/models holds the state. A scene with no
+   state needs no model. The engine gives the palette (see ink.js), so a
+   scene does not read the CSS. */
 
 import { createSurface } from './canvas-surface.js';
 import { createLoop } from './frame-loop.js';
@@ -48,7 +43,7 @@ export function initFieldCanvas(canvas, isDark, scene, options = {}) {
 
   function step(time) {
     /* The limit of 0.05 s holds the first step after a pause, a resize or
-       a tab that comes back, so the scene does not jump. */
+       a tab that comes back. The scene therefore does not jump. */
     const dt = Math.min((time - lastFrameTime) / 1000, 0.05) || 0.016;
     lastFrameTime = time;
     clock += dt;

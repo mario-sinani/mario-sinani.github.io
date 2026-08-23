@@ -3,9 +3,8 @@
 
    The scene of the same name draws it. The first bending mode carries the
    trim and is stable. The second bending mode grows or decays at the rate
-   the paper gives for the angle, and a soft limit holds the unstable
-   motion at a small amplitude, where the paper also sees the peaks
-   saturate. On the wing the second mode is at 29 Hz and on the screen at
+   the paper gives for the angle. A soft limit holds the unstable motion at
+   a small amplitude, where the paper also sees the peaks saturate. On the wing the second mode is at 29 Hz and on the screen at
    2.4 Hz, and the rates scale with the same ratio. */
 
 import { createSeries } from './series.js';

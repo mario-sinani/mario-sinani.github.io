@@ -1,9 +1,8 @@
-/* Loop: the animation loop of one field, and the reasons to stop it.
+/* Loop: the animation loop of one field.
 
-   The loop runs only while the canvas is on the screen and the tab is in
-   front, because a hero field is off the screen for most of a visit. The
-   visitor can also stop it. The loop knows nothing of the drawing: it
-   calls the step it is given. */
+   The loop runs while the canvas is on the screen and the tab is in
+   front, and a pause stops it. It calls the step that it is given, and
+   knows nothing of the drawing. */
 
 export function createLoop(element, step) {
   let handle = 0;
@@ -49,7 +48,7 @@ export function createLoop(element, step) {
     stop,
     /** Never run: a fixed frame, reduced motion or reduced data. */
     freeze() { stopped = true; stop(); },
-    /** The wish of the visitor. It gives back true for a pause. */
+    /** Set or clear the pause. It gives back true for a pause. */
     setPaused(paused) {
       userPaused = paused;
       if (paused) stop();

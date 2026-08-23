@@ -1,8 +1,8 @@
 /* The bending modes of a clamped-free beam.
 
-   Four scenes need the same shapes: the Pazy wing under a step and at
-   its flutter band, the beam that moves energy between its modes, and
-   the wing on a flared hinge. The roots come from cos(b) cosh(b) = -1,
+   Four scenes need the same shapes: the Pazy wing under a step, the Pazy
+   wing at its flutter band, the beam that moves energy between its modes,
+   and the wing on a flared hinge. The roots come from cos(b) cosh(b) = -1,
    and sigma from the ratio the clamped-free end conditions give.
 
    shape(m, xi) is the raw mode m at the station xi, from 0 at the root

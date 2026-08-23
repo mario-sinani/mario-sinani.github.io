@@ -4,8 +4,8 @@
    The bending stretches the axis by the square of its slope, and the
    axial force changes the stiffness of the bending. The sum of the
    energies is constant. estimateBound gives the envelope of the running
-   average of the bending share over many starts, plus the gap the paper
-   reports between its envelope and its bound.
+   average of the bending share over many starts. It adds the gap that the
+   paper reports between its envelope and its bound.
 
    The scene of the same name draws this model. */
 
@@ -15,9 +15,9 @@ const TWO_PI = Math.PI * 2;
 const BEND_HZ = 0.28;             // the first bending mode, on the screen
 const RATIO = 6;                  // the axial frequency over the bending frequency; 58 and 14 in the paper
 /* The quadratic coupling. It is small enough that the axial force never
-   cancels the stiffness of the bending. With the amplitudes below it moves
-   1 to 18 per cent of the energy out of the bending mode, which is the
-   range of the two cases of the paper. */
+   cancels the stiffness of the bending. With the amplitudes below, it
+   moves 1 to 18 per cent of the energy out of the bending mode. That is
+   the range of the two cases of the paper. */
 const COUPLING = 35;
 const BOUND_GAP = 1.05;           // the paper finds its bounds 5 per cent over the envelope
 const BOUND_RUNS = 16;

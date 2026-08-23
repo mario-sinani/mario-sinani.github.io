@@ -1,14 +1,12 @@
-/* The fingerprint of each scene: the drawing it makes and the numbers
-   it reports.
+/* The fingerprint of each scene: the drawing and the numbers it reports.
 
-   Run it with --write to record the fingerprints in golden.json, and
-   with no argument to compare the code against that record. A refactor
-   that changes no behaviour gives the same fingerprint.
+   --write records the fingerprints in golden.json. With no argument the
+   tool compares the code against that record; a refactor that changes no
+   behaviour gives the same fingerprint.
 
    A fingerprint holds the hash of the drawing, the count of each kind of
-   call, the numbers of probe() and the line of the lab. A change of
-   behaviour therefore shows in the file as more arcs or fewer lines, and
-   not as one hash that says nothing. */
+   call, the values of probe(), and the line of the lab. A change of
+   behaviour therefore shows as a change of the counts. */
 
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';

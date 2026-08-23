@@ -65,8 +65,8 @@
    effective again. */
 .pub[hidden] { display: none; }
 
-/* The filter changes which entry is first and last, so classes give the
-   caps of the rail, and not the position of the child. */
+/* The filter changes which entry is first and last. The caps of the rail
+   therefore come from classes, and not from the position of the child. */
 .pub:first-child .pub-node::before { top: 0; }
 .pub:last-child .pub-node::before { bottom: 0; height: auto; }
 .pub:last-child .pub-body { padding-bottom: 3.2rem; }

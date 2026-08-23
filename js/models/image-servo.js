@@ -3,11 +3,14 @@
 
    The scene of the same name draws it. The detection gives the bounding
    box of the coastline, and its four corners are the features. Their
-   desired positions are the corners of a narrow box across the middle, and
-   they slide along the frame, so the craft moves along the coast. Between
-   two solutions the camera keeps the last velocity in an open loop, and it
-   solves again when the measured features depart from the predicted ones
-   by more than a bound, or when the horizon of six steps ends.
+   desired positions are the corners of a narrow box across the middle.
+   The desired positions slide along the frame, so the craft moves along
+   the coast.
+
+   Between two solutions the camera keeps the last velocity in an open
+   loop. It solves again at an event: a departure of the measured features
+   from the predicted ones by more than the bound, or the end of the
+   horizon of six steps.
 
    The geometry lives in the scene, which gives it here: the frame of the
    camera and the shape of the coast, in the pixels of the image. */
@@ -19,9 +22,8 @@ export const HORIZON = 0.6;     // seconds a solution stays valid for: 6 steps o
 export const ALONG = 40;        // px/s the desired features slide along the frame
 const GAIN_U = 1.6;             // 1/s on the lateral error
 const GAIN_ROLL = 1.4;          // 1/s on the tilt
-/* The triggering condition: the departure of the measured features from
-   the predicted ones stays under a floor in pixels plus a fraction of the
-   image error. */
+/* The triggering condition. The departure of the measured features from
+   the predicted ones stays under a floor plus a fraction of the error. */
 const SIGMA = 0.25;
 const FLOOR = 2.5;
 export const NOISE = 1.5;              // pixels of noise in the visual tracking, unless the lab holds it
